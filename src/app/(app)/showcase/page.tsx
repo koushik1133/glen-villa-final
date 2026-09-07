@@ -51,48 +51,48 @@ export default async function ShowcasePage({
 
         {/* Project Key Metrics Row */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
-          <div className="rounded-2xl border border-ink-800 bg-ink-900/40 p-4 transition hover:border-ink-700">
-            <div className="flex items-center gap-2 text-amber-400">
+          <div className="rounded-2xl border border-ink-700/60 bg-ink-900/60 p-4 shadow-sm transition hover:border-ink-600">
+            <div className="flex items-center gap-2 text-amber-500 dark:text-amber-400">
               <Building2 size={16} />
               <span className="text-[10.5px] font-bold uppercase tracking-wider text-mist-400">Towers</span>
             </div>
-            <p className="tnum mt-2 text-2xl font-bold text-white">6 Towers</p>
+            <p className="tnum mt-2 text-2xl font-bold text-mist-100">6 Towers</p>
             <p className="text-[11px] text-mist-400">G + 16 High-Rise</p>
           </div>
 
-          <div className="rounded-2xl border border-ink-800 bg-ink-900/40 p-4 transition hover:border-ink-700">
-            <div className="flex items-center gap-2 text-emerald-400">
+          <div className="rounded-2xl border border-ink-700/60 bg-ink-900/60 p-4 shadow-sm transition hover:border-ink-600">
+            <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400">
               <Trees size={16} />
               <span className="text-[10.5px] font-bold uppercase tracking-wider text-mist-400">Project Area</span>
             </div>
-            <p className="tnum mt-2 text-2xl font-bold text-white">8.5 Acres</p>
+            <p className="tnum mt-2 text-2xl font-bold text-mist-100">8.5 Acres</p>
             <p className="text-[11px] text-mist-400">70% Open Green Space</p>
           </div>
 
-          <div className="rounded-2xl border border-ink-800 bg-ink-900/40 p-4 transition hover:border-ink-700">
-            <div className="flex items-center gap-2 text-blue-400">
+          <div className="rounded-2xl border border-ink-700/60 bg-ink-900/60 p-4 shadow-sm transition hover:border-ink-600">
+            <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
               <Waves size={16} />
               <span className="text-[10.5px] font-bold uppercase tracking-wider text-mist-400">Clubhouse</span>
             </div>
-            <p className="tnum mt-2 text-2xl font-bold text-white">25,000 <span className="text-xs font-normal">sq.ft</span></p>
+            <p className="tnum mt-2 text-2xl font-bold text-mist-100">25,000 <span className="text-xs font-normal text-mist-400">sq.ft</span></p>
             <p className="text-[11px] text-mist-400">Rooftop Infinity Pool</p>
           </div>
 
-          <div className="rounded-2xl border border-ink-800 bg-ink-900/40 p-4 transition hover:border-ink-700">
-            <div className="flex items-center gap-2 text-purple-400">
+          <div className="rounded-2xl border border-ink-700/60 bg-ink-900/60 p-4 shadow-sm transition hover:border-ink-600">
+            <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400">
               <Compass size={16} />
               <span className="text-[10.5px] font-bold uppercase tracking-wider text-mist-400">Vastu</span>
             </div>
-            <p className="tnum mt-2 text-2xl font-bold text-white">100%</p>
+            <p className="tnum mt-2 text-2xl font-bold text-mist-100">100%</p>
             <p className="text-[11px] text-mist-400">East & West Facing</p>
           </div>
 
-          <div className="rounded-2xl border border-ink-800 bg-ink-900/40 p-4 transition hover:border-ink-700">
-            <div className="flex items-center gap-2 text-orange-400">
+          <div className="rounded-2xl border border-ink-700/60 bg-ink-900/60 p-4 shadow-sm transition hover:border-ink-600">
+            <div className="flex items-center gap-2 text-orange-600 dark:text-orange-400">
               <ShieldCheck size={16} />
               <span className="text-[10.5px] font-bold uppercase tracking-wider text-mist-400">RERA Status</span>
             </div>
-            <p className="tnum mt-2 text-2xl font-bold text-white">Approved</p>
+            <p className="tnum mt-2 text-2xl font-bold text-mist-100">Approved</p>
             <p className="text-[11px] text-mist-400">P02200004523</p>
           </div>
         </div>
@@ -106,48 +106,48 @@ export default async function ShowcasePage({
             />
 
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <div className="flex items-start gap-3 rounded-xl border border-ink-800/80 bg-ink-900/50 p-3.5">
-                <div className="rounded-lg bg-amber-400/10 p-2 text-amber-400">
+              <div className="flex items-start gap-3 rounded-xl border border-ink-700/60 bg-ink-900/50 p-3.5">
+                <div className="rounded-lg bg-amber-500/10 p-2 text-amber-600 dark:text-amber-400">
                   <Waves size={16} />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-white">Skyline Infinity Pool</h4>
+                  <h4 className="text-xs font-bold text-mist-100">Skyline Infinity Pool</h4>
                   <p className="mt-0.5 text-[11px] text-mist-400">
                     Rooftop infinity swimming pool with separate kids splash pool and sun lounge deck.
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 rounded-xl border border-ink-800/80 bg-ink-900/50 p-3.5">
-                <div className="rounded-lg bg-emerald-400/10 p-2 text-emerald-400">
+              <div className="flex items-start gap-3 rounded-xl border border-ink-700/60 bg-ink-900/50 p-3.5">
+                <div className="rounded-lg bg-emerald-500/10 p-2 text-emerald-600 dark:text-emerald-400">
                   <Trophy size={16} />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-white">Outdoor Sports Arena</h4>
+                  <h4 className="text-xs font-bold text-mist-100">Outdoor Sports Arena</h4>
                   <p className="mt-0.5 text-[11px] text-mist-400">
                     Floodlit regulation tennis and basketball courts, outdoor fitness gym and skating ring.
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 rounded-xl border border-ink-800/80 bg-ink-900/50 p-3.5">
-                <div className="rounded-lg bg-purple-400/10 p-2 text-purple-400">
+              <div className="flex items-start gap-3 rounded-xl border border-ink-700/60 bg-ink-900/50 p-3.5">
+                <div className="rounded-lg bg-purple-500/10 p-2 text-purple-600 dark:text-purple-400">
                   <Trees size={16} />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-white">Central Botanical Park</h4>
+                  <h4 className="text-xs font-bold text-mist-100">Central Botanical Park</h4>
                   <p className="mt-0.5 text-[11px] text-mist-400">
                     Continuous 1.2km jogging trail, meditation gazebos, aroma garden, and reflexology path.
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 rounded-xl border border-ink-800/80 bg-ink-900/50 p-3.5">
-                <div className="rounded-lg bg-blue-400/10 p-2 text-blue-400">
+              <div className="flex items-start gap-3 rounded-xl border border-ink-700/60 bg-ink-900/50 p-3.5">
+                <div className="rounded-lg bg-blue-500/10 p-2 text-blue-600 dark:text-blue-400">
                   <Car size={16} />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-white">Vehicular Free Podium</h4>
+                  <h4 className="text-xs font-bold text-mist-100">Vehicular Free Podium</h4>
                   <p className="mt-0.5 text-[11px] text-mist-400">
                     100% vehicle-free central pedestrian zone with dedicated basement parking access.
                   </p>
@@ -163,29 +163,29 @@ export default async function ShowcasePage({
             />
 
             <div className="mt-4 space-y-3 text-xs">
-              <div className="flex items-center justify-between rounded-lg border border-ink-800/60 bg-ink-900/40 px-3 py-2.5">
-                <span className="text-mist-300 font-medium">Infosys SEZ Pocharam</span>
-                <span className="tnum font-bold text-amber-400">2 Mins</span>
+              <div className="flex items-center justify-between rounded-lg border border-ink-700/60 bg-ink-900/50 px-3 py-2.5">
+                <span className="text-mist-200 font-medium">Infosys SEZ Pocharam</span>
+                <span className="tnum font-bold text-amber-600 dark:text-amber-400">2 Mins</span>
               </div>
 
-              <div className="flex items-center justify-between rounded-lg border border-ink-800/60 bg-ink-900/40 px-3 py-2.5">
-                <span className="text-mist-300 font-medium">Raheja Mindspace IT Park</span>
-                <span className="tnum font-bold text-amber-400">5 Mins</span>
+              <div className="flex items-center justify-between rounded-lg border border-ink-700/60 bg-ink-900/50 px-3 py-2.5">
+                <span className="text-mist-200 font-medium">Raheja Mindspace IT Park</span>
+                <span className="tnum font-bold text-amber-600 dark:text-amber-400">5 Mins</span>
               </div>
 
-              <div className="flex items-center justify-between rounded-lg border border-ink-800/60 bg-ink-900/40 px-3 py-2.5">
-                <span className="text-mist-300 font-medium">Outer Ring Road (ORR Exit 9)</span>
-                <span className="tnum font-bold text-amber-400">3 Mins</span>
+              <div className="flex items-center justify-between rounded-lg border border-ink-700/60 bg-ink-900/50 px-3 py-2.5">
+                <span className="text-mist-200 font-medium">Outer Ring Road (ORR Exit 9)</span>
+                <span className="tnum font-bold text-amber-600 dark:text-amber-400">3 Mins</span>
               </div>
 
-              <div className="flex items-center justify-between rounded-lg border border-ink-800/60 bg-ink-900/40 px-3 py-2.5">
-                <span className="text-mist-300 font-medium">Uppal Metro Station</span>
-                <span className="tnum font-bold text-amber-400">15 Mins</span>
+              <div className="flex items-center justify-between rounded-lg border border-ink-700/60 bg-ink-900/50 px-3 py-2.5">
+                <span className="text-mist-200 font-medium">Uppal Metro Station</span>
+                <span className="tnum font-bold text-amber-600 dark:text-amber-400">15 Mins</span>
               </div>
 
-              <div className="flex items-center justify-between rounded-lg border border-ink-800/60 bg-ink-900/40 px-3 py-2.5">
-                <span className="text-mist-300 font-medium">Secunderabad Railway Station</span>
-                <span className="tnum font-bold text-amber-400">25 Mins</span>
+              <div className="flex items-center justify-between rounded-lg border border-ink-700/60 bg-ink-900/50 px-3 py-2.5">
+                <span className="text-mist-200 font-medium">Secunderabad Railway Station</span>
+                <span className="tnum font-bold text-amber-600 dark:text-amber-400">25 Mins</span>
               </div>
             </div>
 

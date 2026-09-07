@@ -715,30 +715,30 @@ export function Orion3dShowcase() {
       {/* FLOOR PLANS MODAL */}
       {showPlanModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md">
-          <div className="w-full max-w-2xl rounded-3xl border border-white/20 bg-ink-950 p-6 shadow-2xl text-white">
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+          <div className="card w-full max-w-2xl rounded-3xl p-6 shadow-2xl text-mist-100 transition-all">
+            <div className="flex items-center justify-between border-b border-ink-700/60 pb-4">
               <div>
-                <h3 className="text-lg font-black text-white">Ramky One Orion · 3 BHK Master Layout</h3>
+                <h3 className="text-lg font-black text-mist-100">Ramky One Orion · 3 BHK Master Layout</h3>
                 <p className="text-xs text-mist-400">Architectural Floor Plans & Unit Layouts</p>
               </div>
               <button
                 type="button"
                 onClick={() => setShowPlanModal(false)}
-                className="rounded-full p-1.5 text-mist-400 hover:bg-white/10 hover:text-white"
+                className="rounded-full p-1.5 text-mist-400 hover:bg-ink-800 hover:text-mist-100 transition"
               >
                 <X size={18} />
               </button>
             </div>
 
             <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="rounded-2xl border border-amber-400/30 bg-ink-900/60 p-4">
+              <div className="rounded-2xl border border-amber-500/30 bg-amber-500/5 dark:bg-amber-500/10 p-4 shadow-sm">
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-amber-300 text-sm">3 BHK · Type A</span>
-                  <span className="rounded bg-amber-400/20 px-2 py-0.5 text-[10px] font-bold text-amber-300">
+                  <span className="font-bold text-amber-700 dark:text-amber-300 text-sm">3 BHK · Type A</span>
+                  <span className="rounded bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-700 dark:text-amber-300 border border-amber-500/20">
                     East Facing
                   </span>
                 </div>
-                <p className="mt-1 text-2xl font-black text-white">1,485 <span className="text-xs font-normal text-mist-400">sq.ft</span></p>
+                <p className="mt-1 text-2xl font-black text-mist-100">1,485 <span className="text-xs font-normal text-mist-400">sq.ft</span></p>
                 <ul className="mt-3 space-y-1.5 text-xs text-mist-300">
                   <li className="flex items-center gap-2">✓ Living & Dining: 11&apos;0&quot; x 22&apos;6&quot;</li>
                   <li className="flex items-center gap-2">✓ Master Bedroom: 11&apos;0&quot; x 14&apos;0&quot;</li>
@@ -747,14 +747,14 @@ export function Orion3dShowcase() {
                 </ul>
               </div>
 
-              <div className="rounded-2xl border border-white/15 bg-ink-900/60 p-4">
+              <div className="rounded-2xl border border-orange-500/30 bg-orange-500/5 dark:bg-orange-500/10 p-4 shadow-sm">
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-orange-300 text-sm">3 BHK · Type B</span>
-                  <span className="rounded bg-orange-400/20 px-2 py-0.5 text-[10px] font-bold text-orange-300">
+                  <span className="font-bold text-orange-700 dark:text-orange-300 text-sm">3 BHK · Type B</span>
+                  <span className="rounded bg-orange-500/15 px-2 py-0.5 text-[10px] font-bold text-orange-700 dark:text-orange-300 border border-orange-500/20">
                     West Facing
                   </span>
                 </div>
-                <p className="mt-1 text-2xl font-black text-white">1,720 <span className="text-xs font-normal text-mist-400">sq.ft</span></p>
+                <p className="mt-1 text-2xl font-black text-mist-100">1,720 <span className="text-xs font-normal text-mist-400">sq.ft</span></p>
                 <ul className="mt-3 space-y-1.5 text-xs text-mist-300">
                   <li className="flex items-center gap-2">✓ Grand Living: 12&apos;0&quot; x 24&apos;0&quot;</li>
                   <li className="flex items-center gap-2">✓ Master Suite with Walk-in Dresser</li>
@@ -771,7 +771,7 @@ export function Orion3dShowcase() {
                   setShowPlanModal(false);
                   setShowBrochureModal(true);
                 }}
-                className="rounded-xl bg-amber-400 px-5 py-2.5 text-xs font-bold text-black transition hover:bg-amber-300"
+                className="rounded-xl bg-amber-400 px-5 py-2.5 text-xs font-bold text-black shadow-md transition hover:bg-amber-300"
               >
                 Download Complete Architectural Drawings
               </button>
@@ -783,16 +783,16 @@ export function Orion3dShowcase() {
       {/* BROCHURE DOWNLOAD & ENQUIRY MODAL */}
       {showBrochureModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-md">
-          <div className="w-full max-w-md rounded-3xl border border-white/20 bg-ink-950 p-6 shadow-2xl text-white">
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+          <div className="card w-full max-w-md rounded-3xl p-6 shadow-2xl text-mist-100 transition-all">
+            <div className="flex items-center justify-between border-b border-ink-700/60 pb-4">
               <div>
-                <h3 className="text-base font-bold text-white">Ramky One Orion Brochure</h3>
+                <h3 className="text-base font-bold text-mist-100">Ramky One Orion Brochure</h3>
                 <p className="text-xs text-mist-400">Instant PDF Delivery & Floor Plans</p>
               </div>
               <button
                 type="button"
                 onClick={() => setShowBrochureModal(false)}
-                className="rounded-full p-1.5 text-mist-400 hover:bg-white/10 hover:text-white"
+                className="rounded-full p-1.5 text-mist-400 hover:bg-ink-800 hover:text-mist-100 transition"
               >
                 <X size={18} />
               </button>
@@ -813,7 +813,7 @@ export function Orion3dShowcase() {
                   required
                   placeholder="Enter your name"
                   defaultValue="Praneeth Ramaswamy"
-                  className="mt-1 w-full rounded-xl border border-ink-700 bg-ink-900 px-3.5 py-2 text-xs text-white placeholder-mist-500 focus:border-amber-400 focus:outline-none"
+                  className="mt-1 w-full rounded-xl border border-ink-700 bg-ink-850 px-3.5 py-2 text-xs text-mist-100 placeholder:text-mist-500 focus:border-amber-400 focus:outline-none"
                 />
               </div>
 
@@ -824,7 +824,7 @@ export function Orion3dShowcase() {
                   required
                   placeholder="+91 98765 43210"
                   defaultValue="+91 98765 43210"
-                  className="mt-1 w-full rounded-xl border border-ink-700 bg-ink-900 px-3.5 py-2 text-xs text-white placeholder-mist-500 focus:border-amber-400 focus:outline-none"
+                  className="mt-1 w-full rounded-xl border border-ink-700 bg-ink-850 px-3.5 py-2 text-xs text-mist-100 placeholder:text-mist-500 focus:border-amber-400 focus:outline-none"
                 />
               </div>
 
@@ -835,7 +835,7 @@ export function Orion3dShowcase() {
                   required
                   placeholder="name@example.com"
                   defaultValue="praneeth@kiwik.one"
-                  className="mt-1 w-full rounded-xl border border-ink-700 bg-ink-900 px-3.5 py-2 text-xs text-white placeholder-mist-500 focus:border-amber-400 focus:outline-none"
+                  className="mt-1 w-full rounded-xl border border-ink-700 bg-ink-850 px-3.5 py-2 text-xs text-mist-100 placeholder:text-mist-500 focus:border-amber-400 focus:outline-none"
                 />
               </div>
 
