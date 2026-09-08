@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "next dev --turbopack -p 4321",
     "build": "next build",
+    "build:check": "NEXT_DIST_DIR=.next-build next build",
     "start": "next start -p 4321",
     "typecheck": "tsc --noEmit",
     "provision-users": "node scripts/provision-users.mjs",

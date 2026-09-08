@@ -2,7 +2,9 @@ import {
   AuthError as CoreAuthError, getSession, requirePermission,
   assertCustomerAccess as coreAssertCustomerAccess, type Permission as CorePermission, type Session as CoreSession,
 } from "../auth/session";
+import { read } from "../db";
 import { syncTeamMembers } from "./seed";
+import { keepAlive } from "../background";
 
 /**
  * Adapter from the ops module's permission vocabulary onto the single
@@ -81,11 +83,42 @@ function project(s: CoreSession): OpsSession {
   return { memberId: s.userId, orgId: s.orgId, role, name: s.fullName, permissions: s.permissions };
 }
 
+/**
+ * One in-flight roster sync per org. `syncTeamMembers` is itself throttled to
+ * 60s, but the throttle is only stamped once the Supabase query returns, so a
+ * burst of concurrent requests arriving just after it expires would each start
+ * their own query. This collapses them to one.
+ */
+const rosterSync = new Map<string, Promise<unknown>>();
+
+function kickRosterSync(orgId: string): void {
+  if (rosterSync.has(orgId)) return;
+  const p = syncTeamMembers(orgId)
+    .catch(() => {
+      /* keep the last known roster; syncTeamMembers already swallows its own errors */
+    })
+    .finally(() => {
+      rosterSync.delete(orgId);
+    });
+  rosterSync.set(orgId, p);
+  keepAlive(p);
+}
+
 export async function authorize(_req: Request, ...required: string[]): Promise<OpsSession> {
   const session = await requirePermission(...required.map(translate));
   // Every ops route that can assign work passes through here, so this is the
-  // one place that guarantees the roster is current before `assign()` runs.
-  await syncTeamMembers(session.orgId);
+  // one place that keeps the roster current for `assign()`. It is kicked off
+  // without awaiting: the roster is a mirror of Supabase that is at most 60s
+  // stale by design, and blocking every ops request on a remote query to
+  // refresh a cache it will probably not even read is pure added latency.
+  // Authorisation itself is unchanged — `requirePermission` is still awaited.
+  //
+  // The one case that must still block is a cold roster: with no members mirrored
+  // yet, `assign()` would have nobody to pick and the request would silently
+  // leave the work unassigned. So await only when there is nothing to serve.
+  const cold = !read().teamMembers.some((m) => m.orgId === session.orgId);
+  if (cold) await syncTeamMembers(session.orgId);
+  else kickRosterSync(session.orgId);
   return project(session);
 }
 

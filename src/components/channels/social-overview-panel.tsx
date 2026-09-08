@@ -9,7 +9,7 @@ import type { SocialOverviewResponse } from "@/app/api/channels/[channel]/overvi
 import type { RecentPost, SocialChannel } from "@/lib/uploadpost/analytics";
 import { Badge, Card, SectionTitle, fmt } from "@/components/ui";
 import { MiniSpark } from "@/components/charts";
-import { useInterval } from "@/hooks/use-interval";
+import { isAbortError, useInterval, useUnmountSignal } from "@/hooks/use-interval";
 
 const POLL_MS = 60_000;
 
@@ -57,12 +57,15 @@ export function SocialOverviewPanel({ brandId, channel }: { brandId: string; cha
   const visible = useVisible();
   const inflight = useRef(false);
 
+  const signal = useUnmountSignal();
+
   const load = useCallback((fresh: boolean) => {
-    if (inflight.current) return;
+    if (inflight.current) return true;
     inflight.current = true;
     setRefreshing(true);
+    let failed = false;
     const qs = `brandId=${encodeURIComponent(brandId)}${fresh ? "&fresh=1" : ""}`;
-    fetch(`/api/channels/${channel}/overview?${qs}`, { cache: "no-store" })
+    return fetch(`/api/channels/${channel}/overview?${qs}`, { cache: "no-store", signal: signal() })
       .then((r) => r.json() as Promise<SocialOverviewResponse>)
       .then((r) => {
         if (r.ok) {
@@ -70,17 +73,22 @@ export function SocialOverviewPanel({ brandId, channel }: { brandId: string; cha
           setError(null);
           setThrottled(fresh && !r.fresh ? (r.retryAfter ?? 0) : 0);
         } else {
+          failed = true;
           setError(r.error ?? "Could not load analytics.");
         }
         setLastUpdated(new Date());
       })
-      .catch((e) => setError(e instanceof Error ? e.message : String(e)))
+      .catch((e) => {
+        failed = true;
+        if (!isAbortError(e)) setError(e instanceof Error ? e.message : String(e));
+      })
       .finally(() => {
         inflight.current = false;
         setLoading(false);
         setRefreshing(false);
-      });
-  }, [brandId, channel]);
+      })
+      .then(() => !failed);
+  }, [brandId, channel, signal]);
 
   const poll = useCallback(() => load(false), [load]);
   const refresh = useCallback(() => load(true), [load]);
@@ -124,7 +132,7 @@ export function SocialOverviewPanel({ brandId, channel }: { brandId: string; cha
             </span>
             <button
               type="button"
-              onClick={refresh}
+              onClick={() => void refresh()}
               disabled={refreshing || throttled > 0}
               className="inline-flex items-center gap-1.5 rounded-lg border border-ink-700 px-2.5 py-1.5 text-[11.5px] text-mist-200 hover:border-ink-600 disabled:opacity-60"
             >
@@ -152,7 +160,7 @@ export function SocialOverviewPanel({ brandId, channel }: { brandId: string; cha
                 {a.reason === "personal_unsupported" && (
                   <p>{a.message ?? `${label} reports analytics only for company pages you administer, not personal profiles.`}</p>
                 )}
-                {a.reason === "page_id_required" && <FacebookPageIdForm brandId={brandId} onSaved={refresh} />}
+                {a.reason === "page_id_required" && <FacebookPageIdForm brandId={brandId} onSaved={() => void refresh()} />}
                 {a.reason === "not_configured" && <p>The publishing connector is not configured, so {label} analytics cannot be read.</p>}
                 {a.reason === "error" && <p>{a.message ?? `${label} analytics are unavailable right now.`}</p>}
               </div>

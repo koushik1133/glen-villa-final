@@ -9,7 +9,7 @@ import {
 import type { YouTubeCommentThread, YouTubeSnapshot } from "@/lib/youtube/public";
 import { computeTotals, performancePct, rankByViews, type RecentComment, type YouTubeTotals } from "@/lib/youtube/studio";
 import { Badge, Card, SectionTitle, fmt } from "@/components/ui";
-import { useInterval } from "@/hooks/use-interval";
+import { isAbortError, useInterval, useUnmountSignal } from "@/hooks/use-interval";
 
 type Snapshot = YouTubeSnapshot & { handle: string; fresh?: boolean; retryAfter?: number };
 type SnapshotResponse = ({ ok: true } & Snapshot) | { ok: false; code?: string; error: string };
@@ -74,12 +74,15 @@ export function YouTubeVideos({ brandId }: { brandId: string }) {
   const visible = useVisible();
   const inflight = useRef(false);
 
+  const signal = useUnmountSignal();
+
   const load = useCallback((fresh: boolean) => {
-    if (inflight.current) return;
+    if (inflight.current) return true;
     inflight.current = true;
     setRefreshing(true);
+    let failed = false;
     const qs = `brandId=${encodeURIComponent(brandId)}${fresh ? "&fresh=1" : ""}`;
-    fetch(`/api/channels/youtube/videos?${qs}`, { cache: "no-store" })
+    return fetch(`/api/channels/youtube/videos?${qs}`, { cache: "no-store", signal: signal() })
       .then((r) => r.json() as Promise<SnapshotResponse>)
       .then((r) => {
         if (r.ok) {
@@ -88,17 +91,22 @@ export function YouTubeVideos({ brandId }: { brandId: string }) {
           // Server said "not this time": surface the wait instead of pretending it was fresh.
           setThrottled(fresh && !r.fresh ? (r.retryAfter ?? 0) : 0);
         } else {
+          failed = true;
           setError(r.error);
         }
         setLastUpdated(new Date());
       })
-      .catch((e) => setError(e instanceof Error ? e.message : String(e)))
+      .catch((e) => {
+        failed = true;
+        if (!isAbortError(e)) setError(e instanceof Error ? e.message : String(e));
+      })
       .finally(() => {
         inflight.current = false;
         setLoading(false);
         setRefreshing(false);
-      });
-  }, [brandId]);
+      })
+      .then(() => !failed);
+  }, [brandId, signal]);
 
   const poll = useCallback(() => load(false), [load]);
   const refresh = useCallback(() => load(true), [load]);
@@ -161,7 +169,7 @@ export function YouTubeVideos({ brandId }: { brandId: string }) {
               </span>
               <button
                 type="button"
-                onClick={refresh}
+                onClick={() => void refresh()}
                 disabled={refreshing}
                 title={throttled > 0 ? `Fresh read available in ${throttled}s` : "Refresh from YouTube now (bypasses cache)"}
                 className="ml-1 inline-flex items-center gap-1 text-mist-400 hover:text-mist-100 transition-colors disabled:opacity-60"
@@ -742,15 +750,22 @@ function RecentCommentsFeed({ brandId, enabled, visible }: { brandId: string; en
   const [error, setError] = useState<string | null>(null);
   const [updated, setUpdated] = useState<Date | null>(null);
 
+  const signal = useUnmountSignal();
+
   const load = useCallback(() => {
-    fetch(`/api/channels/youtube/recent-comments?brandId=${encodeURIComponent(brandId)}`, { cache: "no-store" })
+    let failed = false;
+    return fetch(`/api/channels/youtube/recent-comments?brandId=${encodeURIComponent(brandId)}`, { cache: "no-store", signal: signal() })
       .then((r) => r.json() as Promise<RecentResponse>)
       .then((r) => {
-        if (r.ok) { setComments(r.comments); setError(null); } else setError(r.error);
+        if (r.ok) { setComments(r.comments); setError(null); } else { failed = true; setError(r.error); }
         setUpdated(new Date());
       })
-      .catch((e) => setError(e instanceof Error ? e.message : String(e)));
-  }, [brandId]);
+      .catch((e) => {
+        failed = true;
+        if (!isAbortError(e)) setError(e instanceof Error ? e.message : String(e));
+      })
+      .then(() => !failed);
+  }, [brandId, signal]);
 
   useInterval(load, enabled && visible ? RECENT_POLL_MS : null);
 

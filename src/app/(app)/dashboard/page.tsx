@@ -14,6 +14,7 @@ import { ComboChart, DonutChart, TrendArea, VIZ } from "@/components/charts";
 import { SuggestionCard } from "@/components/suggestion-card";
 import { YouTubeSnapshotBlock } from "@/components/analytics/youtube-snapshot-block";
 import { SocialOverview } from "@/components/analytics/social-overview";
+import { RefreshOnce } from "@/components/refresh-once";
 import { AdsCard } from "@/components/analytics/ads-card";
 
 export const dynamic = "force-dynamic";
@@ -24,11 +25,11 @@ export default async function DashboardPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const sp = await searchParams;
-  // Refresh YouTube rows older than ten minutes before reading; a failed
-  // refresh renders the stale store rather than an error.
-  const pre = pageContext(sp);
-  const fresh = await ensureFreshStats(pre.brandId);
-  const { db, brand, brandId, range, prev, days } = fresh.refreshed ? pageContext(sp) : pre;
+  // Rows older than ten minutes kick a background refresh; the page renders the
+  // store as it stands and RefreshOnce pulls the new numbers in a moment later.
+  const { db, brand, brandId, range, prev, days } = pageContext(sp);
+  // Kicked, never awaited: the render does not wait on YouTube/connector APIs.
+  const fresh = await ensureFreshStats(brandId);
   const link = qs(sp);
 
   const stats = statsFor(db, brandId);
@@ -250,6 +251,7 @@ export default async function DashboardPage({
 
         {/* YouTube live overview — only renders when YouTube channel is connected */}
         <YouTubeSnapshotBlock brandId={brandId} />
+        <RefreshOnce />
       </div>
     </>
   );

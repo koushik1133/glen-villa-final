@@ -13,3 +13,4 @@ media/renders
 .security-audit/
 .claude/
 _e2e.mjs
+.next-build

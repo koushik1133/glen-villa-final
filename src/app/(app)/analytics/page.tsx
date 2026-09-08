@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { pageContext, qs } from "@/lib/page-context";
 import {
   adStatsFor, previousRange, pctChange, rollupByChannel, statsFor, timeseries, totals,
@@ -12,7 +13,9 @@ import { YouTubeSnapshotBlock } from "@/components/analytics/youtube-snapshot-bl
 import { YouTubeSection } from "@/components/analytics/youtube-section";
 import { SocialOverview } from "@/components/analytics/social-overview";
 import { AdsCard } from "@/components/analytics/ads-card";
-import { UploadPostLiveStudio } from "@/components/analytics/uploadpost-live-studio";
+import { UploadPostLiveStudioLazy } from "@/components/analytics/uploadpost-live-studio-lazy";
+import { CardSkeleton } from "@/components/skeletons";
+import { RefreshOnce } from "@/components/refresh-once";
 
 export const dynamic = "force-dynamic";
 
@@ -22,11 +25,11 @@ export default async function AnalyticsPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const sp = await searchParams;
-  // Refresh YouTube rows older than ten minutes before reading; a failed
-  // refresh renders the stale store rather than an error.
-  const pre = pageContext(sp);
-  const fresh = await ensureFreshStats(pre.brandId);
-  const { db, brand, brandId, range, days } = fresh.refreshed ? pageContext(sp) : pre;
+  // Rows older than ten minutes kick a background refresh; the page renders the
+  // store as it stands and RefreshOnce pulls the new numbers in a moment later.
+  const { db, brand, brandId, range, days } = pageContext(sp);
+  // Kicked, never awaited: the render does not wait on YouTube/connector APIs.
+  const fresh = await ensureFreshStats(brandId);
   const link = qs(sp);
 
   const stats = statsFor(db, brandId);
@@ -66,7 +69,7 @@ export default async function AnalyticsPage({
       <TopBar brands={db.brands} brandId={brandId} title="Analytics" subtitle={`${brand.name} · live multi-platform performance`} />
 
       <div className="space-y-6 p-7">
-        <UploadPostLiveStudio brandId={brandId} />
+        <UploadPostLiveStudioLazy brandId={brandId} />
 
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
           <Stat label="Impressions" value={fmt.n(t.impressions)} delta={pctChange(t.impressions, tPrev.impressions)} />
@@ -260,12 +263,17 @@ export default async function AnalyticsPage({
         </Card>
 
         {/* YouTube: synced series + live totals; renders nothing when not connected */}
-        <YouTubeSection db={db} brandId={brandId} range={range} days={days} lastSyncedAt={fresh.lastSyncedAt} />
+        {/* Live YouTube totals are fetched server-side; stream them in rather
+            than holding the whole page on the API. */}
+        <Suspense fallback={<CardSkeleton rows={4} />}>
+          <YouTubeSection db={db} brandId={brandId} range={range} days={days} lastSyncedAt={fresh.lastSyncedAt} />
+        </Suspense>
 
         <AdsCard rows={adStatsFor(db, brandId, range)} days={days} link={link} />
 
         {/* YouTube live overview — renders itself only when YouTube is connected */}
         <YouTubeSnapshotBlock brandId={brandId} />
+        <RefreshOnce />
       </div>
     </>
   );

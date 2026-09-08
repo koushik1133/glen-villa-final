@@ -15,8 +15,9 @@ export const dynamic = "force-dynamic";
 const ACTOR_TONE = { ai: "brand", human: "good", customer: "neutral", system: "neutral" } as const;
 
 export default async function Customer360({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const session = await sessionFromCookies();
+  // params and the session are independent — resolve them together rather than
+  // paying the session round trip after the params promise has already settled.
+  const [{ id }, session] = await Promise.all([params, sessionFromCookies()]);
   if (!session) redirect("/ops");
   if (!(await canAccessCustomer(session, id))) redirect("/ops");
 

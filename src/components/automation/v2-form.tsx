@@ -1,5 +1,6 @@
 "use client";
 
+import { useInterval } from "@/hooks/use-interval";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   AlertCircle,
@@ -269,12 +270,9 @@ export function V2Form({ brandId, brandName }: V2FormProps) {
     }
   }, [brandId]);
 
-  // Initial fetch and 10-second real-time live polling
-  useEffect(() => {
-    fetchSubmissions();
-    const interval = setInterval(fetchSubmissions, 10000);
-    return () => clearInterval(interval);
-  }, [fetchSubmissions]);
+  // 10-second live polling: paused while the tab is hidden, never overlapping,
+  // and backing off when the endpoint fails.
+  useInterval(fetchSubmissions, 10000);
 
   // Clear submission history
   const handleClearHistory = async () => {

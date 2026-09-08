@@ -222,7 +222,7 @@ async function getJson(path: string, cacheKey: string, fresh: boolean): Promise<
   const hit = cache.get(cacheKey);
   if (!fresh && hit && Date.now() - hit.at < CACHE_TTL_MS) return { ok: true, json: hit.value };
   try {
-    const res = await fetch(`${BASE}${path}`, { headers: { Authorization: `Apikey ${key}` }, cache: "no-store", signal: AbortSignal.timeout(8000) });
+    const res = await fetch(`${BASE}${path}`, { headers: { Authorization: `Apikey ${key}` }, cache: "no-store", signal: AbortSignal.timeout(5000) });
     const json: unknown = await res.json().catch(() => null);
     if (!res.ok) {
       const msg = json && typeof json === "object" && typeof (json as { message?: unknown }).message === "string" ? (json as { message: string }).message : `HTTP ${res.status}`;
@@ -296,7 +296,7 @@ export async function discoverFacebookPageId(saved?: string | null): Promise<str
   if (token) {
     try {
       const v = process.env.META_GRAPH_VERSION?.trim() || "v21.0";
-      const res = await fetch(`https://graph.facebook.com/${v}/me/accounts?fields=id&limit=1&access_token=${encodeURIComponent(token)}`, { cache: "no-store", signal: AbortSignal.timeout(6000) });
+      const res = await fetch(`https://graph.facebook.com/${v}/me/accounts?fields=id&limit=1&access_token=${encodeURIComponent(token)}`, { cache: "no-store", signal: AbortSignal.timeout(5000) });
       const json = (await res.json().catch(() => null)) as { data?: Array<{ id?: string }> } | null;
       const id = json?.data?.[0]?.id;
       if (res.ok && id) return id;

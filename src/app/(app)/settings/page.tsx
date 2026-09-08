@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { pageContext } from "@/lib/page-context";
 import { activeProvider, hasLLM } from "@/lib/ai/provider";
 import { hasFfmpeg } from "@/lib/media/render";
@@ -9,6 +10,7 @@ import { AdminDiagnostics, vendorDiagnostics } from "@/components/settings/admin
 import { KnowledgeEditor } from "@/components/knowledge-editor";
 import { WhatsAppHealthCard } from "@/components/settings/whatsapp-health";
 import { whatsappHealth } from "@/lib/platforms/whatsapp-health";
+import { CardSkeleton } from "@/components/skeletons";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +23,6 @@ export default async function SettingsPage({
   const { db, brand, brandId } = pageContext(sp);
   // Vendor names are an admin concern; everyone else sees product wording.
   const isAdmin = hasPermission(await getSession(), "users.manage");
-  const waHealth = isAdmin ? await whatsappHealth() : null;
 
   const checks = [
     // Not "simulated": with the mock driver publishing fails outright rather than
@@ -60,7 +61,12 @@ export default async function SettingsPage({
         </Card>
 
         {isAdmin && <AdminDiagnostics rows={vendorDiagnostics(activeProvider())} />}
-        {waHealth && <WhatsAppHealthCard h={waHealth} />}
+        {/* One Meta Graph call — streamed so the rest of Settings paints first. */}
+        {isAdmin && (
+          <Suspense fallback={<CardSkeleton rows={4} />}>
+            <WhatsAppHealthSection />
+          </Suspense>
+        )}
 
         <Card>
           <SectionTitle title="Brand profile" hint="This is what every AI engine conditions on — keep it specific" />
@@ -101,4 +107,15 @@ export default async function SettingsPage({
       </div>
     </>
   );
+}
+
+/**
+ * The one part of Settings that talks to an external API. Kept in its own
+ * async component so a slow (or unavailable) Graph call streams in late
+ * instead of holding the page. The page checks the permission; this only draws.
+ */
+async function WhatsAppHealthSection() {
+  const h = await whatsappHealth().catch(() => null);
+  if (!h) return null;
+  return <WhatsAppHealthCard h={h} />;
 }

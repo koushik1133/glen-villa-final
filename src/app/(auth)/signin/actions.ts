@@ -4,7 +4,7 @@ import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createServerClient } from "@supabase/ssr";
 import { adminClient, hasServiceRole, isSupabaseConfigured } from "@/lib/supabase/client";
-import { readMustChangePassword } from "@/lib/auth/session";
+import { readMustChangePassword, cacheKeyFromCookies, clearSessionCache } from "@/lib/auth/session";
 import { logAuthEvent, stampLastLogin } from "@/lib/auth/audit";
 import { clientKey, rateLimit, resetLimit } from "@/lib/ops/ratelimit";
 
@@ -214,6 +214,11 @@ export async function rotatePassword(_prev: AuthState, form: FormData): Promise<
     return { error: "Use at least 12 characters. Length protects you far more than symbols do." };
   }
 
+  // The pre-rotation token's cached resolution still says mustChangePassword.
+  // Drop it now so the lock lifts on the very next request.
+  const staleKey = cacheKeyFromCookies((await cookies()).getAll().map((c) => ({ name: c.name, value: c.value })));
+  if (staleKey) clearSessionCache(staleKey);
+
   const sb = await serverClient();
   const { data, error } = await sb.auth.updateUser({
     password,
@@ -244,6 +249,10 @@ export async function rotatePassword(_prev: AuthState, form: FormData): Promise<
 }
 
 export async function signOut(): Promise<void> {
+  // Drop the cached resolution before revoking, so the 30s cross-request cache
+  // cannot hand this token back to a request that races the sign-out.
+  const key = cacheKeyFromCookies((await cookies()).getAll().map((c) => ({ name: c.name, value: c.value })));
+  if (key) clearSessionCache(key);
   if (isSupabaseConfigured()) {
     const sb = await serverClient();
     await sb.auth.signOut();

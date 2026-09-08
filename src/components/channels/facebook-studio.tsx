@@ -8,7 +8,7 @@ import {
   Activity, BarChart3, Share2
 } from "lucide-react";
 import { Badge, Card, SectionTitle, fmt } from "@/components/ui";
-import { useInterval } from "@/hooks/use-interval";
+import { isAbortError, useInterval, useUnmountSignal } from "@/hooks/use-interval";
 import type { FacebookUploadItem } from "@/app/api/channels/facebook/posts/route";
 
 interface FacebookStudioResponse {
@@ -55,32 +55,40 @@ export function FacebookStudio({ brandId }: { brandId: string }) {
   const [open, setOpen] = useState<string | null>(null);
   const inflight = useRef(false);
 
+  const signal = useUnmountSignal();
+
   const fetchStudio = useCallback(() => {
-    if (inflight.current) return;
+    if (inflight.current) return true;
     inflight.current = true;
     setRefreshing(true);
+    let failed = false;
 
-    fetch(`/api/channels/facebook/posts`, { cache: "no-store" })
+    return fetch(`/api/channels/facebook/posts`, { cache: "no-store", signal: signal() })
       .then((r) => r.json() as Promise<FacebookStudioResponse>)
       .then((res) => {
         if (res.ok) {
           setData(res);
           setError(null);
         } else {
+          failed = true;
           setError(res.error || "Failed to load Facebook Studio data");
         }
         setLastUpdated(new Date());
       })
-      .catch((e) => setError(e instanceof Error ? e.message : String(e)))
+      .catch((e) => {
+        failed = true;
+        if (!isAbortError(e)) setError(e instanceof Error ? e.message : String(e));
+      })
       .finally(() => {
         inflight.current = false;
         setLoading(false);
         setRefreshing(false);
-      });
-  }, []);
+      })
+      .then(() => !failed);
+  }, [signal]);
 
   useEffect(() => {
-    fetchStudio();
+    void fetchStudio();
   }, [fetchStudio]);
 
   useInterval(fetchStudio, POLL_MS);
@@ -134,7 +142,7 @@ export function FacebookStudio({ brandId }: { brandId: string }) {
               </span>
               <button
                 type="button"
-                onClick={fetchStudio}
+                onClick={() => void fetchStudio()}
                 disabled={refreshing}
                 title="Refresh Facebook feed now"
                 className="ml-1 inline-flex items-center gap-1 text-mist-400 transition-colors hover:text-mist-100 disabled:opacity-60"

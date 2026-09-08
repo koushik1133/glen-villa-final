@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import { NextResponse } from "next/server";
 import { adminClient, hasServiceRole } from "@/lib/supabase/client";
-import { requirePermission } from "@/lib/auth/session";
+import { requirePermission, clearAllSessions } from "@/lib/auth/session";
 import { apiError, apiOk } from "@/lib/auth/http";
 import { rateLimit, clientKey } from "@/lib/ops/ratelimit";
 
@@ -170,6 +170,11 @@ export async function PATCH(req: Request) {
       await admin.from("user_roles").delete().eq("profile_id", userId);
       await admin.from("user_roles").insert({ profile_id: userId, role_id: role.id });
     }
+
+    // Role and active-flag changes must not wait out the 30s session cache.
+    // The cache is keyed by token digest, and this route has no way to know the
+    // target's token, so the whole map goes — it is at most 500 cheap entries.
+    clearAllSessions();
 
     await admin.from("audit_logs").insert({
       org_id: session.orgId,

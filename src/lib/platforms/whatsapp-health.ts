@@ -46,7 +46,7 @@ export async function fetchPhoneInfo(
     const fields = "display_phone_number,verified_name,quality_rating,name_status,code_verification_status";
     const res = await fetch(`https://graph.facebook.com/${graphVersion()}/${phoneNumberId}?fields=${fields}`, {
       headers: { Authorization: `Bearer ${token}` },
-      signal: AbortSignal.timeout(8_000),
+      signal: AbortSignal.timeout(5_000),
     });
     const json = (await res.json()) as {
       display_phone_number?: string;

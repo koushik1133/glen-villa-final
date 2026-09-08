@@ -2,6 +2,16 @@ import { cache } from "react";
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { adminClient, hasServiceRole, isSupabaseConfigured } from "../supabase/client";
+import {
+  cacheKeyFromCookies,
+  extractAccessToken,
+  getCachedSession,
+  hasRefreshToken,
+  isObviouslyExpired,
+  setCachedSession,
+} from "./session-cache";
+
+export { clearSessionCache, clearAllSessions, cacheKeyFromCookies } from "./session-cache";
 
 /**
  * IDENTITY AND PERMISSIONS — one source of truth.
@@ -127,6 +137,35 @@ export const resolveSession = cache(async (): Promise<SessionResult> => {
   const sb = await supabaseFromCookies();
   if (!sb) return { status: "anonymous" };
 
+  // Cross-request cache, keyed by a digest of the auth cookie. See
+  // ./session-cache for the (deliberately narrow) staleness window this opens.
+  const authCookies = (await cookies()).getAll().map((c) => ({ name: c.name, value: c.value }));
+  const key = cacheKeyFromCookies(authCookies);
+  if (key) {
+    // An expired JWT *with no refresh token* can be recognised without asking
+    // anybody. When a refresh token is present the cookie is still good —
+    // getUser() renews it — so we must fall through to the network rather than
+    // signing the user out once per access-token lifetime.
+    const raw = authCookies
+      .filter((c) => c.name.startsWith("sb-") && c.name.includes("-auth-token"))
+      .sort((a, b) => (a.name < b.name ? -1 : 1))
+      .map((c) => c.value)
+      .join("");
+    const token = extractAccessToken(raw);
+    const expired = Boolean(token && isObviouslyExpired(token));
+    if (expired && !hasRefreshToken(raw)) return { status: "anonymous" };
+
+    if (!expired) {
+      const cached = getCachedSession(key);
+      if (cached) return cached;
+    }
+  }
+
+  const remember = (result: SessionResult): SessionResult => {
+    if (key) setCachedSession(key, result);
+    return result;
+  };
+
   // getUser() re-validates the JWT against Supabase. getSession() would trust
   // whatever is in the cookie, which is forgeable.
   const { data, error } = await sb.auth.getUser();
@@ -143,8 +182,8 @@ export const resolveSession = cache(async (): Promise<SessionResult> => {
   ]);
 
   const profile = profileRes.data;
-  if (!profile) return { status: "unprovisioned", email };
-  if (!profile.active) return { status: "disabled", email: profile.email || email };
+  if (!profile) return remember({ status: "unprovisioned", email });
+  if (!profile.active) return remember({ status: "disabled", email: profile.email || email });
 
   type RoleEmbed = { key: string; role_permissions?: Array<{ permission_key: string }> };
   const roles: string[] = [];
@@ -157,7 +196,7 @@ export const resolveSession = cache(async (): Promise<SessionResult> => {
     }
   }
 
-  return {
+  return remember({
     status: "active",
     session: {
       userId: profile.id,
@@ -168,7 +207,7 @@ export const resolveSession = cache(async (): Promise<SessionResult> => {
       permissions,
       mustChangePassword,
     },
-  };
+  });
 });
 
 /**

@@ -7,7 +7,7 @@ import {
   Linkedin, Globe2, Share2
 } from "lucide-react";
 import { Badge, Card, SectionTitle, fmt } from "@/components/ui";
-import { useInterval } from "@/hooks/use-interval";
+import { isAbortError, useInterval, useUnmountSignal } from "@/hooks/use-interval";
 import Link from "next/link";
 
 type LinkedInPost = {
@@ -59,11 +59,14 @@ export function LinkedInStudio({ brandId }: { brandId: string }) {
   const visible = useVisible();
   const inflight = useRef(false);
 
+  const signal = useUnmountSignal();
+
   const load = useCallback(() => {
-    if (inflight.current) return;
+    if (inflight.current) return true;
     inflight.current = true;
     setRefreshing(true);
-    fetch(`/api/channels/linkedin/posts?brandId=${encodeURIComponent(brandId)}`, { cache: "no-store" })
+    let failed = false;
+    return fetch(`/api/channels/linkedin/posts?brandId=${encodeURIComponent(brandId)}`, { cache: "no-store", signal: signal() })
       .then((r) => r.json() as Promise<LinkedInResponse>)
       .then((r) => {
         setData(r);
@@ -71,19 +74,21 @@ export function LinkedInStudio({ brandId }: { brandId: string }) {
           setError(null);
           setLastUpdated(new Date());
         } else {
+          failed = true;
           setError(r.error);
         }
       })
       .catch((e) => {
-        const msg = e instanceof Error ? e.message : String(e);
-        setError(msg);
+        failed = true;
+        if (!isAbortError(e)) setError(e instanceof Error ? e.message : String(e));
       })
       .finally(() => {
         setLoading(false);
         setRefreshing(false);
         inflight.current = false;
-      });
-  }, [brandId]);
+      })
+      .then(() => !failed);
+  }, [brandId, signal]);
 
   useInterval(load, visible ? POLL_MS : null);
 
@@ -109,7 +114,7 @@ export function LinkedInStudio({ brandId }: { brandId: string }) {
         setTimeout(() => {
           setShowConfig(false);
           setConfigMsg(null);
-          load();
+          void load();
         }, 1500);
       } else {
         setConfigMsg({ text: resJson.error || "Failed to save credentials", success: false });
@@ -253,7 +258,7 @@ export function LinkedInStudio({ brandId }: { brandId: string }) {
             </div>
           )}
           <button
-            onClick={() => load()}
+            onClick={() => void load()}
             disabled={refreshing}
             className="inline-flex items-center gap-1.5 rounded-lg border border-ink-700 bg-ink-800 px-3 py-1.5 text-[11px] font-semibold text-mist-200 transition-colors hover:bg-ink-700 disabled:opacity-50"
           >

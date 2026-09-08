@@ -1,8 +1,11 @@
+import { Suspense } from "react";
 import { pageContext } from "@/lib/page-context";
 import { getSession, hasPermission } from "@/lib/auth/session";
 import { TopBar } from "@/components/shell";
 import { loadVoiceOverview } from "@/lib/voice/overview";
 import { VoicePanel } from "@/components/voice/voice-panel";
+import { CardSkeleton } from "@/components/skeletons";
+import type { Brand } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -24,13 +27,37 @@ export default async function VoicePage({
   const { db, brand, brandId } = pageContext(sp);
   const requested = Number(typeof sp.range === "string" ? sp.range : 30);
   const days = RANGES.has(requested) ? requested : 30;
+
+  // The overview calls the voice provider; stream it so the shell paints at once.
+  return (
+    <Suspense
+      fallback={
+        <>
+          <TopBar brands={db.brands} brandId={brandId} title="Voice agent" subtitle={`${brand.name} · last ${days} days`} />
+          <div className="p-7"><CardSkeleton rows={5} /></div>
+        </>
+      }
+    >
+      <VoiceSection brands={db.brands} brand={brand} brandId={brandId} days={days} />
+    </Suspense>
+  );
+}
+
+async function VoiceSection({
+  brands, brand, brandId, days,
+}: {
+  brands: Brand[];
+  brand: { name: string };
+  brandId: string;
+  days: number;
+}) {
   const session = await getSession();
   const overview = await loadVoiceOverview(brandId, { days, diagnostics: hasPermission(session, "users.manage") });
 
   return (
     <>
       <TopBar
-        brands={db.brands}
+        brands={brands}
         brandId={brandId}
         title="Voice agent"
         subtitle={`${overview.funnel.calls} call${overview.funnel.calls === 1 ? "" : "s"} in ${days} days · ${brand.name}`}

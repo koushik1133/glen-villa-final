@@ -178,7 +178,7 @@ describe("ensureFreshStats", () => {
     assert.ok(calls <= 1, `expected at most one upstream call, got ${calls}`);
   });
 
-  test("a hung YouTube API does not hold the page past the deadline", async () => {
+  test("a hung YouTube API does not hold the page at all", async () => {
     process.env.YOUTUBE_API_KEY = "test-key";
     const brandId = stage("2026-01-01T00:00:00Z");
     fr.resetFreshnessBackoff();
@@ -189,7 +189,7 @@ describe("ensureFreshStats", () => {
       const out = await fr.ensureFreshStats(brandId);
       assert.equal(out.refreshed, false, "stale rows are rendered when the refresh loses the race");
       assert.equal(out.lastSyncedAt, "2026-01-01T00:00:00Z");
-      assert.ok(Date.now() - started < fr.REFRESH_DEADLINE_MS + 1500, "returns right after the deadline");
+      assert.ok(Date.now() - started < 250, "the refresh is kicked, never awaited");
     } finally {
       globalThis.fetch = realFetch;
       delete process.env.YOUTUBE_API_KEY;

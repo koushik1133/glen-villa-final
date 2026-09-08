@@ -1,5 +1,6 @@
 "use client";
 
+import { useInterval } from "@/hooks/use-interval";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import clsx from "clsx";
 import {
@@ -80,15 +81,14 @@ export function WhatsAppInbox() {
   useEffect(() => { void loadList(); }, [loadList]);
   useEffect(() => { if (activeId) void loadThread(activeId); else setThread(null); }, [activeId, loadThread]);
 
-  // Poll every 10s while the tab is visible.
-  useEffect(() => {
-    if (!visible) return;
-    const t = setInterval(() => {
-      void loadList();
-      if (activeId) void loadThread(activeId);
-    }, 10_000);
-    return () => clearInterval(t);
-  }, [visible, activeId, loadList, loadThread]);
+  // Poll every 10s while the tab is visible. useInterval skips hidden-tab ticks,
+  // waits for the previous round trip instead of stacking requests, and backs off
+  // when the endpoint is failing.
+  const poll = useCallback(async () => {
+    await loadList();
+    if (activeId) await loadThread(activeId);
+  }, [activeId, loadList, loadThread]);
+  useInterval(poll, visible ? 10_000 : null);
 
   const onControl = async (paused: boolean) => {
     if (!thread) return;

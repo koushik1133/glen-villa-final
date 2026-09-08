@@ -14,8 +14,8 @@ export const dynamic = "force-dynamic";
 
 /** The loan officer's working surface for one case. */
 export default async function LoanCasePage({ params }: { params: Promise<{ caseId: string }> }) {
-  const { caseId } = await params;
-  const session = await sessionFromCookies();
+  // params and the session are independent — resolve them together.
+  const [{ caseId }, session] = await Promise.all([params, sessionFromCookies()]);
   if (!session) redirect("/ops");
   if (!["ADMIN", "LOAN_OFFICER"].includes(session.role)) redirect("/ops");
 

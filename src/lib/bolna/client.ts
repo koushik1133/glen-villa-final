@@ -31,7 +31,7 @@ const BASE_URL = "https://api.bolna.ai";
  * more than the number: without it a stalled provider socket holds a Next.js
  * server-component render open until the platform kills the whole request.
  */
-const TIMEOUT_MS = 20_000;
+const TIMEOUT_MS = 5_000;
 
 export type BolnaFailureReason =
   /** No BOLNA_API_KEY. Not an error — the operator has not connected it yet. */

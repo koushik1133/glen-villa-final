@@ -6,6 +6,7 @@ import { channelMeta, isUsableConnection, connectionProblem } from "@/lib/platfo
 import { TopBar } from "@/components/shell";
 import { Badge, Card, Dot, Empty, SectionTitle, fmt } from "@/components/ui";
 import { CHANNEL_TABS, hasSignal, snapshotFor } from "./_data";
+import { RefreshOnce } from "@/components/refresh-once";
 
 export const dynamic = "force-dynamic";
 
@@ -23,11 +24,11 @@ export default async function ChannelsIndexPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const sp = await searchParams;
-  // Refresh YouTube rows older than ten minutes before reading; a failed
-  // refresh renders the stale store rather than an error.
-  const pre = pageContext(sp);
-  const fresh = await ensureFreshStats(pre.brandId);
-  const { db, brand, brandId, range, prev, days } = fresh.refreshed ? pageContext(sp) : pre;
+  // Rows older than ten minutes kick a background refresh; the page renders the
+  // store as it stands and RefreshOnce pulls the new numbers in a moment later.
+  const { db, brand, brandId, range, prev, days } = pageContext(sp);
+  // Kicked, never awaited: the render does not wait on YouTube/connector APIs.
+  await ensureFreshStats(brandId);
   const link = qs(sp);
 
   const snaps = CHANNEL_TABS.map((channel) => snapshotFor(db, brandId, channel, range, prev));
@@ -170,6 +171,7 @@ export default async function ChannelsIndexPage({
             </Link>
           </Card>
         )}
+        <RefreshOnce />
       </div>
     </>
   );

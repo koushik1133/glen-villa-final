@@ -3,7 +3,7 @@
 import { useCallback, useState } from "react";
 import { Eye, ThumbsUp, MessageCircle, Users, Youtube, ExternalLink } from "lucide-react";
 import { Card, SectionTitle, fmt } from "@/components/ui";
-import { useInterval } from "@/hooks/use-interval";
+import { isAbortError, useInterval, useUnmountSignal } from "@/hooks/use-interval";
 import type { YouTubeSnapshot } from "@/lib/youtube/public";
 
 type Snapshot = YouTubeSnapshot & { handle: string };
@@ -41,13 +41,20 @@ export function YouTubeSnapshotBlock({ brandId }: { brandId: string }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const signal = useUnmountSignal();
+
   const poll = useCallback(() => {
-    fetch(`/api/channels/youtube/videos?brandId=${encodeURIComponent(brandId)}`)
+    let failed = false;
+    return fetch(`/api/channels/youtube/videos?brandId=${encodeURIComponent(brandId)}`, { signal: signal() })
       .then((r) => r.json() as Promise<Response>)
-      .then((r) => { if (r.ok) { setSnap(r); setError(null); } else setError(r.error); })
-      .catch((e) => setError(e instanceof Error ? e.message : String(e)))
-      .finally(() => setLoading(false));
-  }, [brandId]);
+      .then((r) => { if (r.ok) { setSnap(r); setError(null); } else { failed = true; setError(r.error); } })
+      .catch((e) => {
+        failed = true;
+        if (!isAbortError(e)) setError(e instanceof Error ? e.message : String(e));
+      })
+      .finally(() => setLoading(false))
+      .then(() => !failed);
+  }, [brandId, signal]);
 
   useInterval(poll, 60_000);
 

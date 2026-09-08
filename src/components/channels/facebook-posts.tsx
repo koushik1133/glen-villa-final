@@ -7,7 +7,7 @@ import {
   Tv2, Globe2, Share2, Sparkles
 } from "lucide-react";
 import { Badge, Card, SectionTitle, fmt } from "@/components/ui";
-import { useInterval } from "@/hooks/use-interval";
+import { isAbortError, useInterval, useUnmountSignal } from "@/hooks/use-interval";
 
 export interface FacebookUploadItem {
   id: string;
@@ -58,32 +58,40 @@ export function FacebookPosts({ brandId }: { brandId: string }) {
   const [open, setOpen] = useState<string | null>(null);
   const inflight = useRef(false);
 
+  const signal = useUnmountSignal();
+
   const fetchPosts = useCallback(() => {
-    if (inflight.current) return;
+    if (inflight.current) return true;
     inflight.current = true;
     setRefreshing(true);
+    let failed = false;
 
-    fetch(`/api/channels/facebook/posts`, { cache: "no-store" })
+    return fetch(`/api/channels/facebook/posts`, { cache: "no-store", signal: signal() })
       .then((r) => r.json() as Promise<FacebookPostsResponse>)
       .then((res) => {
         if (res.ok) {
           setData(res);
           setError(null);
         } else {
+          failed = true;
           setError(res.error || "Failed to load Facebook posts");
         }
         setLastUpdated(new Date());
       })
-      .catch((e) => setError(e instanceof Error ? e.message : String(e)))
+      .catch((e) => {
+        failed = true;
+        if (!isAbortError(e)) setError(e instanceof Error ? e.message : String(e));
+      })
       .finally(() => {
         inflight.current = false;
         setLoading(false);
         setRefreshing(false);
-      });
-  }, []);
+      })
+      .then(() => !failed);
+  }, [signal]);
 
   useEffect(() => {
-    fetchPosts();
+    void fetchPosts();
   }, [fetchPosts]);
 
   useInterval(fetchPosts, POLL_MS);
@@ -111,7 +119,7 @@ export function FacebookPosts({ brandId }: { brandId: string }) {
                 )}
                 <button
                   type="button"
-                  onClick={fetchPosts}
+                  onClick={() => void fetchPosts()}
                   disabled={refreshing}
                   className="text-mist-400 hover:text-mist-100 transition-colors"
                   title="Refresh Facebook feed"

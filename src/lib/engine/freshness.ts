@@ -1,4 +1,5 @@
 import { read } from "../db";
+import { keepAlive } from "../background";
 import { STALE_AFTER_MS, isStale } from "../metrics/youtube";
 import { retrieveAll } from "./sync";
 
@@ -10,11 +11,10 @@ import { retrieveAll } from "./sync";
  * those pages asks here first: if the newest YouTube row/stamp is older than
  * ten minutes, run the YouTube part of the retrieval sync before rendering.
  *
- * Non-blocking by contract: any failure (no API key, quota, network) is
- * swallowed and the page renders whatever it already holds, and a slow API
- * only delays the page by REFRESH_DEADLINE_MS — the sync keeps running in the
- * background and the next render picks up its rows. One refresh at a time per
- * brand — concurrent renders share the in-flight promise.
+ * Non-blocking by contract: the refresh is kicked off and never awaited, so a
+ * render costs nothing beyond a store read. Failures (no API key, quota,
+ * network) are swallowed and remembered for a backoff TTL. One refresh at a
+ * time per brand — concurrent renders share the in-flight promise.
  */
 
 const inflight = new Map<string, Promise<boolean>>();
@@ -25,7 +25,7 @@ const lastFailedAt = new Map<string, number>();
 export function resetFreshnessBackoff(): void {
   lastFailedAt.clear();
 }
-/** Longest a page render waits on the YouTube refresh before showing stale rows. */
+/** Legacy deadline constant — kept for callers/tests; renders no longer wait at all. */
 export const REFRESH_DEADLINE_MS = 4000;
 
 export interface FreshnessInfo {
@@ -62,27 +62,17 @@ export async function ensureFreshStats(brandId: string): Promise<FreshnessInfo> 
   const failed = lastFailedAt.get(brandId);
   if (failed !== undefined && Date.now() - failed < STALE_AFTER_MS) return { lastSyncedAt: before.lastSyncedAt, refreshed: false };
 
-  let refreshed = false;
-  try {
-    let p = inflight.get(brandId);
-    if (!p) {
-      // Only a source that reached "synced" wrote rows worth re-reading;
-      // anything else is remembered so the next TTL of renders skips the API.
-      p = retrieveAll(brandId, { only: [...FRESH_CHANNELS], silent: true })
-        .then((r) => r.totals.synced > 0)
-        .then((ok) => { if (ok) lastFailedAt.delete(brandId); else lastFailedAt.set(brandId, Date.now()); return ok; })
-        .finally(() => inflight.delete(brandId));
-      inflight.set(brandId, p);
-    }
-    let timer: NodeJS.Timeout | undefined;
-    const deadline = new Promise<"timeout">((res) => { timer = setTimeout(() => res("timeout"), REFRESH_DEADLINE_MS); });
-    // Race, don't await: a hung fetch must not hold the page. `p` stays in
-    // `inflight` and finishes (or fails) on its own.
-    const won = await Promise.race([p, deadline]).finally(() => clearTimeout(timer));
-    refreshed = won === true;
-  } catch {
-    // Stale beats blank: the caller renders what the store already holds.
-    lastFailedAt.set(brandId, Date.now());
+  // Fire and forget: the render never waits on the network. One refresh at a
+  // time per brand (the in-flight map), failures remembered for the backoff
+  // TTL, and the client-side refresh picks the new rows up a moment later.
+  if (!inflight.get(brandId)) {
+    const p = retrieveAll(brandId, { only: [...FRESH_CHANNELS], silent: true })
+      .then((r) => r.totals.synced > 0)
+      .catch(() => false)
+      .then((ok) => { if (ok) lastFailedAt.delete(brandId); else lastFailedAt.set(brandId, Date.now()); return ok; })
+      .finally(() => inflight.delete(brandId));
+    inflight.set(brandId, p);
+    keepAlive(p);
   }
-  return { lastSyncedAt: youtubeFreshnessInput(read(), brandId, [...FRESH_CHANNELS]).lastSyncedAt, refreshed };
+  return { lastSyncedAt: before.lastSyncedAt, refreshed: false };
 }
