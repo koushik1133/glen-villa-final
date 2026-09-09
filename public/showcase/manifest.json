@@ -1,0 +1,404 @@
+{
+  "generated": "2026-09-09",
+  "note": "All imagery is the client's own (Glentree brochures, supplied artwork and glentreehomes.in). Renders are artist's impressions.",
+  "masterPlanAspect": {
+    "width": 3000,
+    "height": 1413,
+    "ratio": 2.123142
+  },
+  "assets": [
+    {
+      "project": "glentree-serenity",
+      "section": "master-plan",
+      "path": "/showcase/serenity/master-plan.webp",
+      "width": 3000,
+      "height": 1413,
+      "bytes": 523868,
+      "caption": "Official master plan with numbered villa plots",
+      "status": "ok"
+    },
+    {
+      "project": "glentree-serenity",
+      "section": "master-plan",
+      "path": "/showcase/serenity/master-plan@2x.webp",
+      "width": 6000,
+      "height": 2827,
+      "bytes": 1302022,
+      "caption": "Master plan at full render resolution for deep zoom",
+      "status": "ok"
+    },
+    {
+      "project": "glentree-serenity",
+      "section": "hero",
+      "path": "/showcase/serenity/hero-1.webp",
+      "width": 1920,
+      "height": 1446,
+      "bytes": 188738,
+      "caption": "Triplex villas along the internal avenue at dusk",
+      "status": "ok"
+    },
+    {
+      "project": "glentree-serenity",
+      "section": "hero",
+      "path": "/showcase/serenity/hero-2.webp",
+      "width": 1920,
+      "height": 1620,
+      "bytes": 223660,
+      "caption": "Club Serene clubhouse lit up after dark",
+      "status": "ok"
+    },
+    {
+      "project": "glentree-serenity",
+      "section": "hero",
+      "path": "/showcase/serenity/hero-3.webp",
+      "width": 1920,
+      "height": 1335,
+      "bytes": 284894,
+      "caption": "Veranda Pavilion sports and fitness clubhouse",
+      "status": "ok"
+    },
+    {
+      "project": "glentree-serenity",
+      "section": "hero",
+      "path": "/showcase/serenity/hero-4.webp",
+      "width": 1920,
+      "height": 763,
+      "bytes": 307336,
+      "caption": "Lakeside green spine through the community",
+      "status": "ok"
+    },
+    {
+      "project": "glentree-serenity",
+      "section": "elevation",
+      "path": "/showcase/serenity/villa-elevation.webp",
+      "width": 1548,
+      "height": 1457,
+      "bytes": 174994,
+      "caption": "200 sq yd triplex villa elevation",
+      "status": "ok"
+    },
+    {
+      "project": "glentree-serenity",
+      "section": "elevation",
+      "path": "/showcase/serenity/villa-elevation-267.webp",
+      "width": 1600,
+      "height": 1201,
+      "bytes": 196842,
+      "caption": "267 sq yd triplex villa elevation",
+      "status": "ok"
+    },
+    {
+      "project": "glentree-serenity",
+      "section": "elevation",
+      "path": "/showcase/serenity/villa-elevation-300.webp",
+      "width": 1600,
+      "height": 1506,
+      "bytes": 193782,
+      "caption": "300 sq yd triplex villa elevation",
+      "status": "ok"
+    },
+    {
+      "project": "glentree-serenity",
+      "section": "interior",
+      "path": "/showcase/serenity/interior-living.webp",
+      "width": 1400,
+      "height": 1647,
+      "bytes": 114524,
+      "caption": "Living room interior, artist's impression",
+      "status": "ok"
+    },
+    {
+      "project": "glentree-serenity",
+      "section": "interior",
+      "path": "/showcase/serenity/interior-clubhouse-lobby.webp",
+      "width": 1600,
+      "height": 1113,
+      "bytes": 196244,
+      "caption": "Double-height clubhouse lobby",
+      "status": "ok"
+    },
+    {
+      "project": "glentree-serenity",
+      "section": "amenity",
+      "path": "/showcase/serenity/amenity-clubhouse-serene.webp",
+      "width": 1600,
+      "height": 1350,
+      "bytes": 159912,
+      "caption": "Club Serene, approx. 29,479 sq ft",
+      "status": "ok"
+    },
+    {
+      "project": "glentree-serenity",
+      "section": "amenity",
+      "path": "/showcase/serenity/amenity-clubhouse-pavilion.webp",
+      "width": 1600,
+      "height": 1112,
+      "bytes": 199420,
+      "caption": "Veranda Pavilion, approx. 12,866 sq ft",
+      "status": "ok"
+    },
+    {
+      "project": "glentree-serenity",
+      "section": "amenity",
+      "path": "/showcase/serenity/amenity-parks.webp",
+      "width": 1600,
+      "height": 635,
+      "bytes": 233696,
+      "caption": "Themed parks and lakeside walk",
+      "status": "ok"
+    },
+    {
+      "project": "glentree-onyx",
+      "section": "tower",
+      "path": "/showcase/onyx/tower.webp",
+      "width": 1600,
+      "height": 960,
+      "bytes": 315446,
+      "caption": "Full tower elevation seen from the metro corridor",
+      "status": "ok"
+    },
+    {
+      "project": "glentree-onyx",
+      "section": "amenity",
+      "path": "/showcase/onyx/amenity-podium-deck.webp",
+      "width": 1200,
+      "height": 806,
+      "bytes": 167466,
+      "caption": "Podium amenity deck above the parking levels",
+      "status": "ok"
+    },
+    {
+      "project": "glentree-onyx",
+      "section": "amenity",
+      "path": "/showcase/onyx/amenity-relax-area.webp",
+      "width": 1200,
+      "height": 806,
+      "bytes": 323270,
+      "caption": "Landscaped relaxation and play area",
+      "status": "ok"
+    },
+    {
+      "project": "glentree-onyx",
+      "section": "amenity",
+      "path": "/showcase/onyx/amenity-walkway.webp",
+      "width": 1200,
+      "height": 806,
+      "bytes": 358138,
+      "caption": "Shaded walking track",
+      "status": "ok"
+    },
+    {
+      "project": "glentree-onyx",
+      "section": "floorplan",
+      "path": "/showcase/onyx/floor-plan-typical.webp",
+      "width": 1600,
+      "height": 2262,
+      "bytes": 204134,
+      "caption": "Typical floor plan, seven units per floor",
+      "status": "ok"
+    },
+    {
+      "project": "glentree-onyx",
+      "section": "floorplan",
+      "path": "/showcase/onyx/unit-plan-1.webp",
+      "width": 1120,
+      "height": 1493,
+      "bytes": 88690,
+      "caption": "Apartment plan, unit 1 - 2,594 sft, north facing",
+      "status": "ok"
+    },
+    {
+      "project": "glentree-onyx",
+      "section": "floorplan",
+      "path": "/showcase/onyx/unit-plan-2.webp",
+      "width": 1076,
+      "height": 1493,
+      "bytes": 106838,
+      "caption": "Apartment plan, unit 2 - 2,945 sft, east facing",
+      "status": "ok"
+    },
+    {
+      "project": "glentree-onyx",
+      "section": "floorplan",
+      "path": "/showcase/onyx/unit-plan-3.webp",
+      "width": 1056,
+      "height": 1493,
+      "bytes": 95856,
+      "caption": "Apartment plan, unit 3 - 2,032 sft, east facing",
+      "status": "ok"
+    },
+    {
+      "project": "glentree-onyx",
+      "section": "floorplan",
+      "path": "/showcase/onyx/unit-plan-4.webp",
+      "width": 1056,
+      "height": 1488,
+      "bytes": 98942,
+      "caption": "Apartment plan, unit 4 - 2,405 sft, west facing",
+      "status": "ok"
+    },
+    {
+      "project": "glentree-onyx",
+      "section": "floorplan",
+      "path": "/showcase/onyx/unit-plan-5.webp",
+      "width": 1054,
+      "height": 1482,
+      "bytes": 97958,
+      "caption": "Apartment plan, unit 5 - 2,457 sft, west facing",
+      "status": "ok"
+    },
+    {
+      "project": "glentree-onyx",
+      "section": "floorplan",
+      "path": "/showcase/onyx/unit-plan-6.webp",
+      "width": 1078,
+      "height": 1493,
+      "bytes": 100030,
+      "caption": "Apartment plan, unit 6 - 2,529 sft, west facing",
+      "status": "ok"
+    },
+    {
+      "project": "glentree-onyx",
+      "section": "floorplan",
+      "path": "/showcase/onyx/unit-plan-7.webp",
+      "width": 1056,
+      "height": 1493,
+      "bytes": 82754,
+      "caption": "Apartment plan, unit 7 - 2,571 sft, east facing",
+      "status": "ok"
+    },
+    {
+      "project": "glentree-onyx",
+      "section": "hero",
+      "path": "/showcase/onyx/hero-arrival.webp",
+      "width": 1920,
+      "height": 1004,
+      "bytes": 183554,
+      "caption": "Tower entrance and arrival forecourt at dusk",
+      "status": "ok"
+    },
+    {
+      "project": "glentree-onyx",
+      "section": "hero",
+      "path": "/showcase/onyx/hero-aerial.webp",
+      "width": 942,
+      "height": 504,
+      "bytes": 124786,
+      "caption": "Aerial view of the podium amenity deck and sky garden",
+      "status": "ok"
+    },
+    {
+      "project": "glentree-onyx",
+      "section": "floorplan",
+      "path": "/showcase/onyx/apartment-plans-overview.webp",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 248286,
+      "caption": "3D apartment plans, all seven units on a typical floor",
+      "status": "ok"
+    },
+    {
+      "project": "glentree-serenity",
+      "section": "hero",
+      "path": "/showcase/serenity/hero-garden.webp",
+      "width": 1748,
+      "height": 900,
+      "bytes": 385106,
+      "caption": "Triplex villa and landscaped street at golden hour",
+      "status": "ok"
+    },
+    {
+      "project": "glentree-serenity",
+      "section": "interior",
+      "path": "/showcase/serenity/interior-bedroom.webp",
+      "width": 1747,
+      "height": 900,
+      "bytes": 168312,
+      "caption": "Master bedroom interior, artist\u2019s impression",
+      "status": "ok"
+    },
+    {
+      "project": "glentree-serenity",
+      "section": "floorplan",
+      "path": "/showcase/serenity/villa-plan-200-east.webp",
+      "width": 1988,
+      "height": 791,
+      "bytes": 275716,
+      "caption": "200 sq yd east facing villa - 2,876 sft (1,246 / 1,246 / 384)",
+      "status": "ok"
+    },
+    {
+      "project": "glentree-serenity",
+      "section": "floorplan",
+      "path": "/showcase/serenity/villa-plan-267-east.webp",
+      "width": 1986,
+      "height": 792,
+      "bytes": 261602,
+      "caption": "267 sq yd east facing villa - 3,715 sft (1,455 / 1,404 / 856)",
+      "status": "ok"
+    },
+    {
+      "project": "glentree-serenity",
+      "section": "floorplan",
+      "path": "/showcase/serenity/villa-plan-267-west.webp",
+      "width": 1986,
+      "height": 792,
+      "bytes": 297230,
+      "caption": "267 sq yd west facing villa - 3,665 sft (1,410 / 1,399 / 856)",
+      "status": "ok"
+    },
+    {
+      "project": "glentree-serenity",
+      "section": "floorplan",
+      "path": "/showcase/serenity/villa-plan-300-east.webp",
+      "width": 1986,
+      "height": 792,
+      "bytes": 272142,
+      "caption": "300 sq yd east facing villa - 4,277 sft (1,697 / 1,627 / 953)",
+      "status": "ok"
+    },
+    {
+      "project": "glentree-serenity",
+      "section": "floorplan",
+      "path": "/showcase/serenity/villa-plan-300-west.webp",
+      "width": 1986,
+      "height": 792,
+      "bytes": 248372,
+      "caption": "300 sq yd west facing villa - 4,274 sft (1,645 / 1,613 / 1,016)",
+      "status": "ok"
+    },
+    {
+      "project": "glentree-serenity",
+      "section": "floorplan",
+      "path": "/showcase/serenity/villa-plan-200-west.webp",
+      "width": 0,
+      "height": 0,
+      "bytes": 0,
+      "caption": "200 sq yd west facing villa plan",
+      "status": "missing",
+      "note": "Not supplied by the client; only the 200 sq yd east facing sheet was provided."
+    },
+    {
+      "project": "glentree-serenity",
+      "section": "amenity",
+      "path": "/showcase/serenity/amenity-pool.webp",
+      "width": 0,
+      "height": 0,
+      "bytes": 0,
+      "caption": "Swimming pool render",
+      "status": "missing",
+      "note": "No standalone pool render exists in the supplied brochures; pool appears only inside the clubhouse renders."
+    },
+    {
+      "project": "glentree-onyx",
+      "section": "master-plan",
+      "path": "/showcase/onyx/site-plan.webp",
+      "width": 0,
+      "height": 0,
+      "bytes": 0,
+      "caption": "Onyx site / master plan",
+      "status": "missing",
+      "note": "Not published on the client site; only the typical floor plan is available."
+    }
+  ]
+}

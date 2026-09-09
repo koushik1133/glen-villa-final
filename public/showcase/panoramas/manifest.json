@@ -1,0 +1,116 @@
+{
+  "generated": "2026-09-09",
+  "generator": "scripts/gen-panoramas.mjs",
+  "kind": "schematic",
+  "note": "Schematic 360 interiors ray-traced from the published floor-plan dimensions. Room footprints are the printed plan dimensions. Clear height, finishes, furniture and daylight are indicative and not published facts. These are not photographs.",
+  "width": 2048,
+  "height": 1024,
+  "conventions": {
+    "doorYaw": 3.141592653589793,
+    "windowYaw": 0,
+    "archYaw": 1.5707963267948966,
+    "eyeHeightM": 1.55
+  },
+  "scenes": [
+    {
+      "id": "ser-267e-living",
+      "path": "/showcase/panoramas/ser-267e-living.webp",
+      "title": "Living",
+      "plan": "Living, ground floor (double height) — dimensions to be confirmed",
+      "widthM": 4.877,
+      "depthM": 4.877,
+      "ceilingM": 5.8,
+      "hasArch": true
+    },
+    {
+      "id": "ser-267e-master",
+      "path": "/showcase/panoramas/ser-267e-master.webp",
+      "title": "Master bedroom",
+      "plan": "Bedroom-2, first floor — dimensions to be confirmed",
+      "widthM": 4.877,
+      "depthM": 3.962,
+      "ceilingM": 3.05,
+      "hasArch": true
+    },
+    {
+      "id": "ser-267e-kitchen",
+      "path": "/showcase/panoramas/ser-267e-kitchen.webp",
+      "title": "Kitchen",
+      "plan": "Kitchen, ground floor — dimensions to be confirmed",
+      "widthM": 3.048,
+      "depthM": 3.962,
+      "ceilingM": 3.05,
+      "hasArch": false
+    },
+    {
+      "id": "ser-267e-terrace",
+      "path": "/showcase/panoramas/ser-267e-terrace.webp",
+      "title": "Terrace",
+      "plan": "Terrace, second floor — dimensions to be confirmed",
+      "widthM": 4.877,
+      "depthM": 6.096,
+      "ceilingM": 3.2,
+      "hasArch": false
+    },
+    {
+      "id": "onyx-u2-living",
+      "path": "/showcase/panoramas/onyx-u2-living.webp",
+      "title": "Living",
+      "plan": "Living 13'-0\" x 16'-9\"",
+      "widthM": 3.962,
+      "depthM": 5.105,
+      "ceilingM": 3.05,
+      "hasArch": true
+    },
+    {
+      "id": "onyx-u2-master",
+      "path": "/showcase/panoramas/onyx-u2-master.webp",
+      "title": "Master bedroom",
+      "plan": "M.Bedroom 14'-5\" x 12'-0\"",
+      "widthM": 4.394,
+      "depthM": 3.658,
+      "ceilingM": 3.05,
+      "hasArch": false
+    },
+    {
+      "id": "onyx-u2-kitchen",
+      "path": "/showcase/panoramas/onyx-u2-kitchen.webp",
+      "title": "Kitchen",
+      "plan": "Kitchen 8'-6\" x 12'-0\"",
+      "widthM": 2.591,
+      "depthM": 3.658,
+      "ceilingM": 3.05,
+      "hasArch": false
+    },
+    {
+      "id": "onyx-u3-living",
+      "path": "/showcase/panoramas/onyx-u3-living.webp",
+      "title": "Living",
+      "plan": "Living 12'-0\" x 12'-0\"",
+      "widthM": 3.658,
+      "depthM": 3.658,
+      "ceilingM": 3.05,
+      "hasArch": true
+    },
+    {
+      "id": "onyx-u3-master",
+      "path": "/showcase/panoramas/onyx-u3-master.webp",
+      "title": "Master bedroom",
+      "plan": "Bedroom 12'-0\" x 14'-7\"",
+      "widthM": 3.658,
+      "depthM": 4.445,
+      "ceilingM": 3.05,
+      "hasArch": false
+    },
+    {
+      "id": "onyx-u3-kitchen",
+      "path": "/showcase/panoramas/onyx-u3-kitchen.webp",
+      "title": "Kitchen",
+      "plan": "Kitchen 11'-5\" x 10'-7\"",
+      "widthM": 3.48,
+      "depthM": 3.226,
+      "ceilingM": 3.05,
+      "hasArch": false
+    }
+  ]
+}
