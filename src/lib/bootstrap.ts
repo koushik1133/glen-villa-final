@@ -141,6 +141,7 @@ export function buildBootstrap(): Database {
     crmTasks: [],
     voiceCalls: [],
     voiceAgentConfigs: [],
+    inventoryUnits: [],
     ...EMPTY_OPS,
   };
 }

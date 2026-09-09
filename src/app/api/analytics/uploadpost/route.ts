@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { guard } from "@/lib/auth/guard";
 import { uploadPostApiKey, uploadPostUser } from "@/lib/uploadpost/client";
 
 export const dynamic = "force-dynamic";
@@ -19,7 +20,23 @@ interface TotalDayPoint {
 let cachedData: any = null;
 let cacheExpiry = 0;
 
+/**
+ * Cross-channel performance for the analytics screens.
+ *
+ * `analytics.view`, which is what every other reporting surface takes. It had
+ * no permission check, so the reach, follower and engagement numbers for every
+ * connected account — the business performance the analytics permission exists
+ * to fence off — were readable by any signed-in account.
+ *
+ * The responses are also marked `private`. They were `public, s-maxage=60`,
+ * which invites a shared proxy or CDN to keep one account's answer and serve it
+ * to the next caller; on a per-account response that is a cache-poisoning
+ * disclosure, and `public` is never right for something behind a session.
+ */
 export async function GET(req: NextRequest) {
+  const denied = await guard("analytics.view");
+  if (denied) return denied;
+
   try {
     const key = uploadPostApiKey();
     if (!key) {
@@ -37,7 +54,7 @@ export async function GET(req: NextRequest) {
     if (!forceRefresh && cachedData && cachedData.profile === requestedProfile && now < cacheExpiry) {
       return NextResponse.json(
         { ok: true, cached: true, ...cachedData },
-        { headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" } }
+        { headers: { "Cache-Control": "private, no-store" } }
       );
     }
 
@@ -236,7 +253,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(
       { ok: true, cached: false, ...responsePayload },
-      { headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" } }
+      { headers: { "Cache-Control": "private, no-store" } }
     );
   } catch (error) {
     return NextResponse.json(

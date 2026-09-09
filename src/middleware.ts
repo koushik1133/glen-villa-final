@@ -52,7 +52,12 @@ function isPublic(pathname: string): boolean {
     pathname.startsWith("/_next/") ||
     pathname === "/favicon.ico" ||
     pathname.startsWith("/renders/") ||
-    pathname.startsWith("/samples/")
+    pathname.startsWith("/samples/") ||
+    // Showcase media only — never the /showcase page itself, which stays gated.
+    // These are the client's own published marketing renders, and routing every
+    // one of them through the session check turned a missing cookie into broken
+    // images and put a middleware pass in front of each file request.
+    (pathname.startsWith("/showcase/") && /\.(webp|avif|jpg|jpeg|png|svg|json|mp4)$/i.test(pathname))
   );
 }
 

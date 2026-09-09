@@ -55,6 +55,7 @@ const EMPTY: Database = {
   crmTasks: [],
   voiceCalls: [],
   voiceAgentConfigs: [],
+  inventoryUnits: [],
   ...EMPTY_OPS,
 };
 

@@ -20,15 +20,15 @@ export default function AppError({
 
   return (
     <div className="p-7">
-      <div className="rounded-xl border border-black/10 bg-white p-6">
+      <div className="rounded-xl border border-ink-700 bg-ink-900 p-6">
         <h2 className="text-base font-semibold">Something went wrong</h2>
-        <p className="mt-1 text-sm text-black/60">
+        <p className="mt-1 text-sm text-mist-300">
           This section could not be loaded. It is usually a temporary problem with an upstream provider.
         </p>
         <button
           type="button"
           onClick={reset}
-          className="mt-4 rounded-lg border border-black/10 px-3 py-1.5 text-sm font-medium hover:bg-black/5"
+          className="mt-4 rounded-lg border border-ink-700 px-3 py-1.5 text-sm font-medium text-mist-200 hover:bg-ink-800 hover:text-mist-100"
         >
           Try again
         </button>

@@ -590,6 +590,47 @@ export interface Database {
   /** Voice agent: normalised call log (idempotent by executionId) and per-brand agent wording. */
   voiceCalls: VoiceCallRecord[];
   voiceAgentConfigs: VoiceAgentConfig[];
+  /** Sellable units (villas and flats) behind the public showcase layouts. */
+  inventoryUnits: InventoryUnit[];
+}
+
+/**
+ * Where a unit stands in the sales funnel.
+ *
+ * `no_leads` is deliberately distinct from `available`: both are sellable, but
+ * the first tells the sales team the unit has had no interest at all, which is
+ * what drives a re-pricing or a campaign — a distinction "available" erases.
+ */
+export type UnitStatus =
+  | "available"
+  | "no_leads"
+  | "enquiry"
+  | "deal_pending"
+  | "blocked"
+  | "sold";
+
+/** One sellable villa or flat. Keyed per brand so agencies stay isolated. */
+export interface InventoryUnit {
+  id: string;
+  brandId: string;
+  project: "serenity" | "onyx";
+  /** Villa plot number, or flat number like "1204" (floor 12, unit 04). */
+  unitNumber: string;
+  kind: "villa" | "flat";
+  status: UnitStatus;
+  plotSqYds?: number;
+  builtUpSqFt?: number;
+  bhk?: string;
+  facing?: string;
+  floor?: number;
+  tower?: string;
+  priceInr?: number;
+  leadId?: string;
+  customerId?: string;
+  assignedTo?: string;
+  blockedUntil?: string;
+  updatedAt: string;
+  notes?: string;
 }
 
 /** The ops slice is merged into Database so there is one store, one mutate(). */

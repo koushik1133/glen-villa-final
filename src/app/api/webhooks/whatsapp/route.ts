@@ -88,12 +88,28 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "invalid json" }, { status: 400 });
   }
 
-  // Delivery receipts share the endpoint. Apply them to the outbound rows they
-  // belong to before deciding whether there is anything else to do.
-  const statuses = parseStatuses(payload);
-  const statusesApplied = statuses.length ? applyDeliveryStatuses(statuses) : 0;
+  // Everything from here on is shape-dependent, and the shape is Meta's, not
+  // ours. An unhandled throw becomes a 500, and a 500 is precisely what Meta
+  // treats as "try again" — the same batch comes back on a schedule, for hours,
+  // and every redelivery re-runs the same crash. So the parsing and the inbox
+  // write are bounded: a payload we cannot make sense of is acknowledged and
+  // logged rather than retried at us forever. The signature has already been
+  // verified at this point, so acknowledging is not accepting anonymous input;
+  // it is declining to argue with a sender that only knows how to repeat itself.
+  let statuses: ReturnType<typeof parseStatuses>;
+  let statusesApplied = 0;
+  let messages: ReturnType<typeof parseWebhook>;
+  try {
+    // Delivery receipts share the endpoint. Apply them to the outbound rows they
+    // belong to before deciding whether there is anything else to do.
+    statuses = parseStatuses(payload);
+    statusesApplied = statuses.length ? applyDeliveryStatuses(statuses) : 0;
+    messages = parseWebhook(payload);
+  } catch (e) {
+    console.error("[whatsapp/webhook] unreadable payload", (e as Error).message);
+    return NextResponse.json({ ok: true, ignored: "unreadable payload" });
+  }
 
-  const messages = parseWebhook(payload);
   if (!messages.length) {
     return NextResponse.json({ ok: true, ignored: "no messages in payload", statuses: statuses.length, statusesApplied });
   }
@@ -101,11 +117,6 @@ export async function POST(req: Request) {
   const db = read();
   const conn = db.connections.find((c) => c.channel === "whatsapp");
   const brandId = conn?.brandId ?? db.brands[0]?.id;
-  {
-    const { getSession, assertBrandAccess } = require("@/lib/auth/session");
-    const session = await getSession();
-    if (session) assertBrandAccess(session, brandId);
-  }
   if (!brandId) return NextResponse.json({ ok: true, ignored: "no brand" });
 
   const created = mutate((d) => {

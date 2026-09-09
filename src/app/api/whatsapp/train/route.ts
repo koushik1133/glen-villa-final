@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { guard } from "@/lib/auth/guard";
 import { mutate, read } from "@/lib/db";
 import type { Database } from "@/lib/types";
 
@@ -18,8 +19,23 @@ type DbWithWhatsApp = Database & { whatsappConfig?: Record<string, WhatsAppConfi
 /**
  * POST /api/whatsapp/train
  * Saves the WhatsApp AI knowledge base configuration for a brand.
+ *
+ * `workflows.manage`, the same permission the other configuration surfaces
+ * take. This route had NO permission check at all: the middleware only proves
+ * a session exists, so every provisioned account — a receptionist holding
+ * nothing but `customers.read`, or an account with no permissions whatsoever —
+ * could POST here and rewrite `systemPrompt`, the instruction block the agent
+ * runs on when it answers real buyers over WhatsApp. That is remote control of
+ * what the company says to its customers, handed to the lowest-privileged
+ * account in the building.
+ *
+ * The GET is gated too, and for the same reason it is not merely a mirror: the
+ * stored config carries the sales team's direct contacts and the internal
+ * pricing and booking playbook, which is not front-desk reading.
  */
 export async function POST(req: NextRequest) {
+  const denied = await guard("workflows.manage");
+  if (denied) return denied;
   try {
     const body = await req.json() as {
       brandId: string;
@@ -70,6 +86,9 @@ export async function POST(req: NextRequest) {
 
 /** GET /api/whatsapp/train?brandId=xxx — returns the saved config */
 export async function GET(req: NextRequest) {
+  const denied = await guard("workflows.manage");
+  if (denied) return denied;
+
   const brandId = req.nextUrl.searchParams.get("brandId");
   if (!brandId) return NextResponse.json({ ok: false, error: "brandId required" }, { status: 400 });
 

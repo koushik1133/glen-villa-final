@@ -242,11 +242,12 @@ export function parseWebhook(payload: unknown): WhatsAppMessage[] {
     }>;
   };
 
-  for (const entry of body.entry ?? []) {
-    for (const change of entry.changes ?? []) {
-      const value = change.value;
-      if (!value?.messages) continue; // status callbacks arrive here too — ignore them
+  for (const entry of Array.isArray(body?.entry) ? body.entry! : []) {
+    for (const change of Array.isArray(entry?.changes) ? entry.changes : []) {
+      const value = change?.value;
+      if (!Array.isArray(value?.messages)) continue; // status callbacks arrive here too — ignore them
       for (const m of value.messages) {
+        if (!m || typeof m.id !== "string" || typeof m.from !== "string") continue;
         const contact = value.contacts?.find((c) => c.wa_id === m.from);
         const media = m.image ?? m.document ?? m.video ?? m.audio ?? m.sticker;
         const reply = m.interactive?.button_reply ?? m.interactive?.list_reply;
@@ -267,7 +268,15 @@ export function parseWebhook(payload: unknown): WhatsAppMessage[] {
             (m.location ? `[location] ${m.location.name ?? ""} ${m.location.address ?? ""}`.trim() : undefined) ??
             (m.reaction ? `[reaction] ${m.reaction.emoji ?? ""}`.trim() : undefined) ??
             `[${m.type}]`,
-          timestamp: new Date(Number(m.timestamp) * 1000).toISOString(),
+          // Guarded exactly as parseStatuses guards its own: `Number(undefined)`
+          // is NaN and `new Date(NaN).toISOString()` THROWS. This function is
+          // called straight out of the webhook handler with no try/catch, so a
+          // single message missing a timestamp turned into a 500 — and Meta
+          // answers a 500 by redelivering the whole batch, on a schedule, for
+          // hours. A missing clock is worth "now", not an outage.
+          timestamp: Number.isFinite(Number(m.timestamp) * 1000) && Number(m.timestamp) > 0
+            ? new Date(Number(m.timestamp) * 1000).toISOString()
+            : new Date().toISOString(),
           type,
           mediaId: media?.id,
           mimeType: media?.mime_type,
@@ -349,9 +358,9 @@ export function parseStatuses(payload: unknown): WhatsAppStatus[] {
       }>;
     }>;
   };
-  for (const entry of body.entry ?? []) {
-    for (const change of entry.changes ?? []) {
-      for (const s of change.value?.statuses ?? []) {
+  for (const entry of Array.isArray(body?.entry) ? body.entry! : []) {
+    for (const change of Array.isArray(entry?.changes) ? entry.changes : []) {
+      for (const s of Array.isArray(change?.value?.statuses) ? change.value!.statuses! : []) {
         if (!s?.id) continue;
         if (!["sent", "delivered", "read", "failed"].includes(s.status)) continue;
         const err = s.errors?.[0];

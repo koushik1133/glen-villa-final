@@ -55,7 +55,12 @@ describe("1. Navigation & Route Permission Matrix", () => {
 
     // Engage
     { path: "/voice", group: "Engage", expectedPerm: "customers.read" },
-    { path: "/voice/whatsapp-training", group: "Engage", expectedPerm: "customers.read" },
+    // Configuration, not a customer surface: this screen edits the instruction
+    // block the WhatsApp assistant runs on when it answers real buyers, which is
+    // the same kind of thing as /voice/settings and takes the same permission.
+    // It inherited `customers.read` from the general /voice rule, so the front
+    // desk could open it — and the API behind it checked nothing at all.
+    { path: "/voice/whatsapp-training", group: "Engage", expectedPerm: "workflows.manage" },
     { path: "/inbox/whatsapp", group: "Engage", expectedPerm: "customers.read" },
 
     // Grow

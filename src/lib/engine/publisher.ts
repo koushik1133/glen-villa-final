@@ -58,6 +58,15 @@ function dueTargets(post: Post, now: Date): PostTarget[] {
   return post.targets.filter((t) => {
     if (t.externalId) return false; // already out
     if (t.status === "published") return false;
+    // `failed` is the terminal target state: recordFailure() sets it only for a
+    // permanent error or the last attempt, and puts a retryable failure back to
+    // "scheduled" instead. Without this line the status was written and then
+    // ignored — a 400 "caption too long", or a missing credential, came back on
+    // the next tick and burned every remaining attempt against an error that
+    // could never succeed, which is exactly what `retryable: false` means not
+    // to do. Nothing resets a target to "scheduled" except a retryable failure,
+    // so this cannot strand work the queue is still meant to try.
+    if (t.status === "failed") return false;
     if (t.attempts >= MAX_ATTEMPTS) return false;
     const when = new Date(t.scheduledAt ?? post.scheduledAt ?? 0).getTime();
     const backoff = BACKOFF_MINUTES[Math.min(t.attempts, BACKOFF_MINUTES.length - 1)] * 60_000;

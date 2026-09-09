@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { getSession } from "@/lib/auth/session";
+import { cookies } from "next/headers";
+import { cacheKeyFromCookies, clearSessionCache, getSession } from "@/lib/auth/session";
 import { apiError, apiOk } from "@/lib/auth/http";
 
 /**
@@ -53,6 +54,15 @@ export async function GET(req: Request) {
  * failed client-side signOut cannot be replayed.
  */
 export async function DELETE() {
+  // The session-cache module documents "sign-out calls clearSessionCache() for
+  // its own token". That was true of the server action in (auth)/signin only —
+  // this endpoint, which is the sign-out the client calls, dropped the cookie
+  // and left the resolved entry warm for the rest of its 30s TTL. Anyone
+  // holding a copy of the token (a shared machine, a proxy log) kept the old
+  // answer for that window. Making the statement true costs three lines.
+  const key = cacheKeyFromCookies((await cookies()).getAll().map((c) => ({ name: c.name, value: c.value })));
+  if (key) clearSessionCache(key);
+
   const res = apiOk({ signedOut: true });
   const ref = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").match(/https:\/\/([^.]+)\./)?.[1];
   for (const name of [`sb-${ref}-auth-token`, `sb-${ref}-auth-token.0`, `sb-${ref}-auth-token.1`, "ops_session"]) {

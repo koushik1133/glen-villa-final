@@ -35,6 +35,12 @@ const RULES: Array<[RegExp, Permission]> = [
   // Editing what the agent says is configuration, so it sits with the other
   // config screens. Listed before the general /voice rule because first match wins.
   [/^\/voice\/settings/, "workflows.manage"],
+  // Same reasoning, same answer: /voice/whatsapp-training edits the instruction
+  // block the WhatsApp assistant runs on when it answers buyers. It sat under
+  // the general /voice rule, so anybody with `customers.read` could open it —
+  // and the API behind it had no permission check at all, which made the pair a
+  // way for the front desk to rewrite what the company tells its customers.
+  [/^\/voice\/whatsapp-training/, "workflows.manage"],
   [/^\/voice/, "customers.read"],
 
   // Marketing surfaces

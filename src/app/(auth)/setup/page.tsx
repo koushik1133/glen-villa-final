@@ -164,7 +164,7 @@ export default async function SetupPage() {
             {rows.map((r) => (
               <div
                 key={r.label}
-                className="liquid-glass-card liquid-glass-interactive flex flex-wrap items-start gap-3.5 rounded-2xl p-4 border border-white/15 dark:border-white/10"
+                className="liquid-glass-card liquid-glass-interactive flex flex-wrap items-start gap-3.5 rounded-2xl p-4"
               >
                 <span className="mt-0.5 grid h-7 w-7 place-items-center rounded-full bg-ink-800/90 shadow-inner">
                   {r.state === "ok" ? (

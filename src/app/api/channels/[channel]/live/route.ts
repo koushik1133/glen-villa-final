@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { guard } from "@/lib/auth/guard";
 import { read } from "@/lib/db";
 import type { ChannelId } from "@/lib/types";
 
@@ -6,11 +7,22 @@ import type { ChannelId } from "@/lib/types";
  * GET /api/channels/[channel]/live?brandId=xxx
  * Returns the latest cached connection stats for a channel.
  * Used by client-side refresh on the channel detail page.
+ *
+ * `marketing.read`, matching the /channels page this feeds. It carried no
+ * permission check, so the session gate in middleware was the whole of its
+ * authorisation: any provisioned account could enumerate the connected
+ * handles, follower counts and — via `lastError` — the verbatim provider
+ * error, which is where an expired-token message names the account it belongs
+ * to. The page that draws this is already `marketing.read`; the data it draws
+ * from was not.
  */
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ channel: string }> },
 ) {
+  const denied = await guard("marketing.read");
+  if (denied) return denied;
+
   const { channel } = await params;
   const brandId = req.nextUrl.searchParams.get("brandId");
 

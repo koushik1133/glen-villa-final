@@ -167,3 +167,25 @@ describe("pause / resume", () => {
     assert.ok(inbox.getThread(ORG, out.customerId)!.events.some((e) => e.kind === "control" && /resumed/i.test(e.label)));
   });
 });
+
+describe("inbox list failure state", () => {
+  const src = require("node:fs").readFileSync(
+    require("node:path").join(__dirname, "../../src/components/whatsapp-inbox/inbox.tsx"),
+    "utf8",
+  ) as string;
+
+  test("a failed conversation load clears the spinner before the error branch returns", () => {
+    const body = src.slice(src.indexOf("const loadList"), src.indexOf("const loadThread"));
+    const settle = body.indexOf("setLoading(false)");
+    const bail = body.indexOf("if (!j.ok)");
+    assert.ok(settle > -1, "loadList must end the loading state");
+    assert.ok(bail > -1 && settle < bail, "setLoading(false) must run before the early return on failure");
+  });
+
+  test("the list pane shows a retry affordance on error, separate from the empty state", () => {
+    assert.ok(/!loading && error && conversations\.length === 0/.test(src), "error state is rendered in the list pane");
+    assert.ok(/Try again/.test(src), "the error block offers a retry");
+    assert.ok(/onClick=\{\(\) => void loadList\(\)\}/.test(src), "retry re-runs loadList");
+    assert.ok(/!loading && !error && conversations\.length === 0/.test(src), "'No conversations match.' only shows without an error");
+  });
+});
