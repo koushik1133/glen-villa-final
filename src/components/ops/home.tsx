@@ -113,7 +113,7 @@ export function OpsHome({
         <div className="absolute right-0 top-0 -mt-10 -mr-10 h-56 w-56 rounded-full bg-gradient-to-br from-purple-500/20 via-pink-500/15 to-transparent blur-3xl pointer-events-none" />
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
           <div className="flex items-start gap-4">
-            <div className="relative grid h-13 w-13 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-brand-400/25 via-brand-500/20 to-brand-600/30 border border-white/20 text-brand-300 shadow-lg">
+            <div className="relative grid h-13 w-13 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-brand-400/25 via-brand-500/20 to-brand-600/30 border border-brand-500/25 text-brand-300 shadow-lg">
               <Building2 size={26} />
               <span className="beacon-dot absolute -bottom-0.5 -right-0.5 bg-good-400" />
             </div>
@@ -141,7 +141,7 @@ export function OpsHome({
           <div className="flex items-center gap-2.5">
             <Link
               href="/setup"
-              className="liquid-glass-button px-4 py-2 text-[12px] font-medium text-mist-200 hover:text-white"
+              className="liquid-glass-button px-4 py-2 text-[12px] font-medium text-mist-200 hover:text-mist-100"
             >
               <Sparkles size={13} className="text-brand-400 mr-1.5" />
               Diagnostics

@@ -104,7 +104,11 @@ export function ReviewsPanel({ reviews, brandId }: { reviews: Review[]; brandId:
               onClick={() => setAutoReply((v) => !v)}
               className={clsx("relative h-5 w-9 rounded-full transition-colors", autoReply ? "bg-brand-500" : "bg-ink-600")}
             >
-              <span className={clsx("absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all", autoReply ? "left-[18px]" : "left-0.5")} />
+              {/* The knob was bg-white, which vanishes on the "on" track: the accent is
+                  near-white in dark mode. Painting it in the accent's own on-colour keeps
+                  it at 17:1 against the track it sits on, whichever way the theme flips. */}
+              <span className={clsx("absolute top-0.5 h-4 w-4 rounded-full transition-all",
+                autoReply ? "left-[18px] bg-[var(--a-on)]" : "left-0.5 bg-mist-100")} />
             </button>
           </label>
         }

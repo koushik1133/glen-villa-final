@@ -64,10 +64,14 @@ export function WhatsAppInbox() {
     const params = new URLSearchParams({ filter });
     if (q.trim()) params.set("q", q.trim());
     const j = await api<{ conversations: ConversationSummary[] }>(`/api/ops/whatsapp/conversations?${params}`);
+    // The first attempt ends the loading state whether it succeeded or not.
+    // Returning early on failure left the list spinning "Loading…" forever while
+    // the only report of the failure sat in the other pane, so an outage looked
+    // like a slow network and nobody knew to retry.
+    setLoading(false);
     if (!j.ok) { setError(j.error ?? "Could not load conversations"); return; }
     setError(null);
     setConversations(j.conversations);
-    setLoading(false);
   }, [filter, q]);
 
   const loadThread = useCallback(async (id: string) => {
@@ -136,7 +140,18 @@ export function WhatsAppInbox() {
         </div>
         <div className="flex-1 overflow-y-auto">
           {loading && <div className="p-4 text-[12px] text-mist-400"><Loader2 size={14} className="inline animate-spin" /> Loading…</div>}
-          {!loading && conversations.length === 0 && <div className="p-4 text-[12px] text-mist-500">No conversations match.</div>}
+          {/* A failed load is not an empty inbox. Saying "No conversations
+              match." when the request errored tells the operator the customer
+              never wrote in, which is the opposite of the truth. */}
+          {!loading && error && conversations.length === 0 && (
+            <div className="m-3 rounded-lg border border-warn-500/30 bg-warn-500/[0.06] p-3 text-[12px] text-warn-200">
+              <AlertTriangle size={13} className="mb-1 inline shrink-0" aria-hidden /> {error}
+              <button type="button" onClick={() => void loadList()} className="mt-2 block text-[11.5px] font-medium text-brand-300 underline underline-offset-2">
+                Try again
+              </button>
+            </div>
+          )}
+          {!loading && !error && conversations.length === 0 && <div className="p-4 text-[12px] text-mist-500">No conversations match.</div>}
           {conversations.map((c) => (
             <button
               key={c.customerId}
@@ -286,7 +301,7 @@ function ThreadPane({ thread, error, onDismissError, onControl, onSent, onError 
           <div className="flex items-start gap-2 border-b border-warn-500/30 bg-warn-500/[0.06] px-4 py-2 text-[12px] text-warn-200">
             <AlertTriangle size={13} className="mt-0.5 shrink-0" />
             <span className="flex-1">{error}</span>
-            <button onClick={onDismissError} className="text-mist-400 hover:text-mist-200"><X size={13} /></button>
+            <button type="button" onClick={onDismissError} aria-label="Dismiss error" className="text-mist-400 hover:text-mist-200"><X size={13} aria-hidden /></button>
           </div>
         )}
 
@@ -333,7 +348,7 @@ function ThreadPane({ thread, error, onDismissError, onControl, onSent, onError 
             <button
               onClick={() => void send()}
               disabled={sending || !draft.trim()}
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-brand-500 px-3 text-[12px] font-medium text-white hover:bg-brand-400 disabled:opacity-50"
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-brand-500 px-3 text-[12px] font-medium text-[var(--a-on)] hover:bg-brand-400 disabled:opacity-50"
             >
               {sending ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />} Send
             </button>

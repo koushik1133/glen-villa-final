@@ -167,7 +167,9 @@ export function Button({
     glass:
       "glass-card border-ink-700/80 text-mist-200 hover:text-mist-100 hover:border-ink-600 active:scale-[0.98] shadow-sm rounded-full",
     liquid:
-      "liquid-glass-button text-mist-100 hover:text-white active:scale-[0.97] rounded-full",
+      /* hover:text-white here was white-on-white in light mode: the liquid pill
+         is a translucent white surface, so the hover state erased the label. */
+      "liquid-glass-button text-mist-200 hover:text-mist-100 active:scale-[0.97] rounded-full",
     holographic:
       "holographic-sheen text-white font-semibold rounded-full shadow-lg shadow-purple-500/25 active:scale-[0.96]",
     ghost:
@@ -224,8 +226,8 @@ export function LiquidSegmentedControl<T extends string>({
             className={clsx(
               "relative flex items-center gap-1.5 rounded-full px-3.5 py-1 text-[12px] font-medium transition-all duration-200 outline-none",
               active
-                ? "bg-white/15 dark:bg-white/12 text-mist-100 shadow-sm border border-white/20 dark:border-white/10"
-                : "text-mist-400 hover:text-mist-200 hover:bg-white/5",
+                ? "bg-ink-700 text-mist-100 shadow-sm border border-brand-500/55"
+                : "text-mist-400 hover:text-mist-200 hover:bg-ink-800/60",
             )}
           >
             <span>{opt.label}</span>
@@ -233,7 +235,7 @@ export function LiquidSegmentedControl<T extends string>({
               <span
                 className={clsx(
                   "tnum rounded-full px-1.5 py-0.2 text-[10px]",
-                  active ? "bg-white/20 text-mist-100" : "bg-ink-800 text-mist-400",
+                  active ? "bg-ink-700 text-mist-100" : "bg-ink-800 text-mist-400",
                 )}
               >
                 {opt.count}

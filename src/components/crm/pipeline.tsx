@@ -149,7 +149,7 @@ export function Pipeline({ leads }: { leads: PipelineLead[] }) {
                     onDragStart={() => setDrag(l.id)}
                     onDragEnd={() => setDrag(null)}
                     className={clsx(
-                      "liquid-glass-card liquid-glass-interactive cursor-grab rounded-2xl p-3.5 border border-white/15 dark:border-white/10 active:cursor-grabbing active:scale-[0.98]",
+                      "liquid-glass-card liquid-glass-interactive cursor-grab rounded-2xl p-3.5 active:cursor-grabbing active:scale-[0.98]",
                       drag === l.id && "drag-ghost opacity-50",
                     )}
                   >

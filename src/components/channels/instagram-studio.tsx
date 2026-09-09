@@ -166,7 +166,7 @@ export function InstagramStudio({ brandId }: { brandId: string }) {
                 href={profile.url}
                 target="_blank"
                 rel="noreferrer"
-                className="liquid-glass-button inline-flex items-center gap-1.5 px-3 py-1.5 text-[11.5px] font-medium text-mist-200 hover:text-white"
+                className="liquid-glass-button inline-flex items-center gap-1.5 px-3 py-1.5 text-[11.5px] font-medium text-mist-200 hover:text-mist-100"
               >
                 <Instagram size={13} className="text-[#E1306C]" />
                 <span>Open Instagram</span>

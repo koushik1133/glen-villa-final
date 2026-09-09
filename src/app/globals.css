@@ -1,6 +1,31 @@
 @import "tailwindcss";
 
 /* --------------------------------------------------------------------------
+   `dark:` must mean "the theme this app resolved", not "the OS preference".
+
+   Tailwind's stock `dark:` variant is a bare prefers-color-scheme media query.
+   This app resolves its theme from a cookie stamped onto <html data-theme>, so
+   the stock variant disagrees with every token below the moment someone picks
+   Light on a dark OS (or Dark on a light one): the semantic variables flip one
+   way and every `dark:` utility flips the other, which is exactly how a
+   light-on-light or dark-on-dark pair gets shipped. Redefining the variant to
+   mirror the same three cases as the token blocks keeps them in lockstep.
+   -------------------------------------------------------------------------- */
+@custom-variant dark {
+  &:where(:root[data-theme="dark"], :root[data-theme="dark"] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(
+        :root:not([data-theme="dark"]):not([data-theme="light"]),
+        :root:not([data-theme="dark"]):not([data-theme="light"]) *
+      ) {
+      @slot;
+    }
+  }
+}
+
+/* --------------------------------------------------------------------------
    DESIGN TOKENS — one palette, two themes.
 
    Tailwind v4 emits every `@theme` entry as a real CSS variable on :root, and
@@ -19,11 +44,25 @@
   --color-ink-700: var(--s-border);
   --color-ink-600: var(--s-border-strong);
   --color-ink-500: var(--s-faint);
+  /* mist-600/500 are the faint tiers below `muted`: timestamps, placeholders,
+     the em-dash that stands in for a missing value. They were referenced in ~50
+     places before they existed here, and an undefined key emits no utility at
+     all — so every one of those rendered at --t-primary, i.e. louder than the
+     body text it was meant to sit under. */
+  --color-mist-600: var(--t-fainter);
+  --color-mist-500: var(--t-faint);
   --color-mist-400: var(--t-muted);
   --color-mist-300: var(--t-secondary);
   --color-mist-200: var(--t-strong);
   --color-mist-100: var(--t-primary);
 
+  /* brand-300..100 are accent *text* on a tinted accent chip. The ramp cannot be
+     "lighter as the number falls" in both themes — that direction is legible on
+     black and invisible on white — so each theme moves away from its own
+     surface instead, and every step stays readable on the chip it sits on. */
+  --color-brand-100: var(--a-100);
+  --color-brand-200: var(--a-200);
+  --color-brand-300: var(--a-300);
   --color-brand-400: var(--a-400);
   --color-brand-500: var(--a-500);
   --color-brand-600: var(--a-600);
@@ -31,8 +70,11 @@
   /* Status colours are theme-driven too: a green tuned for a near-black
      background is unreadable on white, and status text is exactly where poor
      contrast costs a person real information. */
+  --color-good-300: var(--c-good-soft);
   --color-good-400: var(--c-good);
   --color-good-500: var(--c-good-strong);
+  --color-warn-200: var(--c-warn-softer);
+  --color-warn-300: var(--c-warn-soft);
   --color-warn-400: var(--c-warn);
   --color-warn-500: var(--c-warn-strong);
   --color-bad-400: var(--c-bad);
@@ -58,7 +100,11 @@
   --s-border: #26262b;
   --s-border-strong: #37373e;
   --s-faint: #52525b;
-  --t-muted: #7b7b86;
+  --t-fainter: #52525b;
+  --t-faint: #62626d;
+  --t-muted: #82828d; /* was #7b7b86 — 4.15:1 on --s-raised, so every muted
+                          label inside a chip or badge failed AA in dark mode.
+                          #82828d clears 4.5 on raised, card and page alike. */
   --t-secondary: #a1a1ab;
   --t-strong: #d0d0d6;
   --t-primary: #f4f4f6;
@@ -66,11 +112,17 @@
   /* A black accent on a black background is an invisible button, so in dark
      mode the monochrome accent inverts to near-white and --a-on carries the
      label colour with it. Same token, both themes, always legible. */
+  --a-300: #e2e2e8;
+  --a-200: #f0f0f3;
+  --a-100: #f9f9fb;
   --a-400: #d4d4d9;
   --a-500: #ededf0;
   --a-600: #ffffff;
   --a-on: #08080a;
 
+  --c-good-soft: #6ee7b7;
+  --c-warn-soft: #fcd34d;
+  --c-warn-softer: #fde68a;
   --c-good: #34d399;
   --c-good-strong: #10b981;
   --c-warn: #fbbf24;
@@ -115,14 +167,24 @@
     --s-border: #e2e4e8;
     --s-border-strong: #cfd2d8;
     --s-faint: #9ea2ac;
-    --t-muted: #6b7280;
+    --t-fainter: #9ea2ac;
+    --t-faint: #858a95;
+    --t-muted: #646b77; /* was #6b7280 — 4.43:1 on --s-bg, i.e. AA-failing for
+                          every muted label in light mode. #646b77 clears 4.5
+                          on all three light surfaces: page, card and raised. */
     --t-secondary: #4b5563;
     --t-strong: #374151;
     --t-primary: #0f172a;
+    --a-300: #35353a;
+    --a-200: #45454b;
+    --a-100: #55555c;
     --a-400: #27272a;
     --a-500: #18181b;
     --a-600: #000000;
     --a-on: #ffffff;
+    --c-good-soft: #036c4b;
+    --c-warn-soft: #8a5800;
+    --c-warn-softer: #7a4d00;
     --c-good: #047a55;
     --c-good-strong: #059669;
     --c-warn: #9a6300;
@@ -163,17 +225,27 @@
   --s-border: #e2e4e8;
   --s-border-strong: #cfd2d8;
   --s-faint: #9ea2ac;
-  --t-muted: #6b7280;
+  --t-fainter: #9ea2ac;
+  --t-faint: #858a95;
+  --t-muted: #646b77; /* was #6b7280 — 4.43:1 on --s-bg, i.e. AA-failing for
+                          every muted label in light mode. #646b77 clears 4.5
+                          on all three light surfaces: page, card and raised. */
   --t-secondary: #4b5563;
   --t-strong: #374151;
   --t-primary: #0f172a;
 
+  --a-300: #35353a;
+  --a-200: #45454b;
+  --a-100: #55555c;
   --a-400: #27272a;
   --a-500: #18181b;
   --a-600: #000000;
   --a-on: #ffffff;
 
   /* Darkened so status text clears WCAG AA against a white surface. */
+  --c-good-soft: #036c4b;
+  --c-warn-soft: #8a5800;
+  --c-warn-softer: #7a4d00;
   --c-good: #047a55;
   --c-good-strong: #059669;
   --c-warn: #9a6300;
@@ -933,4 +1005,32 @@ body {
   .liquid-glass-card:hover {
     background: var(--card-bg-hover);
   }
+}
+
+/* Showcase: slow Ken-Burns drift so still renders read as a walkthrough. */
+@keyframes showcase-kenburns {
+  0% { transform: scale(1.03) translate3d(0, 0, 0); }
+  100% { transform: scale(1.12) translate3d(-1.5%, -1.5%, 0); }
+}
+.showcase-kenburns { animation: showcase-kenburns 18s ease-out forwards; }
+@media (prefers-reduced-motion: reduce) {
+  .showcase-kenburns { animation: none; }
+}
+
+/* --------------------------------------------------------------------------
+   Keyboard focus for form controls.
+
+   Two dozen inputs and selects carry Tailwind's `outline-none` — which removes
+   the browser's own focus ring — and never replaced it, so tabbing through the
+   leads grid, the sales call flow or the loan controls moved a cursor nobody
+   could see. `focus-visible` keeps the ring off mouse clicks, where the
+   original `outline-none` was aimed, and the rule is unlayered so it wins over
+   the utility without needing !important. Controls that style their own focus
+   border keep it; this only adds back the missing outline.
+   -------------------------------------------------------------------------- */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--color-brand-400);
+  outline-offset: 1px;
 }

@@ -327,7 +327,7 @@ export function AppointmentsView({
         {slotDays.map(([day, list]) => (
           <div key={day}>
             <div className="mb-1.5 flex items-center gap-2">
-              <h4 className="text-[11px] font-semibold uppercase tracking-wider text-mist-400">{dayHeading(day)}</h4>
+              <h3 className="text-[11px] font-semibold uppercase tracking-wider text-mist-400">{dayHeading(day)}</h3>
               <span className="text-[10.5px] text-mist-500">{relativeDay(new Date(day).toISOString())}</span>
               <span className="h-px flex-1 bg-ink-700" />
             </div>
@@ -723,7 +723,7 @@ export function AppointmentsView({
             {buckets.upcoming.map(([day, list]) => (
               <div key={day}>
                 <div className="mb-1.5 flex items-center gap-2">
-                  <h4 className="text-[11px] font-semibold uppercase tracking-wider text-mist-400">{dayHeading(day)}</h4>
+                  <h3 className="text-[11px] font-semibold uppercase tracking-wider text-mist-400">{dayHeading(day)}</h3>
                   <span className="text-[10.5px] text-mist-500">{relativeDay(new Date(day).toISOString())}</span>
                   <span className="h-px flex-1 bg-ink-700" />
                 </div>

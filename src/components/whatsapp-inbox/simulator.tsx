@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Bot, Check, ChevronRight, FileText, FlaskConical, Loader2,
   MessageSquare, Send, Sparkles, User, X
@@ -58,6 +58,14 @@ export function WhatsAppSimulator({
   onSelectCustomer?: (customerId: string) => void;
   onClose: () => void;
 }) {
+  // A full-screen overlay that only closes by hitting one small X is a trap for
+  // anyone not using a mouse; Escape is the expected way out of a dialog.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
   const [phone, setPhone] = useState("+91 98765 43210");
   const [name, setName] = useState("Koushik");
   const [input, setInput] = useState("");
@@ -131,7 +139,7 @@ export function WhatsAppSimulator({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+    <div role="dialog" aria-modal="true" aria-label="Test agent simulator" className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
       <div className="flex h-[90vh] max-h-[820px] w-full max-w-4xl overflow-hidden rounded-2xl border border-ink-800 bg-ink-950 shadow-2xl">
         
         {/* Left column: Controls & Scenarios */}
@@ -244,10 +252,12 @@ export function WhatsAppSimulator({
               </div>
             </div>
             <button
+              type="button"
               onClick={onClose}
+              aria-label="Close simulator"
               className="rounded-lg p-1.5 text-mist-400 hover:bg-ink-800 hover:text-mist-100"
             >
-              <X size={18} />
+              <X size={18} aria-hidden />
             </button>
           </div>
 
@@ -262,7 +272,7 @@ export function WhatsAppSimulator({
                   className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-[12.5px] leading-relaxed shadow-sm ${
                     h.sender === "user"
                       ? "rounded-tr-none bg-[#005c4b] text-white"
-                      : "rounded-tl-none bg-[#202c33] text-mist-100"
+                      : "rounded-tl-none bg-[#202c33] text-white"
                   }`}
                 >
                   <p className="whitespace-pre-wrap break-words">{h.text}</p>
@@ -309,6 +319,7 @@ export function WhatsAppSimulator({
             <button
               type="submit"
               disabled={sending || !input.trim()}
+              aria-label="Send message"
               className="grid h-9 w-9 place-items-center rounded-xl bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-50 transition-colors shadow-sm"
             >
               {sending ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}

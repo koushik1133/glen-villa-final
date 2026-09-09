@@ -41,7 +41,7 @@ const NAV: NavSection[] = [
     { href: "/channels/youtube", label: "YouTube", icon: Youtube },
   ]},
   { group: "Create & publish", items: [
-    { href: "/showcase", label: "3D Showcase", icon: Building2 },
+    { href: "/showcase", label: "Project Showcase", icon: Building2 },
     { href: "/composer", label: "Composer", icon: PenSquare },
     { href: "/automation", label: "Publish video", icon: Workflow },
     { href: "/publish-v2", label: "Video Pipeline", icon: Sparkles },
@@ -151,11 +151,14 @@ export function Sidebar({
                 <Link
                   key={item.href}
                   href={`${item.href}${qs}`}
+                  /* The active page was signalled by colour alone, which a
+                     screen reader cannot read out. */
+                  aria-current={active ? "page" : undefined}
                   className={clsx(
                     "group relative mb-0.5 flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-[13px] font-medium transition-all duration-150",
                     active
-                      ? "liquid-glass-pill bg-white/12 dark:bg-white/10 text-mist-100 shadow-sm border border-white/20 dark:border-white/15"
-                      : "text-mist-400 hover:bg-white/5 hover:text-mist-100",
+                      ? "liquid-glass-pill bg-ink-700 text-mist-100 shadow-sm border border-brand-500/55"
+                      : "text-mist-400 hover:bg-ink-800/60 hover:text-mist-100",
                   )}
                 >
                   <Icon
@@ -255,7 +258,7 @@ export function TopBar({
               className={clsx(
                 "rounded-full px-3 py-1 text-[11.5px] font-medium transition-all duration-150 outline-none",
                 range === d
-                  ? "bg-white/15 dark:bg-white/12 text-mist-100 shadow-sm border border-white/20 dark:border-white/10"
+                  ? "bg-ink-700 text-mist-100 shadow-sm border border-brand-500/55"
                   : "text-mist-400 hover:text-mist-200",
               )}
             >

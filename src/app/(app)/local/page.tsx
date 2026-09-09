@@ -8,11 +8,22 @@ import { SuggestionCard } from "@/components/suggestion-card";
 
 export const dynamic = "force-dynamic";
 
-/** Rank 1–3 green, 4–10 amber, 11+ red — the standard local-pack reading. */
+/**
+ * Rank 1–3 green, 4–10 amber, 11+ red — the standard local-pack reading.
+ *
+ * These are deliberately the darker end of each hue rather than the bright
+ * mid-tones a status palette usually reaches for. The cell carries a rank
+ * number in white on top of the fill, and white on a 500-weight amber is about
+ * 1.7:1 — the number is legible only if you already know what it says. Each
+ * value below clears 4.5:1 against white, and because the fill is a fixed
+ * colour in both themes the ratio holds whichever way the surface flips.
+ */
+const RANK_FILL = { top: "#15803d", mid: "#b45309", low: "#be123c" } as const;
+
 function rankColor(rank: number): string {
-  if (rank <= 3) return "#22c55e";
-  if (rank <= 10) return "#fbbf24";
-  return "#f43f5e";
+  if (rank <= 3) return RANK_FILL.top;
+  if (rank <= 10) return RANK_FILL.mid;
+  return RANK_FILL.low;
 }
 
 export default async function LocalPage({
@@ -88,9 +99,9 @@ export default async function LocalPage({
                   </div>
                 </div>
                 <div className="mt-3 flex items-center gap-4 text-[10.5px] text-mist-400">
-                  <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[#22c55e]" /> top 3</span>
-                  <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[#fbbf24]" /> 4–10</span>
-                  <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[#f43f5e]" /> 11+</span>
+                  <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[#15803d]" /> top 3</span>
+                  <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[#b45309]" /> 4–10</span>
+                  <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[#be123c]" /> 11+</span>
                   <span className="ml-auto">Captured {new Date(kwCells[0].capturedAt).toLocaleDateString()}</span>
                 </div>
               </Card>

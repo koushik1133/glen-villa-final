@@ -77,7 +77,7 @@ export function MessageBubble({
             <div
               className={clsx(
                 "mb-1.5 rounded-lg border-l-2 px-2 py-1 text-[11px]",
-                mine ? "border-white/50 bg-black/15" : "border-brand-500 bg-ink-800",
+                mine ? "border-[var(--a-on)]/50 bg-[var(--a-on)]/15" : "border-brand-500 bg-ink-800",
               )}
             >
               <div className="font-medium opacity-80">{parsed.replyTo.senderName}</div>
@@ -91,7 +91,7 @@ export function MessageBubble({
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={mediaUrl} alt={parsed.caption ?? "Photo"} className="max-h-72 rounded-lg object-cover" />
               ) : (
-                <div className="grid h-40 w-56 place-items-center rounded-lg bg-black/20">
+                <div className="grid h-40 w-56 place-items-center rounded-lg bg-[var(--a-on)]/20">
                   <Loader2 size={16} className="animate-spin opacity-60" />
                 </div>
               )}
@@ -128,7 +128,7 @@ export function MessageBubble({
                     }
                     if (e.key === "Escape") setEditing(false);
                   }}
-                  className="min-w-[180px] rounded border border-white/30 bg-black/20 px-2 py-1 text-[13px] outline-none"
+                  className="min-w-[180px] rounded border border-[var(--a-on)]/30 bg-[var(--a-on)]/10 px-2 py-1 text-[13px] outline-none"
                 />
                 <button onClick={() => { onEdit(message.id, draft); setEditing(false); }} className="text-[11px] underline">
                   Save
@@ -153,7 +153,7 @@ export function MessageBubble({
                   title={ids.map((id) => profilesById.get(id)?.fullName ?? "Someone").join(", ")}
                   className={clsx(
                     "rounded-full px-1.5 py-0.5 text-[11px]",
-                    mine ? "bg-black/20" : "bg-ink-700",
+                    mine ? "bg-[var(--a-on)]/20" : "bg-ink-700",
                   )}
                 >
                   {emoji} <span className="tnum opacity-70">{ids.length}</span>

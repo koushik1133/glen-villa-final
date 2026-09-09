@@ -38,14 +38,30 @@ export function SalesActions({
     setError(null);
     setMessage(null);
     try {
-      const res = await fetch("/api/ops/sales", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ customerId, ...body }),
-      });
-      const json = await res.json();
-      if (!json.ok || json.error) {
-        setError(json.error ?? "Request failed");
+      let res: Response;
+      try {
+        res = await fetch("/api/ops/sales", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ customerId, ...body }),
+        });
+      } catch {
+        // Offline or aborted. Without this the rejection escaped the click
+        // handler and the manager saw the spinner stop with nothing said.
+        setError("Could not reach the server — nothing was changed.");
+        return null;
+      }
+      let json: { ok?: boolean; error?: string };
+      try {
+        json = await res.json();
+      } catch {
+        // A proxy error page is not JSON; res.json() throws and the throw used
+        // to look identical to a crash.
+        setError(`The server returned an unreadable response (HTTP ${res.status}). Nothing was changed.`);
+        return null;
+      }
+      if (!res.ok || !json.ok || json.error) {
+        setError(json.error ?? `Request failed (HTTP ${res.status}).`);
         return null;
       }
       setMessage(success);

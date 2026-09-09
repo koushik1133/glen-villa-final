@@ -261,7 +261,7 @@ export function BoardView({ board: initialBoard, cards: initialCards }: { board:
                   {list.length}
                   {col.wipLimit !== undefined && `/${col.wipLimit}`}
                 </span>
-                <button onClick={() => setAddingIn(col.id)} className="rounded-full p-1 text-mist-400 hover:text-mist-100 hover:bg-white/10 transition-colors"><Plus size={14} /></button>
+                <button onClick={() => setAddingIn(col.id)} className="rounded-full p-1 text-mist-400 hover:text-mist-100 hover:bg-ink-800 transition-colors"><Plus size={14} /></button>
               </div>
 
               <div className="flex-1 space-y-3 overflow-y-auto p-3 max-h-[calc(100vh-260px)]">
@@ -288,12 +288,12 @@ export function BoardView({ board: initialBoard, cards: initialCards }: { board:
                     onDragStart={() => setDragCard(card.id)}
                     onDragEnd={() => setDragCard(null)}
                     className={clsx(
-                      "liquid-glass-card liquid-glass-interactive group cursor-grab rounded-2xl p-3.5 border border-white/15 dark:border-white/10 active:cursor-grabbing active:scale-[0.98]",
+                      "liquid-glass-card liquid-glass-interactive group cursor-grab rounded-2xl p-3.5 active:cursor-grabbing active:scale-[0.98]",
                       dragCard === card.id && "drag-ghost opacity-50",
                     )}
                   >
                     <div className="flex items-start gap-2">
-                      <h4 className="min-w-0 flex-1 text-[14px] font-semibold leading-snug text-mist-100">{card.title}</h4>
+                      <h3 className="min-w-0 flex-1 text-[14px] font-semibold leading-snug text-mist-100">{card.title}</h3>
                       <button
                         onClick={() => removeCard(card.id)}
                         className="opacity-0 transition-opacity group-hover:opacity-100 text-mist-400 hover:text-bad-400"

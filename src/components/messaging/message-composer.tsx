@@ -117,7 +117,7 @@ export function MessageComposer({
             <span className="block font-medium text-mist-200">Replying to {replyTo.senderName}</span>
             <span className="block truncate text-mist-400">{replyTo.snippet}</span>
           </span>
-          <button onClick={onCancelReply} className="text-mist-400 hover:text-mist-100"><X size={13} /></button>
+          <button type="button" onClick={onCancelReply} aria-label="Cancel reply" className="text-mist-400 hover:text-mist-100"><X size={13} aria-hidden /></button>
         </div>
       )}
 

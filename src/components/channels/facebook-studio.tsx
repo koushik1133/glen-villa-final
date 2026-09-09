@@ -157,7 +157,7 @@ export function FacebookStudio({ brandId }: { brandId: string }) {
                 href={page.url}
                 target="_blank"
                 rel="noreferrer"
-                className="liquid-glass-button inline-flex items-center gap-1.5 px-3 py-1.5 text-[11.5px] font-medium text-mist-200 hover:text-white"
+                className="liquid-glass-button inline-flex items-center gap-1.5 px-3 py-1.5 text-[11.5px] font-medium text-mist-200 hover:text-mist-100"
               >
                 <Facebook size={13} className="text-[#1877F2]" />
                 <span>Open Facebook Page</span>

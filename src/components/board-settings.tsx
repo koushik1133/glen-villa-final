@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Calendar, Check, ChevronDown, GripVertical, Link2, Pencil, Plus, Shield, Tag, Text, User, X, Zap,
 } from "lucide-react";
@@ -28,6 +28,14 @@ export function BoardSettings({
   onClose: () => void;
   onSaved: (b: Board) => void;
 }) {
+  // A drawer that swallows the whole viewport needs a keyboard exit, not just a
+  // 20px X in the corner.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
   const [name, setName] = useState(board.name);
   const [columns, setColumns] = useState<BoardColumn[]>(board.columns);
   const [fields, setFields] = useState(board.fields);
@@ -71,7 +79,7 @@ export function BoardSettings({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end" role="dialog" aria-label="Board settings">
+    <div className="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true" aria-label="Board settings">
       <button className="absolute inset-0 bg-[var(--scrim)]" onClick={onClose} aria-label="Close settings" />
 
       <div className="slide-in relative flex h-full w-full max-w-[420px] flex-col overflow-y-auto border-l border-ink-700 bg-ink-900">
@@ -80,7 +88,7 @@ export function BoardSettings({
             <h2 className="text-[19px] font-semibold tracking-tight">Board Settings</h2>
             <p className="text-[12.5px] text-mist-400">Customize columns, fields, and layout</p>
           </div>
-          <button onClick={onClose} className="text-mist-400 hover:text-mist-100"><X size={20} /></button>
+          <button type="button" onClick={onClose} aria-label="Close board settings" className="text-mist-400 hover:text-mist-100"><X size={20} aria-hidden /></button>
         </header>
 
         <div className="space-y-8 px-6 py-6">

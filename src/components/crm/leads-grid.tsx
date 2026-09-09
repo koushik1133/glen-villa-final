@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowUpDown, Filter, Phone, Search, Star, X } from "lucide-react";
+import { AlertTriangle, ArrowUpDown, Filter, Phone, Search, Star, X } from "lucide-react";
 import clsx from "clsx";
 import type { Broker, Lead, LeadSource, LeadStatus } from "@/lib/crm/types";
 import { BUDGET_BANDS, KYC_LABELS, LEAD_STATUSES, SOURCE_LABELS } from "@/lib/crm/types";
@@ -45,6 +45,7 @@ export function LeadsGrid({ leads, brokers }: { leads: Lead[]; brokers: Broker[]
   const [q, setQ] = useState("");
   const [sort, setSort] = useState<SortKey>("score");
   const [busy, setBusy] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const brokerName = useMemo(() => Object.fromEntries(brokers.map((b) => [b.id, b])), [brokers]);
 
@@ -85,16 +86,36 @@ export function LeadsGrid({ leads, brokers }: { leads: Lead[]; brokers: Broker[]
     .filter((l) => !["won", "lost"].includes(l.status))
     .reduce((a, l) => a + (l.budgetMin + l.budgetMax) / 2, 0);
 
+  /**
+   * Moving a lead used to fail in silence: a rejected PATCH left the row exactly
+   * as it was and said nothing, so the seller believed the stage had changed. An
+   * HTML error page was worse — `res.json()` threw, the `finally` cleared the
+   * spinner, and the rejection escaped the change handler entirely. Every
+   * outcome now ends either in an updated row or in a visible message.
+   */
   async function move(leadId: string, status: LeadStatus) {
     setBusy(leadId);
+    setError(null);
     try {
       const res = await fetch("/api/crm/leads", {
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ leadId, status }),
       });
-      const json = await res.json();
-      if (json.ok) setRows((r) => r.map((l) => (l.id === leadId ? json.lead : l)));
+      let json: { ok?: boolean; error?: string; lead?: Lead };
+      try {
+        json = await res.json();
+      } catch {
+        setError(`The server returned an unreadable response (HTTP ${res.status}). The lead was not moved.`);
+        return;
+      }
+      if (!res.ok || json.ok !== true || !json.lead) {
+        setError(json.error ?? `Could not move that lead (HTTP ${res.status}).`);
+        return;
+      }
+      setRows((r) => r.map((l) => (l.id === leadId ? json.lead! : l)));
+    } catch {
+      setError("Could not reach the server — the lead was not moved.");
     } finally {
       setBusy(null);
     }
@@ -108,6 +129,15 @@ export function LeadsGrid({ leads, brokers }: { leads: Lead[]; brokers: Broker[]
 
   return (
     <div className="space-y-4">
+      {error && (
+        <div role="alert" className="flex items-start gap-2 rounded-xl border border-bad-500/30 bg-bad-500/[0.08] px-3.5 py-2.5 text-[12px] text-bad-400">
+          <AlertTriangle size={13} className="mt-0.5 shrink-0" aria-hidden />
+          <span className="flex-1">{error}</span>
+          <button type="button" onClick={() => setError(null)} aria-label="Dismiss error" className="shrink-0 text-mist-400 hover:text-mist-200">
+            <X size={13} aria-hidden />
+          </button>
+        </div>
+      )}
       <Card className="space-y-3">
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative min-w-[200px] flex-1">
@@ -225,9 +255,13 @@ export function LeadsGrid({ leads, brokers }: { leads: Lead[]; brokers: Broker[]
                       <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-ink-700 text-[10px] font-semibold text-mist-200">
                         {initials(l.name)}
                       </span>
-                      <span className="min-w-0">
+                      {/* `truncate` only bites against a constrained width, and a
+                          table cell in auto layout grows to fit instead. Without
+                          the cap a 45-character name widened the Lead column and
+                          squeezed Last touch into "added 1 / Aug". */}
+                      <span className="block min-w-0 max-w-[200px]">
                         <span className="flex items-center gap-1.5">
-                          <span className="truncate font-medium text-mist-100">{l.name}</span>
+                          <span className="min-w-0 truncate font-medium text-mist-100" title={l.name}>{l.name}</span>
                           {l.isHNWI && <Star size={10} className="shrink-0 fill-warn-400 text-warn-400" />}
                         </span>
                         <span className="flex items-center gap-1 text-[10.5px] text-mist-400">
@@ -243,8 +277,17 @@ export function LeadsGrid({ leads, brokers }: { leads: Lead[]; brokers: Broker[]
                     <select
                       value={l.status}
                       onChange={(e) => move(l.id, e.target.value as LeadStatus)}
-                      className="rounded-md border border-ink-700 bg-ink-850 px-1.5 py-1 text-[11px] outline-none"
-                      style={{ color: status?.color || "inherit" }}
+                      /* The status palette is tuned for a near-black background:
+                         as *text* on the white input of light mode, #22d3ee and
+                         #fbbf24 land around 1.8:1 and the stage became
+                         unreadable. Moving the hue onto the border and a faint
+                         tint keeps the at-a-glance colour cue in both themes and
+                         leaves the label on a token that stays legible. */
+                      className="rounded-md border px-1.5 py-1 text-[11px] text-mist-100 outline-none"
+                      style={{
+                        borderColor: status.color,
+                        background: `color-mix(in srgb, ${status.color} 14%, var(--s-input))`,
+                      }}
                     >
                       {LEAD_STATUSES.map((s) => (
                         <option key={s.id} value={s.id} className="text-mist-100">{s.label}</option>

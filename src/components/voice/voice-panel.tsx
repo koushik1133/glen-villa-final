@@ -75,8 +75,8 @@ function Drawer({ call, onClose }: { call: VoiceClientCall; onClose: () => void 
             </p>
           </div>
           <Badge tone={OUTCOME[call.outcome].tone}>{OUTCOME[call.outcome].label}</Badge>
-          <button type="button" onClick={onClose} className="rounded-lg p-1 text-mist-400 hover:bg-ink-800 hover:text-mist-100">
-            <X size={16} />
+          <button type="button" onClick={onClose} aria-label="Close call details" className="rounded-lg p-1 text-mist-400 hover:bg-ink-800 hover:text-mist-100">
+            <X size={16} aria-hidden />
           </button>
         </header>
 

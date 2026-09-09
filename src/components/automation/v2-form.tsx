@@ -91,7 +91,7 @@ const TARGET_CHANNELS = [
   { name: "Instagram", icon: Instagram, color: "from-pink-500 to-purple-500", handle: "Reels / Feed" },
   { name: "YouTube", icon: Youtube, color: "from-red-600 to-red-500", handle: "Shorts / Video" },
   { name: "Facebook", icon: Facebook, color: "from-blue-600 to-blue-500", handle: "Watch / Page" },
-  { name: "X", customIcon: XIcon, color: "from-zinc-400 to-zinc-200", handle: "Native Video Post" },
+  { name: "X", customIcon: XIcon, color: "from-zinc-700 to-zinc-900", handle: "Native Video Post" },
 ];
 
 function formatBytes(bytes: number): string {
@@ -422,7 +422,7 @@ export function V2Form({ brandId, brandName }: V2FormProps) {
                       {step.number}
                     </span>
                   </div>
-                  <div className="font-semibold text-[13.5px] text-mist-100 group-hover:text-white flex items-center gap-1.5">
+                  <div className="font-semibold text-[13.5px] text-mist-100 flex items-center gap-1.5">
                     {step.title}
                   </div>
                   <div className="text-[11.5px] text-mist-400 mt-0.5 truncate">{step.subtitle}</div>
@@ -735,10 +735,10 @@ export function V2Form({ brandId, brandName }: V2FormProps) {
               type="submit"
               disabled={isSubmitting || !videoFile || selectedChannels.length === 0}
               className={clsx(
-                "w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all",
+                "w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold shadow-lg transition-all",
                 isSubmitting || !videoFile || selectedChannels.length === 0
                   ? "bg-ink-800 text-mist-500 border border-ink-700 cursor-not-allowed"
-                  : "bg-gradient-to-r from-brand-500 to-brand-400 hover:from-brand-400 hover:to-brand-300 shadow-brand-500/20 active:scale-[0.98]",
+                  : "bg-gradient-to-r from-brand-500 to-brand-400 text-[var(--a-on)] hover:from-brand-400 hover:to-brand-300 shadow-brand-500/20 active:scale-[0.98]",
               )}
             >
               {isSubmitting ? (

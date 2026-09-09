@@ -48,7 +48,7 @@ export function StartCallDialog({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex items-center gap-1.5 rounded-full bg-brand-500 px-3 py-1.5 text-[12px] font-medium text-white hover:bg-brand-600"
+        className="flex items-center gap-1.5 rounded-full bg-brand-500 px-3 py-1.5 text-[12px] font-medium text-[var(--a-on)] hover:bg-brand-600"
       >
         <Phone size={13} /> Start AI Call
       </button>
@@ -86,7 +86,7 @@ export function StartCallDialog({
           <button
             type="submit"
             disabled={loading || !phone}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand-500 py-2.5 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-50"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand-500 py-2.5 text-sm font-medium text-[var(--a-on)] hover:bg-brand-600 disabled:opacity-50"
           >
             {loading ? <Loader2 size={16} className="animate-spin" /> : <Phone size={16} />}
             {loading ? "Calling..." : "Start Call"}
