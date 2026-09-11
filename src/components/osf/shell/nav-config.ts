@@ -68,8 +68,12 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: "Overview",
     items: [
-      { href: "/inbox/whatsapp", label: "Inbox", icon: Inbox, keywords: ["threads", "conversations", "chats"] },
-      { href: "/inbox/whatsapp/overview", label: "Dashboard", icon: LayoutDashboard, keywords: ["home", "today"] },
+      {
+        href: "/inbox/whatsapp/overview",
+        label: "Dashboard",
+        icon: LayoutDashboard,
+        keywords: ["home", "today", "overview"],
+      },
       { href: "/inbox/whatsapp/training", label: "Training", icon: Bot, keywords: ["teach", "knowledge", "faqs", "pricing"] },
     ],
   },
@@ -185,12 +189,16 @@ export const NAV_ITEMS: FlatNavItem[] = NAV_GROUPS.flatMap((group) =>
  *
  * `/inbox/whatsapp/settings/team` is a prefix match for both `/inbox/whatsapp/settings` and itself; picking
  * the longest href means exactly one link ever highlights.
+ *
+ * The workspace root has no nav entry of its own — it renders the same screen
+ * as `/inbox/whatsapp/overview` — so it is mapped onto Dashboard explicitly.
+ * Without this it would prefix-match nothing and no link would highlight.
  */
 export function activeHref(pathname: string): string | null {
+  if (pathname === "/inbox/whatsapp") return "/inbox/whatsapp/overview";
   let best: string | null = null;
   for (const item of NAV_ITEMS) {
-    const matches =
-      item.href === "/inbox/whatsapp" ? pathname === "/inbox/whatsapp" : pathname === item.href || pathname.startsWith(`${item.href}/`);
+    const matches = pathname === item.href || pathname.startsWith(`${item.href}/`);
     if (matches && (best === null || item.href.length > best.length)) best = item.href;
   }
   return best;

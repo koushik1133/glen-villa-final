@@ -5,8 +5,8 @@ These five equirectangular panoramas are **CC0 (public domain) HDRIs from Poly H
 
 | File | Poly Haven source |
 |---|---|
-| living.webp | lebombo |
-| dining.webp | cayley_interior |
+| living.webp | cayley_interior |
+| dining.webp | glasshouse_interior |
 | bedroom.webp | hotel_room |
 | kitchen.webp | brown_photostudio_04 |
 | balcony.webp | hotel_rooftop_balcony |

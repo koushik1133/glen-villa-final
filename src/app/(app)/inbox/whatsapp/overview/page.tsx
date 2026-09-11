@@ -1,5 +1,6 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
-import { ArrowUpRight, Flame, AlertTriangle } from "lucide-react";
+import { ArrowUpRight, Flame, AlertTriangle, MessageSquare } from "lucide-react";
 import { DonutChart, FunnelChart, TrendChart } from "@/components/osf/charts";
 import { parseRange, rangeLabel, rangeToDays } from "@/components/osf/shell/nav-config";
 import {
@@ -95,10 +96,19 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
         title="Overview"
         sub={`${rangeLabel(range)} — leads, qualification and revenue across every channel the agent works.`}
         actions={
-          <Link href={`/inbox/whatsapp/analytics/reports?range=${range}`} className="btn-ghost h-9 py-0 text-[13px]">
-            Export data
-            <ArrowUpRight size={14} strokeWidth={2} aria-hidden />
-          </Link>
+          <>
+            <Link
+              href="/inbox/whatsapp/communication/whatsapp"
+              className="btn-gold h-9 py-0 text-[13px]"
+            >
+              <MessageSquare size={14} strokeWidth={2} aria-hidden />
+              Open conversations
+            </Link>
+            <Link href={`/inbox/whatsapp/analytics/reports?range=${range}`} className="btn-ghost h-9 py-0 text-[13px]">
+              Export data
+              <ArrowUpRight size={14} strokeWidth={2} aria-hidden />
+            </Link>
+          </>
         }
       />
 
@@ -140,6 +150,53 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
           sub={avgBookingInr === null ? "No bookings in this period" : `${formatInr(avgBookingInr)} average booking`}
         />
       </div>
+
+      {/*
+        Temperature and sentiment are the two signals the agent recomputes on
+        every reply, so they belong beside the KPIs rather than only inside the
+        rankings list further down. Every number here comes from
+        `clientRanking()`'s own totals — the live book, deliberately not
+        date-filtered, same as the rankings card.
+      */}
+      <Card
+        title="Client signals"
+        hint="Buying temperature and conversation sentiment across the whole active book."
+        className="mt-5"
+        actions={
+          <span className="text-xs tabular-nums text-[var(--color-muted)]">
+            {formatNumber(ranking.totals.all)} active
+          </span>
+        }
+      >
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <p className="label">Temperature</p>
+            <div className="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-2">
+              <SignalCount label={<TemperaturePill value="hot" />} value={ranking.totals.hot} />
+              <SignalCount label={<TemperaturePill value="warm" />} value={ranking.totals.warm} />
+              <SignalCount label={<TemperaturePill value="cold" />} value={ranking.totals.cold} />
+            </div>
+          </div>
+          <div>
+            <p className="label">Sentiment</p>
+            <div className="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-2">
+              <SignalCount
+                label={<SentimentPill value="positive" />}
+                value={ranking.sentiment.positive}
+              />
+              <SignalCount
+                label={<SentimentPill value="neutral" />}
+                value={ranking.sentiment.neutral}
+              />
+              <SignalCount
+                label={<SentimentPill value="negative" />}
+                value={ranking.sentiment.negative}
+              />
+              <SignalCount label={<SentimentPill value={null} />} value={ranking.sentiment.unknown} />
+            </div>
+          </div>
+        </div>
+      </Card>
 
       <div className="mt-5 grid gap-4 lg:grid-cols-3">
         <Card
@@ -251,20 +308,6 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
           </Link>
         }
       >
-        <div className="mb-4 flex flex-wrap gap-1.5">
-          <TemperaturePill value="hot" />
-          <span className="text-xs tabular-nums text-[var(--color-muted)]">
-            {formatNumber(ranking.totals.hot)}
-          </span>
-          <TemperaturePill value="warm" />
-          <span className="text-xs tabular-nums text-[var(--color-muted)]">
-            {formatNumber(ranking.totals.warm)}
-          </span>
-          <TemperaturePill value="cold" />
-          <span className="text-xs tabular-nums text-[var(--color-muted)]">
-            {formatNumber(ranking.totals.cold)}
-          </span>
-        </div>
         {ranking.clients.length === 0 ? (
           <Empty>
             No active clients yet. Everyone who messages the WhatsApp agent is scored and appears
@@ -329,6 +372,18 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
         )}
       </Card>
     </>
+  );
+}
+
+/** A pill with its count, sized so the four sentiment buckets wrap cleanly at 375px. */
+function SignalCount({ label, value }: { label: ReactNode; value: number }) {
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      {label}
+      <span className="text-sm font-semibold tabular-nums text-[var(--color-ink)]">
+        {formatNumber(value)}
+      </span>
+    </span>
   );
 }
 

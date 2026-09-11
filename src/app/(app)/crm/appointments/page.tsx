@@ -4,6 +4,7 @@ import { Stat } from "@/components/ui";
 import { HOLDS_SLOT } from "@/lib/appointments/types";
 import { AppointmentsView } from "@/components/crm/appointments-view";
 import { CrmEmpty } from "../_empty";
+import { seedSiteVisitDesk } from "@/lib/appointments/seed";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +25,15 @@ export default async function AppointmentsPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const sp = await searchParams;
-  const { db, brand, brandId } = pageContext(sp);
+  let { db, brand, brandId } = pageContext(sp);
+
+  // A desk with nothing on it cannot show what the desk does — in particular it
+  // cannot show the assistant declining a full day and offering another. Seeds
+  // opening hours and a busy weekend ONLY when there is not a single
+  // appointment, so a real booking is never interleaved with sample data.
+  if (seedSiteVisitDesk(brandId, brand.timezone) > 0) {
+    ({ db, brand, brandId } = pageContext(sp));
+  }
 
   // `?? []` because a store written before appointments existed has no such key.
   const appointments = (db.appointments ?? [])
