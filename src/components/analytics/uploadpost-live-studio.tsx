@@ -760,7 +760,7 @@ export function UploadPostLiveStudio({ brandId }: { brandId?: string }) {
                         "LinkedIn only provides post reach & timeseries analytics for organization/company pages you administer, not personal profiles. This is an official LinkedIn API restriction."}
                     </p>
                     <p className="pt-2 text-mist-400">
-                      You can publish posts, articles, and carousels to your personal profile directly from the Villa-OS Composer. To unlock timeseries charts and audience demographics, link a LinkedIn Company Page via the publishing connector.
+                      You can publish posts, articles, and carousels to your personal profile directly from Villa-OS. To unlock timeseries charts and audience demographics, link a LinkedIn Company Page via the publishing connector.
                     </p>
                   </div>
                 </div>

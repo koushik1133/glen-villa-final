@@ -79,15 +79,6 @@ export default async function DashboardPage({
         brandId={brandId}
         title="Dashboard"
         subtitle={`${brand.name} · ${range.from} → ${range.to}`}
-        right={
-          <Link
-            href={`/composer${link}`}
-            className="holographic-sheen inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-[12px] font-semibold text-white shadow-md shadow-purple-500/25 transition-transform active:scale-[0.97]"
-          >
-            <Sparkles size={13} />
-            Compose
-          </Link>
-        }
       />
 
       <div className="space-y-6 p-4 sm:p-6 lg:p-7">
@@ -242,7 +233,7 @@ export default async function DashboardPage({
                   </div>
                 </div>
               ))}
-              {!upcoming.length && <p className="card p-4 text-[12px] text-mist-400">Queue is empty — add posts from the composer.</p>}
+              {!upcoming.length && <p className="card p-4 text-[12px] text-mist-400">Queue is empty — schedule posts from the board or the video pipeline.</p>}
             </div>
           </div>
         </div>

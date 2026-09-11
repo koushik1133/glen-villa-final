@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { operatorText } from "@/lib/whitelabel";
 import { answerQuestion, gatherContext } from "@/lib/osf/ai/copilot";
 import { configStatus } from "@/lib/osf/env";
 import { guard } from "@/lib/auth/guard";
@@ -42,7 +43,8 @@ export async function POST(request: Request) {
   if (!status.aiConfigured) {
     const key = status.llmProvider === "groq" ? "GROQ_API_KEY" : "ANTHROPIC_API_KEY";
     return NextResponse.json(
-      { error: `${key} is not set, so no model can answer. Add it to .env.local.` },
+      // Surfaced verbatim in the copilot panel, so it carries no key name for a client.
+      { error: operatorText(`${key} is not set, so no model can answer. Add it to .env.local.`) },
       { status: 503 },
     );
   }

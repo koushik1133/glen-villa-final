@@ -1,21 +1,29 @@
 import { Badge, Card, SectionTitle } from "@/components/ui";
 import type { WhatsAppHealth } from "@/lib/platforms/whatsapp-health";
+import { operatorId, operatorText } from "@/lib/whitelabel";
 
-/** Admin-only (users.manage) WhatsApp readiness card. The page checks; this draws. */
+/**
+ * Admin-only (users.manage) WhatsApp readiness card. The page checks; this draws.
+ *
+ * Every row names what the setting *does*, never what it is called in the
+ * environment, and never prints an id Meta issued us. The vendor's own
+ * deployment can still see the number id via `operatorId`.
+ */
 export function WhatsAppHealthCard({ h }: { h: WhatsAppHealth }) {
   const p = h.phone;
+  const numberId = operatorId(h.phoneNumberId);
   const rows: Array<{ label: string; value: string; ok: boolean; hint: string }> = [
     {
-      label: "Phone number",
-      value: !h.phoneNumberId ? "unset" : !h.tokenSet ? "no token" : p?.error ? "error" : p?.displayNumber ?? "resolving",
+      label: "Business number",
+      value: !h.phoneNumberId ? "unset" : !h.tokenSet ? "no access" : p?.error ? "error" : p?.displayNumber ?? "resolving",
       ok: Boolean(p?.displayNumber),
       hint: !h.phoneNumberId
-        ? "WHATSAPP_PHONE_NUMBER_ID is empty"
+        ? "No business number is connected yet"
         : p?.error
-          ? p.error
+          ? operatorText(p.error)
           : p
-            ? `${p.verifiedName ?? "no display name"} · name ${p.nameStatus ?? "?"} · id ${h.phoneNumberId}`
-            : "Set META_SYSTEM_USER_TOKEN to resolve the number",
+            ? `${p.verifiedName ?? "no display name"} \u00b7 name ${p.nameStatus ?? "?"}${numberId ? ` \u00b7 id ${numberId}` : ""}`
+            : "Messaging access is not set up, so the number cannot be checked",
     },
     {
       label: "Quality rating",
@@ -23,9 +31,9 @@ export function WhatsAppHealthCard({ h }: { h: WhatsAppHealth }) {
       ok: p?.qualityRating === "GREEN",
       hint: "GREEN is healthy; YELLOW/RED lowers the daily messaging limit",
     },
-    { label: "Verify token", value: h.verifyTokenSet ? "set" : "unset", ok: h.verifyTokenSet, hint: "WHATSAPP_VERIFY_TOKEN — webhook subscription handshake fails without it" },
-    { label: "Webhook signature", value: h.appSecretSet ? "set" : "unset", ok: h.appSecretSet, hint: "META_APP_SECRET — inbound webhooks are rejected (401) until set" },
-    { label: "Public URL", value: h.publicBaseUrl || "unset", ok: Boolean(h.publicBaseUrl), hint: h.publicBaseUrl ? `Webhook: ${h.publicBaseUrl.replace(/\/$/, "")}/api/webhooks/whatsapp` : "PUBLIC_BASE_URL — needed for the webhook callback and media links" },
+    { label: "Webhook verification", value: h.verifyTokenSet ? "set" : "unset", ok: h.verifyTokenSet, hint: "Message delivery cannot be switched on until this is set up" },
+    { label: "Message verification", value: h.appSecretSet ? "set" : "unset", ok: h.appSecretSet, hint: "Incoming messages are rejected until this is set up" },
+    { label: "Public address", value: h.publicBaseUrl ? "set" : "unset", ok: Boolean(h.publicBaseUrl), hint: h.publicBaseUrl ? "Incoming messages and media links have somewhere to arrive" : "Needed before messages and media links can reach this console" },
     {
       label: "Last inbound message",
       value: h.lastInboundAt ? new Date(h.lastInboundAt).toLocaleString() : "never",

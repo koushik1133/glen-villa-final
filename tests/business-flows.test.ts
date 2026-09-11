@@ -7,7 +7,7 @@ import { cleanup, isolate, samplePdf, seedTeam } from "./helpers";
  *
  * The other suites each prove one module. This one walks the chains a customer
  * and a sales desk actually traverse — enquiry to owned lead, chat to booked
- * visit, "I need a loan" to a case an officer can review, composer to queue —
+ * visit, "I need a loan" to a case an officer can review, draft to queue —
  * and asserts the joins between the modules, which is where the seams are.
  *
  * Everything runs on the isolated store with the stub WhatsApp transport and

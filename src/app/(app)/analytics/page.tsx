@@ -215,8 +215,8 @@ export default async function AnalyticsPage({
           <SectionTitle title="Top content" hint="Ranked by reach, with the 3-second hook score that drove it" />
           {published.length === 0 ? (
             <p className="py-10 text-center text-[12.5px] text-mist-400">
-              No posts have been published for {brand.name} in the last {days} days. Publish from the
-              composer and results land here once each channel reports back.
+              No posts have been published for {brand.name} in the last {days} days. Publish a post
+              and results land here once each channel reports back.
             </p>
           ) : (
             <div className="overflow-x-auto">

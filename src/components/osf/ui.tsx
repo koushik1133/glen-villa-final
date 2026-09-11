@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { operatorText, settingLabel, showOperatorDetail } from "@/lib/whitelabel";
 
 /**
  * Shared UI primitives. Every page composes these rather than restyling from
@@ -131,23 +132,37 @@ export function Empty({ children, action }: { children: ReactNode; action?: Reac
   );
 }
 
-/** Shown when credentials are missing or a migration hasn't been run. */
+/**
+ * Shown when credentials are missing or a migration hasn't been run.
+ *
+ * `missing` arrives as environment-variable names because that is what the
+ * server checks. A client is shown what each one *is* ("the database address")
+ * and no file path; only a vendor deployment with the diagnostics switch on
+ * sees the raw names it would need to fix them.
+ */
 export function SetupNotice({ missing, detail }: { missing: string[]; detail?: string }) {
   if (missing.length === 0 && !detail) return null;
+  const raw = showOperatorDetail();
   return (
     <div className="mb-6 rounded-2xl border border-[var(--color-gold-line)] bg-[var(--color-gold-soft)] p-5">
       <h2 className="text-sm font-semibold text-[var(--color-gold-300)]">Setup needed</h2>
       {missing.length > 0 && (
         <>
           <p className="mt-1.5 text-sm text-[var(--color-ink)]">
-            Open <code className="rounded bg-[var(--color-raised)] px-1.5 py-0.5 text-xs">.env.local</code> and set:
+            {raw
+              ? "Set the following in the server configuration:"
+              : "An administrator still has to finish connecting:"}
           </p>
           <ul className="mt-2 space-y-1">
             {missing.map((m) => (
               <li key={m}>
-                <code className="rounded bg-[var(--color-raised)] px-1.5 py-0.5 text-xs text-[var(--color-gold-100)]">
-                  {m}
-                </code>
+                {raw ? (
+                  <code className="rounded bg-[var(--color-raised)] px-1.5 py-0.5 text-xs text-[var(--color-gold-100)]">
+                    {m}
+                  </code>
+                ) : (
+                  <span className="text-sm text-[var(--color-ink)]">{settingLabel(m)}</span>
+                )}
               </li>
             ))}
           </ul>
@@ -155,7 +170,7 @@ export function SetupNotice({ missing, detail }: { missing: string[]; detail?: s
       )}
       {detail && (
         <p className={`text-sm text-[var(--color-muted)] ${missing.length > 0 ? "mt-3" : "mt-1.5"}`}>
-          {detail}
+          {operatorText(detail)}
         </p>
       )}
     </div>

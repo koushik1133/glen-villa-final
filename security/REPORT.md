@@ -95,7 +95,7 @@ with full content.
 **Fix:** A single permission map (`src/lib/auth/page-access.ts`) enforced once in
 the app layout. Unlisted paths are **denied by default**, so a new page cannot ship
 unprotected by omission.
-**Verification:** As front desk — `/dashboard`, `/ads`, `/reports`, `/composer`,
+**Verification:** As front desk — `/dashboard`, `/ads`, `/reports`,
 `/connections`, `/crm/leads`, `/crm/pipeline`, `/ops/sales`, `/ops/loans`,
 `/ops/admin` all return the no-access page. `/crm/contacts` and `/ops/messages`
 remain reachable, which is correct for that role.

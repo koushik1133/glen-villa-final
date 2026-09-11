@@ -209,8 +209,10 @@ export function ConnectPanel({ rows, brandId }: { rows: ConnectRow[]; brandId: s
                       </ul>
                     </div>
                   ) : null}
+                  {/* Already plain-language unless the server is a vendor
+                      deployment — see `envVars` in the connections page. */}
                   <div className="flex items-center gap-1.5 text-mist-500">
-                    <Link2 size={11} /> Env: {r.envVars.map((v) => <code key={v} className="mx-0.5 rounded bg-ink-800 px-1 py-0.5 text-[10px]">{v}</code>)}
+                    <Link2 size={11} /> Needs: {r.envVars.map((v) => <span key={v} className="mx-0.5 rounded bg-ink-800 px-1 py-0.5 text-[10px]">{v}</span>)}
                   </div>
                 </div>
               )}

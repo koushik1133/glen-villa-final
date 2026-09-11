@@ -3,6 +3,7 @@ import { Lightbulb } from "lucide-react";
 import { pageContext, qs } from "@/lib/page-context";
 import { TopBar } from "@/components/shell";
 import { Card, Badge, Empty } from "@/components/ui";
+import { GenerateIdeasButton } from "@/components/ideas/generate-button";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +24,13 @@ export default async function IdeasPage({
 
   return (
     <>
-      <TopBar brands={db.brands} brandId={brandId} title="Post ideas" subtitle={`${ideas.length} ideas generated from your own data · ${brand.name}`} />
+      <TopBar
+        brands={db.brands}
+        brandId={brandId}
+        title="Post ideas"
+        subtitle={`${ideas.length} ideas generated from your own data · ${brand.name}`}
+        right={<GenerateIdeasButton brandId={brandId} />}
+      />
 
       <div className="p-4 sm:p-6 lg:p-7">
         {/* Ideas are derived from this brand's own signals, so an empty store means
@@ -32,7 +39,7 @@ export default async function IdeasPage({
         {ideas.length === 0 ? (
           <Empty
             title={`No ideas for ${brand.name} yet`}
-            hint="Ideas are generated from your own reviews, format gaps, competitor moves and seasonal windows. Once there is activity to read, they show up here."
+            hint="Ideas are derived from your own inventory, posting history, channel stats and the calendar — press Generate ideas above. Every card shows the fact it came from."
           />
         ) : (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -62,10 +69,10 @@ export default async function IdeasPage({
                 </div>
 
                 <Link
-                  href={`/composer${link}`}
+                  href={`/board${link}`}
                   className="mt-3 rounded-lg bg-brand-500 px-3 py-1.5 text-center text-[12px] font-medium text-[var(--a-on)] hover:bg-brand-600"
                 >
-                  Open in composer
+                  Plan it on the board
                 </Link>
               </Card>
             ))}

@@ -1,5 +1,6 @@
 import { Badge, Card, PageHeader, type BadgeTone } from "@/components/osf/ui";
 import { whatsappReadiness, type Check } from "@/lib/osf/whatsapp/readiness";
+import { operatorNote, operatorText, showOperatorDetail } from "@/lib/whitelabel";
 import { VoiceTester } from "./VoiceTester";
 
 export const dynamic = "force-dynamic";
@@ -30,9 +31,11 @@ function CheckRow({ check }: { check: Check }) {
             </span>
           )}
         </div>
-        <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)]">{check.detail}</p>
+        {/* Readiness text is written for an operator; it is rewritten in plain
+            language before a client sees it. */}
+        <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)]">{operatorText(check.detail)}</p>
         {check.fix && check.state !== "ok" && (
-          <p className="mt-1 text-xs text-[var(--color-gold-300)]">→ {check.fix}</p>
+          <p className="mt-1 text-xs text-[var(--color-gold-300)]">→ {operatorText(check.fix)}</p>
         )}
       </div>
       <Badge tone={TONE[check.state]}>{LABEL[check.state]}</Badge>
@@ -81,8 +84,10 @@ export default async function WhatsAppPage() {
               <div>
                 <dt className="label">Verify token</dt>
                 <dd className="mt-1 text-xs text-[var(--color-muted)]">
-                  The value of WHATSAPP_VERIFY_TOKEN in your .env.local — type the same string
-                  into Meta.
+                  {operatorNote(
+                    "whatsappVerifyToken",
+                    "The verification word an administrator chose when this console was set up — type the same string into Meta.",
+                  )}
                 </dd>
               </div>
               <div>
@@ -95,18 +100,24 @@ export default async function WhatsAppPage() {
             </dl>
           </Card>
 
-          <Card title="Testing locally" hint="Meta cannot call localhost.">
-            <p className="text-xs leading-relaxed text-[var(--color-muted)]">
-              Expose this machine with a tunnel, then use the https URL it prints as the callback:
-            </p>
-            <code className="mt-2 block rounded-lg bg-[var(--color-void)] px-3 py-2 font-mono text-xs">
-              npx ngrok http 3000
-            </code>
-            <p className="mt-3 text-xs leading-relaxed text-[var(--color-muted)]">
-              Set NEXT_PUBLIC_APP_URL to that same https URL, or brochure links the agent sends
-              will point at localhost and fail when WhatsApp tries to fetch them.
-            </p>
-          </Card>
+          {/* Tunnelling instructions are for whoever deploys the console, not
+              for the business using it. */}
+          {showOperatorDetail() && (
+            <Card title="Testing locally" hint="Meta cannot call localhost.">
+              <p className="text-xs leading-relaxed text-[var(--color-muted)]">
+                Expose this machine with a tunnel, then use the https URL it prints as the callback:
+              </p>
+              <code className="mt-2 block rounded-lg bg-[var(--color-void)] px-3 py-2 font-mono text-xs">
+                npx ngrok http 3000
+              </code>
+              <p className="mt-3 text-xs leading-relaxed text-[var(--color-muted)]">
+                {operatorNote(
+                  "whatsappPublicUrl",
+                  "Point the console's public web address at that same https URL, or brochure links the agent sends will point at this machine and fail when WhatsApp tries to fetch them.",
+                )}
+              </p>
+            </Card>
+          )}
         </div>
       </div>
 

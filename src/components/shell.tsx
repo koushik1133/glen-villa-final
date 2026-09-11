@@ -5,7 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   Activity, BarChart3, CalendarCheck, CalendarDays, Film, Gauge, Inbox, KanbanSquare, Lightbulb, MapPin,
-  Megaphone, PenSquare, PlugZap, Sparkles, Star, FileText, Settings,
+  Megaphone, PlugZap, Sparkles, Star, FileText, Settings,
   Users, GitBranch, Contact, UserCheck, ListTodo, BellRing, Building2, Wallet, ShieldCheck, MessageSquare,
   PhoneCall, Menu, X,
   Instagram, Facebook, Linkedin, Youtube, Workflow,
@@ -43,7 +43,6 @@ const NAV: NavSection[] = [
   ]},
   { group: "Create & publish", items: [
     { href: "/showcase", label: "Project Showcase", icon: Building2 },
-    { href: "/composer", label: "Composer", icon: PenSquare },
     { href: "/automation", label: "Publish video", icon: Workflow },
     { href: "/publish-v2", label: "Video Pipeline", icon: Sparkles },
     { href: "/studio", label: "Video Studio", icon: Film },
@@ -366,7 +365,6 @@ export function LiquidDock() {
     { href: "/dashboard", label: "Dashboard", icon: Gauge },
     { href: "/crm/pipeline", label: "Pipeline", icon: GitBranch },
     { href: "/voice", label: "Voice calls", icon: PhoneCall, isCenter: true },
-    { href: "/composer", label: "Composer", icon: PenSquare },
     { href: "/setup", label: "System", icon: Settings },
   ];
 

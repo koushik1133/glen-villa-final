@@ -36,7 +36,6 @@ describe("1. Navigation & Route Permission Matrix", () => {
     { path: "/channels/youtube", group: "Channels", expectedPerm: "marketing.read" },
 
     // Create & publish
-    { path: "/composer", group: "Create & publish", expectedPerm: "marketing.read" },
     { path: "/automation", group: "Create & publish", expectedPerm: "marketing.read" },
     { path: "/publish-v2", group: "Create & publish", expectedPerm: "marketing.read" },
     { path: "/studio", group: "Create & publish", expectedPerm: "marketing.read" },
@@ -112,7 +111,7 @@ describe("1. Navigation & Route Permission Matrix", () => {
     assert.equal(salesPerms.has(requiredPermissionFor("/ops/sales") as any), true);
     assert.equal(salesPerms.has(requiredPermissionFor("/ops/loans") as any), false);
 
-    // Marketing lead can access channels, composer, studio, and publish
+    // Marketing lead can access channels, studio, and publish
     assert.equal(marketingPerms.has(requiredPermissionFor("/channels/instagram") as any), true);
     assert.equal(marketingPerms.has(requiredPermissionFor("/channels/youtube") as any), true);
     assert.equal(marketingPerms.has(requiredPermissionFor("/automation") as any), true);

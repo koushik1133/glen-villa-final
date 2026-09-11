@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Film, Loader2, Plus, Scissors, Sparkles, Terminal, Trash2, Type } from "lucide-react";
 import clsx from "clsx";
 import type { Brand, MediaAsset, MediaEdit, MediaOverlay, PostFormat } from "@/lib/types";
 import { Badge, Card, SectionTitle } from "./ui";
+import { MediaUpload } from "./media-upload";
 
 /**
  * VIDEO STUDIO
@@ -29,7 +30,18 @@ const TARGETS: Array<{ format: PostFormat; label: string; aspect: string }> = [
   { format: "carousel", label: "Carousel", aspect: "1:1" },
 ];
 
-export function Studio({ brand, media, defaultEdit }: { brand: Brand; media: MediaAsset[]; defaultEdit: MediaEdit }) {
+export function Studio({
+  brand,
+  media,
+  defaultEdit,
+  canUpload = false,
+}: {
+  brand: Brand;
+  media: MediaAsset[];
+  defaultEdit: MediaEdit;
+  /** `marketing.publish`, resolved on the server — the upload route enforces it. */
+  canUpload?: boolean;
+}) {
   const [assetId, setAssetId] = useState(media[0]?.id ?? "");
   const asset = media.find((m) => m.id === assetId);
   const [edit, setEdit] = useState<MediaEdit>(asset?.edit ?? defaultEdit);
@@ -38,6 +50,17 @@ export function Studio({ brand, media, defaultEdit }: { brand: Brand; media: Med
   const [renders, setRenders] = useState<Array<{ aspect: string; outputPath: string; simulated: boolean; command: string; ok: boolean }>>([]);
   const [hooks, setHooks] = useState<string[]>([]);
   const [hooksBusy, setHooksBusy] = useState(false);
+
+  // The library starts empty, so the first upload arrives through
+  // `router.refresh()` after the picker has already defaulted to "". Without
+  // this, the clip lands in the grid but nothing is selected and every control
+  // still edits nothing.
+  useEffect(() => {
+    if (!asset && media.length > 0) {
+      setAssetId(media[0].id);
+      setEdit(media[0].edit ?? defaultEdit);
+    }
+  }, [asset, media, defaultEdit]);
 
   const duration = asset?.durationSec ?? 30;
   const set = <K extends keyof MediaEdit>(k: K, v: MediaEdit[K]) => setEdit((e) => ({ ...e, [k]: v }));
@@ -108,8 +131,17 @@ export function Studio({ brand, media, defaultEdit }: { brand: Brand; media: Med
     <div className="grid gap-5 xl:grid-cols-[300px_1fr_320px]">
       {/* ---- Asset picker --------------------------------------------------- */}
       <Card className="h-fit">
-        <SectionTitle title="Clips" hint={`${media.length} in the library`} />
-        <div className="grid grid-cols-3 gap-2">
+        <SectionTitle title="Clips" hint={media.length ? `${media.length} in the library` : "Nothing in the library yet"} />
+        <div className="mb-3">
+          <MediaUpload canUpload={canUpload} />
+        </div>
+        {media.length === 0 && (
+          <p className="mb-3 rounded-lg border border-dashed border-ink-600 p-3 text-[11px] leading-relaxed text-mist-400">
+            Upload a clip to start editing. Everything below — trim, framing, captions and the render targets — works on
+            the selected clip, so there is nothing to preview until one is here.
+          </p>
+        )}
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 xl:grid-cols-3">
           {media.map((m) => (
             <button
               key={m.id}

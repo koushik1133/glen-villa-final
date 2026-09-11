@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { pageContext, qs } from "@/lib/page-context";
 import { suggestSlots } from "@/lib/engine/besttime";
 import { channelMeta } from "@/lib/platforms/registry";
@@ -43,7 +42,7 @@ export default async function CalendarPage({
   // `posts` is the calendar feed, so it only holds posts that carry a scheduled
   // date. "Published all-time" is a count of everything that ever went out, so
   // it reads the brand's posts directly — a post published straight from the
-  // composer never gets a scheduledAt and would otherwise be invisible to its
+  // published directly never gets a scheduledAt and would otherwise be invisible to its
   // own tile.
   const publishedAllTime = db.posts.filter((p) => p.brandId === brandId && p.status === "published").length;
 
@@ -58,11 +57,6 @@ export default async function CalendarPage({
         brandId={brandId}
         title="Calendar"
         subtitle={`${queued.length} queued · ${awaiting.length} awaiting approval · ${brand.name}`}
-        right={
-          <Link href={`/composer${link}`} className="rounded-lg bg-brand-500 px-3 py-1.5 text-[12px] font-medium text-[var(--a-on)] hover:bg-brand-600">
-            Compose
-          </Link>
-        }
       />
 
       <div className="space-y-5 p-4 sm:p-6 lg:p-7">

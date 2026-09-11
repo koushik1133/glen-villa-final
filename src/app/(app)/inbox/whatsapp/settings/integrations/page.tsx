@@ -1,5 +1,6 @@
 import { Ban, AlertCircle, CheckCircle, FileText, RefreshCw, AlertTriangle } from "lucide-react";
 import { Badge, Card, PageHeader, SetupNotice, timeAgo, type BadgeTone } from "@/components/osf/ui";
+import { settingLabel, showOperatorDetail } from "@/lib/whitelabel";
 import { gatedLoad } from "@/lib/osf/queries";
 import {
   channelRows,
@@ -107,10 +108,9 @@ export default async function IntegrationsPage({ searchParams }: { searchParams:
             anything.
           </li>
           <li>
-            <span className="text-[var(--color-ink)]">Nothing on this page accepts a secret.</span> Keys live in{" "}
-            <code className="rounded bg-[var(--color-raised)] px-1.5 py-0.5 text-xs">.env.local</code> and in your
-            host&apos;s environment settings. A form here that took an API key would have to store it in a
-            table, which is strictly worse.
+            <span className="text-[var(--color-ink)]">Nothing on this page accepts a secret.</span>{" "}
+            Credentials live in the server configuration, which only an administrator can reach. A
+            form here that took a key would have to store it in a table, which is strictly worse.
           </li>
         </ul>
 
@@ -118,7 +118,7 @@ export default async function IntegrationsPage({ searchParams }: { searchParams:
           <p className="mt-4 flex items-start gap-2 rounded-xl border border-[var(--color-line)] bg-[var(--color-void)]/50 px-4 py-3 text-sm text-[var(--color-warm)]">
             <AlertTriangle size={14} strokeWidth={2} aria-hidden className="mt-0.5 shrink-0" />
             <span>
-              {stale.length} stored record{stale.length === 1 ? "" : "s"} disagree with the environment (
+              {stale.length} stored record{stale.length === 1 ? "" : "s"} disagree with the live configuration (
               {stale.map((s) => s.label).join(", ")}). The environment wins everywhere in this app —
               &ldquo;Rewrite stored records&rdquo; just makes the table say the same thing.
             </span>
@@ -235,22 +235,24 @@ function IntegrationCard({ integration }: { integration: IntegrationStatus }) {
         </span>
       </div>
 
+      {/* Each credential reads as what it is for. The raw variable name is
+          operator detail and appears only on a vendor deployment. */}
       {integration.envVars.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-1.5">
           {integration.envVars.map((name) => {
             const missing = integration.missing.includes(name);
             return (
-              <code
+              <span
                 key={name}
                 className={`rounded px-1.5 py-0.5 text-[11px] ${
                   missing
                     ? "bg-[color-mix(in_oklab,var(--c-warn)_12%,transparent)] text-[var(--color-warm)] line-through decoration-[var(--color-warm)]/50"
                     : "bg-[var(--color-raised)] text-[var(--color-muted)]"
                 }`}
-                title={missing ? "Not set in the environment" : "Set in the environment"}
+                title={missing ? "Not configured" : "Configured"}
               >
-                {name}
-              </code>
+                {showOperatorDetail() ? name : settingLabel(name)}
+              </span>
             );
           })}
         </div>
@@ -281,10 +283,14 @@ function IntegrationCard({ integration }: { integration: IntegrationStatus }) {
         </p>
       )}
 
-      <p className="mt-auto flex items-center gap-1.5 pt-3 text-[11px] text-[var(--color-faint)]">
-        <FileText size={11} strokeWidth={1.75} aria-hidden />
-        SETUP-GUIDE.md &rarr; <span className="text-[var(--color-muted)]">{integration.guide}</span>
-      </p>
+      {/* The setup guide is a file in the vendor's repository, not something a
+          client can open — so the pointer only shows on a vendor deployment. */}
+      {showOperatorDetail() && (
+        <p className="mt-auto flex items-center gap-1.5 pt-3 text-[11px] text-[var(--color-faint)]">
+          <FileText size={11} strokeWidth={1.75} aria-hidden />
+          SETUP-GUIDE.md &rarr; <span className="text-[var(--color-muted)]">{integration.guide}</span>
+        </p>
+      )}
     </div>
   );
 }

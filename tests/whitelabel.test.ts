@@ -23,6 +23,24 @@ const ADMIN_ONLY = new Set(["src/components/settings/admin-diagnostics.tsx"]);
 const VENDOR =
   /\b(bolna|n8n|upload[- _]?post|uploadpost|groq|gemini|resend|supabase|orbit|anthropic|claude|whisper|baileys|evolution ?api|twilio|openai|sendgrid)\b/i;
 
+/**
+ * Infrastructure a client must never read.
+ *
+ * `ENV_NAME` is deliberately narrow — SCREAMING_SNAKE with a known prefix or
+ * suffix — so ordinary constants (`PRIORITY_TONE`, `MAX_BYTES`) and status
+ * enums shouted by an API (`UNDER_REVIEW`, `GREEN`) do not trip it. Widen the
+ * prefix list rather than loosening the shape when a new provider lands.
+ */
+const ENV_NAME =
+  /\b(?:WHATSAPP|META|SUPABASE|NEXT_PUBLIC|OSF|GROQ|ANTHROPIC|GEMINI|EVOLUTION|BOLNA|N8N|CRON|RESEND|WORKER|UPLOAD_POST|DASHBOARD|AUTH_MODE|PUBLIC_BASE_URL|LLM|AI_PROVIDER|PLATFORM_DRIVER|SALES_TEAM|TIKTOK|LINKEDIN|TWITTER)_[A-Z0-9_]+\b|\bGOOGLE(?:_ADS)?_(?:CLIENT_ID|CLIENT_SECRET|DEVELOPER_TOKEN|API_KEY)\b|\b[A-Z][A-Z0-9]{3,}(?:_[A-Z0-9]+)*_(?:API_KEY|SECRET|TOKEN|PASSWORD|SERVICE_ROLE_KEY|ANON_KEY)\b|\bPUBLIC_BASE_URL\b|\bDASHBOARD_PASSWORD\b|\bCRON_SECRET\b|\bAUTH_MODE\b/;
+/** Where secrets, schema and source live on the server. */
+const SECRET_PATH = /\.env(?:\.local)?\b|supabase\/migrations|\b\d{3,4}_[\w-]+\.sql\b|\bnpm run \b|\bsrc\/lib\//;
+/**
+ * A provider-issued identifier printed into prose — "id 1372518445937587".
+ * Only flagged next to an id word, so prices, counts and dates are left alone.
+ */
+const INTERNAL_ID = /\b(?:id|ID|Id)\s*[:=]?\s*\d{8,}\b/;
+
 function walk(dir: string, out: string[] = []): string[] {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
     const p = path.join(dir, e.name);
@@ -36,8 +54,13 @@ function stripComments(src: string): string {
   return src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:"'`])\/\/[^\n]*/g, "$1");
 }
 
-/** Text a person can read: string literals plus bare JSX text between tags. */
-function readable(src: string): string[] {
+/**
+ * Text a person can read: string literals plus bare JSX text between tags.
+ *
+ * `keepShouty` keeps bare SCREAMING_SNAKE literals, which the vendor sweep drops
+ * as code values but which are exactly what the infrastructure sweep hunts for.
+ */
+function readable(src: string, keepShouty = false): string[] {
   const out: string[] = [];
   // Attribute values nobody reads (class hooks, ids, urls) are not prose.
   src = src.replace(/\b(className|id|key|htmlFor|href|src|data-[\w-]+)=("[^"\n]*"|'[^'\n]*')/g, "");
@@ -60,7 +83,11 @@ function readable(src: string): string[] {
     .filter(Boolean)
     // Single words count too (<Badge>Bolna</Badge>). Only paths, ids and env keys
     // stay off-screen: "@/lib/bolna/x", "uploadpost:x", "BOLNA_API_KEY".
-    .filter((t) => !/^[@./]/.test(t) && !/^[A-Z0-9_]+$/.test(t) && !(/[/:]/.test(t) && !/\s/.test(t)));
+    .filter((t) => !/^[@./]/.test(t) && (keepShouty || !/^[A-Z0-9_]+$/.test(t)) && !(/[/:]/.test(t) && !/\s/.test(t)))
+    // A bare filename passed as an argument (`migration: "001_schema.sql"`) is a
+    // code value. What a person reads is the sentence built around it, and that
+    // sentence is sanitised where it is rendered.
+    .filter((t) => !/^[\w.-]+\.(?:sql|md|ts|tsx|js|json|css)$/.test(t));
 }
 
 describe("vendor names never reach a non-admin screen", () => {
@@ -77,6 +104,24 @@ describe("vendor names never reach a non-admin screen", () => {
       const hits = readable(stripComments(fs.readFileSync(path.join(ROOT, f), "utf8")))
         .filter((t) => VENDOR.test(t));
       assert.deepEqual(hits, [], `vendor name in user-visible text: ${hits.join(" | ")}`);
+    });
+  }
+});
+
+describe("infrastructure detail never reaches a non-admin screen", () => {
+  const files = SCAN.flatMap((d) => walk(path.join(ROOT, d)))
+    .map((f) => path.relative(ROOT, f))
+    .filter((f) => !ADMIN_ONLY.has(f));
+
+  for (const f of files) {
+    test(f, () => {
+      const text = readable(stripComments(fs.readFileSync(path.join(ROOT, f), "utf8")), true);
+      const hits = text.filter((t) => ENV_NAME.test(t) || SECRET_PATH.test(t) || INTERNAL_ID.test(t));
+      assert.deepEqual(
+        hits,
+        [],
+        `env-var name, secret path or provider id in user-visible text: ${hits.join(" | ")}`,
+      );
     });
   }
 });

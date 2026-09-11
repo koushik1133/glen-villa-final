@@ -186,10 +186,11 @@ function Funnel({ f }: { f: VoiceOverview["funnel"] }) {
 /** Admin only — the server omits `diagnostics` for everyone else. */
 function ProviderDiagnostics({ d }: { d: NonNullable<VoiceOverview["diagnostics"]> }) {
   const [open, setOpen] = useState(false);
+  // No vendor name and no provider-issued id: an administrator needs to know
+  // whether each piece is configured, not what the provider calls it.
   const rows: Array<[string, string, boolean]> = [
-    ["Provider", d.provider, true],
     ["API key", d.apiKey ? "set" : "unset", d.apiKey],
-    ["Agent id", d.agentId ?? "unset — settings will not push live", Boolean(d.agentId)],
+    ["Agent", d.agentId ? "configured" : "unset — settings will not push live", Boolean(d.agentId)],
     ["Webhook secret", d.webhookSecret ? "set" : "unset — inbound updates are refused", d.webhookSecret],
     ["Connection", d.status, d.apiKey && d.agentCount !== null],
     ["Balance", d.balance ?? "not reported", true],
@@ -200,7 +201,7 @@ function ProviderDiagnostics({ d }: { d: NonNullable<VoiceOverview["diagnostics"
       <button type="button" onClick={() => setOpen((v) => !v)} className="flex w-full items-center gap-2 text-left">
         {open ? <ChevronDown size={14} className="text-mist-400" /> : <ChevronRight size={14} className="text-mist-400" />}
         <Settings2 size={14} className="text-mist-400" />
-        <span className="text-[13px] font-semibold text-mist-200">Provider diagnostics</span>
+        <span className="text-[13px] font-semibold text-mist-200">Service diagnostics</span>
         <span className="text-[11px] text-mist-500">administrators only</span>
       </button>
       {open && (
@@ -223,7 +224,6 @@ function ProviderDiagnostics({ d }: { d: NonNullable<VoiceOverview["diagnostics"
               ))}
             </ul>
           )}
-          <p className="text-[11px] text-mist-500">Setup steps are in docs/voice-setup.md.</p>
         </div>
       )}
     </Card>

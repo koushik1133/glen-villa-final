@@ -150,7 +150,7 @@ export default async function ChannelPage({
             hint={
               snap.connections.length === 0
                 ? `Nothing has been synced from ${meta.label} because nothing is connected. Every number on this tab comes from ${meta.label}'s own reporting on ${brand.name}'s account — none of it is estimated, so the tab stays empty until that account exists.`
-                : `The connection is in place but ${meta.label} has reported no day in the last ${days} days and no post has been published to it in that window. Publish from the composer, or widen the range, and the figures appear here.`
+                : `The connection is in place but ${meta.label} has reported no day in the last ${days} days and no post has been published to it in that window. Publish a post, or widen the range, and the figures appear here.`
             }
           />
         ) : (

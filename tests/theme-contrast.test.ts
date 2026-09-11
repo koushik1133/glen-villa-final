@@ -105,8 +105,6 @@ const ALLOW: Record<string, string> = {
   "src/components/studio.tsx:bg-black/50": "duration chip over the video frame",
   "src/components/studio.tsx:text-white": "text inside those over-video chips",
   "src/components/studio.tsx:border-white/70": "safe-area guide drawn over the video frame",
-  "src/components/composer.tsx:bg-black/50": "duration chip over a media thumbnail",
-  "src/components/composer.tsx:text-white": "text inside that chip",
   "src/components/channels/facebook-studio.tsx:bg-black/75": "Reel/duration chips over the video thumbnail",
   "src/components/channels/instagram-studio.tsx:bg-black/75": "Reel/duration chips over the video thumbnail",
   "src/components/voice/voice-panel.tsx:bg-black/40": "drawer scrim",
@@ -131,7 +129,6 @@ const ALLOW: Record<string, string> = {
   "src/components/ui.tsx:bg-white": "pulse dot on that same holographic gradient",
   "src/components/ui.tsx:border-white/10":
     "specular hairline on the primary button; decorative, and the label uses --a-on",
-  "src/app/(app)/dashboard/page.tsx:text-white": "label on the holographic gradient action",
   "src/components/shell.tsx:text-white": "icon inside .holographic-orb, a fixed gradient",
   "src/components/shell.tsx:border-white/20": "specular hairline on the brand mark",
   "src/app/(app)/connections/page.tsx:text-white": "monogram on a channel's fixed brand colour",

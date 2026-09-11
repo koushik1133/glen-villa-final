@@ -1,4 +1,5 @@
 import { pageContext } from "@/lib/page-context";
+import { settingLabel, showOperatorDetail } from "@/lib/whitelabel";
 import { adapterFor, channelMeta, isUsableConnection, connectionProblem } from "@/lib/platforms/registry";
 import { DRIVER } from "@/lib/platforms/types";
 import { TopBar } from "@/components/shell";
@@ -47,7 +48,11 @@ export default async function ConnectionsPage({
               scopes: spec.scopes,
               unlocks: spec.unlocks,
               notes: spec.notes,
-              envVars: spec.envVars,
+              // Plain-language on a client install, raw names for the vendor.
+              // Deduped because two variables can mean the same thing to a reader.
+              envVars: showOperatorDetail()
+                ? spec.envVars
+                : Array.from(new Set(spec.envVars.map(settingLabel))),
             };
           })}
         />

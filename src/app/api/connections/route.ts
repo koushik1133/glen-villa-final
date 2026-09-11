@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import { operatorText } from "@/lib/whitelabel";
 import { NextResponse } from "next/server";
 import { mutate, read, resolveBrandId } from "@/lib/db";
 import { specFor } from "@/lib/platforms/oauth";
@@ -101,7 +102,11 @@ export async function POST(req: Request) {
         return NextResponse.json(
           {
             ok: false,
-            error: `${meta.label} is not linked on your Upload-Post account (profile "${process.env.UPLOAD_POST_USER ?? "default"}"). Link it at upload-post.com and connect again, or set ${missingEnv.join(", ")} for the native sign-in.`,
+            // Operator detail (which variables, which publishing profile) is
+            // redacted for clients; the status the caller acts on is unchanged.
+            error: operatorText(
+              `${meta.label} is not linked on your Upload-Post account (profile "${process.env.UPLOAD_POST_USER ?? "default"}"). Link it at upload-post.com and connect again, or set ${missingEnv.join(", ")} for the native sign-in.`,
+            ),
             missingEnv,
           },
           { status: 400 },
@@ -112,7 +117,7 @@ export async function POST(req: Request) {
     if (process.env.PLATFORM_DRIVER === "live") {
       if (missingEnv.length) {
         return NextResponse.json(
-          { ok: false, error: `Missing environment variables: ${missingEnv.join(", ")}`, missingEnv },
+          { ok: false, error: operatorText(`Missing configuration: ${missingEnv.join(", ")}`), missingEnv },
           { status: 400 },
         );
       }
@@ -143,7 +148,7 @@ export async function POST(req: Request) {
     const setup = !spec
       ? `${meta.label} has no connect flow in this build yet.`
       : missingEnv.length
-        ? `${meta.label} is not configured. Set ${missingEnv.join(", ")} and PLATFORM_DRIVER=live in .env, then connect again.`
+        ? operatorText(`${meta.label} is not configured. Set ${missingEnv.join(", ")} and PLATFORM_DRIVER=live in .env, then connect again.`)
         : `${meta.label} credentials are set, but PLATFORM_DRIVER is "${process.env.PLATFORM_DRIVER ?? "mock"}". Set PLATFORM_DRIVER=live to run the real sign-in.`;
 
     return NextResponse.json({ ok: false, error: setup, missingEnv }, { status: 400 });

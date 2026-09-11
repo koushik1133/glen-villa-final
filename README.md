@@ -32,7 +32,6 @@ No API keys, no database, no Docker. It boots with a fully populated 3-brand dem
 
 | Capability | Where |
 |---|---|
-| Write one post → per-network variants → validated → scheduled | Composer |
 | Publish to Instagram (feed/reel/**story**/carousel), Facebook, TikTok, YouTube, LinkedIn, X, Google Business | Publish engine |
 | Edit video once, render per aspect ratio (9:16 / 4:5 / 1:1 / 16:9), burn captions, add hooks | Video Studio |
 | Month / week / day calendar, drag to reschedule, "best slot" ghosts | Calendar |
@@ -54,7 +53,7 @@ No API keys, no database, no Docker. It boots with a fully populated 3-brand dem
 
 **Overview** — Dashboard (AI summary + 6 KPIs + organic and paid charts + top recommendations + queue), AI Insights, Analytics (day×hour engagement heatmap, format performance, top content with 3-second hook scores).
 
-**Create & publish** — Composer, Video Studio, **Board**, Calendar, Post ideas.
+**Create & publish** — Video Studio, **Board**, Calendar, Post ideas.
 
 **CRM** — Leads, Pipeline, Contacts, Customers, Tasks, Follow-ups.
 
@@ -271,7 +270,7 @@ curl -X POST "http://localhost:4321/api/publish/tick?secret=$WORKER_SECRET"
 ```
 or the **Run queue now** button in the calendar. Point a 5-minute cron at that endpoint in production.
 
-**Validation runs twice, from one source.** Adapter capabilities (caption limits, hashtag caps, media counts, supported formats, aspect ratios) drive both the live client-side warnings in the composer and the server-side rejection in `POST /api/posts`. You cannot schedule something that will fail at 6am.
+**Validation runs twice, from one source.** Adapter capabilities (caption limits, hashtag caps, media counts, supported formats, aspect ratios) drive both the live client-side warnings in the publishing screens and the server-side rejection in `POST /api/posts`. You cannot schedule something that will fail at 6am.
 
 ---
 
@@ -379,7 +378,7 @@ Settings → System status shows exactly what is wired up on the current install
 
 **A new brand:** add to `BRAND_BLUEPRINTS` in `seed.ts` (or POST once you wire a form). Everything else — dashboards, analysers, reports, calendar — works immediately, because nothing anywhere assumes one business.
 
-**A new network (Pinterest, Threads, Bluesky):** one file in `src/lib/platforms/` implementing `PlatformAdapter`, plus one line in `registry.ts`. The composer picks up its limits, the validator enforces them, the publisher routes to it, the calendar colours it. Zero changes anywhere else.
+**A new network (Pinterest, Threads, Bluesky):** one file in `src/lib/platforms/` implementing `PlatformAdapter`, plus one line in `registry.ts`. The publishing screens pick up its limits, the validator enforces them, the publisher routes to it, the calendar colours it. Zero changes anywhere else.
 
 **A real database:** reimplement `read()` and `mutate()` in `db.ts`.
 
@@ -396,7 +395,7 @@ src/app/api/          actions · ai/copy · ai/reply · board · board/cards · 
                       posts · publish/tick · render · seed · slots · sync
                       webhooks/whatsapp · whatsapp/send
 src/components/       auth/ (sign-in form · brand panel · mark) · messaging/
-                      shell · ui · charts · theme-toggle · composer · studio · calendar-view
+                      shell · ui · charts · theme-toggle · studio · calendar-view
                       board-view · board-settings · connect-panel · inbox
                       crm/leads-grid · crm/pipeline · crm/tasks-list
                       reviews-panel · suggestion-card

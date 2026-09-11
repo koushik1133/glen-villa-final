@@ -210,26 +210,9 @@ describe("write routes require write permissions", () => {
 });
 
 describe("credentials never reach the browser", () => {
-  test("the composer page allowlists connection fields instead of stripping them", () => {
-    const src = read("src/app/(app)/composer/page.tsx");
-    assert.ok(
-      !/\.\.\.c,\s*\n\s*accessToken: undefined/.test(src),
-      "spread-and-strip leaks every field added to Connection later — refreshToken did exactly that",
-    );
-    // Strip comments first — the explanation of the bug names the field.
-    const code = src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
-    assert.ok(!/refreshToken/.test(code), "no token field may be serialised into client props");
-    assert.ok(!/accessToken/.test(code), "no token field may be serialised into client props");
-  });
-
-  test("the composer's prop type cannot accept a full Connection", () => {
-    const src = read("src/components/composer.tsx");
-    assert.ok(
-      !/connections:\s*Array<Connection\s*&/.test(src),
-      "requiring the full Connection forces the server to hand over the secrets too",
-    );
-    assert.match(src, /Pick<Connection,/);
-  });
+  // The two composer cases that lived here were removed with the /composer
+  // screen and its component; nothing else serialised Connection into client
+  // props. If a new screen does, add its case here.
 });
 
 describe("a reply is addressed to the verified sender, not a display string", () => {

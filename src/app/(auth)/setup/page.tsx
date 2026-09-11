@@ -8,6 +8,7 @@ import { checkUploadPostStatus } from "@/lib/uploadpost/client";
 import { checkGoogleSheetsStatus } from "@/lib/sheets/client";
 import { checkBolnaStatus } from "@/lib/bolna/client";
 import { Badge, Card, SectionTitle } from "@/components/ui";
+import { operatorText, showOperatorDetail } from "@/lib/whitelabel";
 
 export const dynamic = "force-dynamic";
 
@@ -78,7 +79,9 @@ export default async function SetupPage() {
     {
       label: "Supabase project",
       state: supabase.configured ? (supabase.reachable ? "ok" : "partial") : "missing",
-      detail: supabase.configured ? `${supabaseUrl()} — ${supabase.detail}` : "NEXT_PUBLIC_SUPABASE_URL / _ANON_KEY not set",
+      detail: supabase.configured
+        ? `${showOperatorDetail() ? `${supabaseUrl()} — ` : ""}${supabase.detail}`
+        : "the database address and access key are not set",
       action: "Project Settings → API",
     },
     {
@@ -177,7 +180,7 @@ export default async function SetupPage() {
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block text-[13.5px] font-bold text-mist-100">{r.label}</span>
-                  <span className="block text-[12px] text-mist-400 mt-0.5">{r.detail}</span>
+                  <span className="block text-[12px] text-mist-400 mt-0.5">{operatorText(r.detail)}</span>
                 </span>
                 <Badge
                   tone={r.state === "ok" ? "good" : r.state === "partial" ? "warn" : "bad"}
@@ -185,39 +188,43 @@ export default async function SetupPage() {
                 >
                   {r.state === "ok" ? "ready" : r.state === "partial" ? "partial" : "not set"}
                 </Badge>
-                {r.action && <span className="w-full text-[11px] text-mist-500 sm:w-auto font-mono">{r.action}</span>}
+                {r.action && <span className="w-full text-[11px] text-mist-500 sm:w-auto font-mono">{operatorText(r.action)}</span>}
               </div>
             ))}
           </div>
         </Card>
 
-      <Card>
-        <SectionTitle title="Applying the schema" hint="Two files, in order, in the Supabase SQL editor" />
-        <ol className="space-y-2 text-[12.5px] leading-relaxed text-mist-300">
-          <li>
-            <span className="font-medium text-mist-100">1.</span> Open your project → <em>SQL Editor</em> → New query.
-          </li>
-          <li>
-            <span className="font-medium text-mist-100">2.</span> Paste{" "}
-            <code className="rounded bg-ink-800 px-1">supabase/migrations/0002_glentree_platform.sql</code> and run it.
-            This creates the tables, the permission catalogue and every RLS policy.
-          </li>
-          <li>
-            <span className="font-medium text-mist-100">3.</span> Paste{" "}
-            <code className="rounded bg-ink-800 px-1">supabase/migrations/0003_glentree_bootstrap.sql</code> and run it.
-            This creates the Glentree organization, seven roles with their permission grants, the workflow stages and a
-            starter pricing sheet. It creates no users and no passwords.
-          </li>
-          <li>
-            <span className="font-medium text-mist-100">4.</span> Add the service-role key to{" "}
-            <code className="rounded bg-ink-800 px-1">.env.local</code>, then provision staff with{" "}
-            <code className="rounded bg-ink-800 px-1">npm run provision-users</code>.
-          </li>
-        </ol>
-        <p className="mt-3 text-[11.5px] text-mist-400">
-          Both files are idempotent — re-running them is safe.
-        </p>
-      </Card>
+      {/* Migration filenames and shell commands are for whoever deploys this,
+          and this page is reachable without signing in. */}
+      {showOperatorDetail() && (
+        <Card>
+          <SectionTitle title="Applying the schema" hint="Two files, in order, in the Supabase SQL editor" />
+          <ol className="space-y-2 text-[12.5px] leading-relaxed text-mist-300">
+            <li>
+              <span className="font-medium text-mist-100">1.</span> Open your project → <em>SQL Editor</em> → New query.
+            </li>
+            <li>
+              <span className="font-medium text-mist-100">2.</span> Paste{" "}
+              <code className="rounded bg-ink-800 px-1">supabase/migrations/0002_glentree_platform.sql</code> and run it.
+              This creates the tables, the permission catalogue and every RLS policy.
+            </li>
+            <li>
+              <span className="font-medium text-mist-100">3.</span> Paste{" "}
+              <code className="rounded bg-ink-800 px-1">supabase/migrations/0003_glentree_bootstrap.sql</code> and run it.
+              This creates the Glentree organization, seven roles with their permission grants, the workflow stages and a
+              starter pricing sheet. It creates no users and no passwords.
+            </li>
+            <li>
+              <span className="font-medium text-mist-100">4.</span> Add the service-role key to{" "}
+              <code className="rounded bg-ink-800 px-1">.env.local</code>, then provision staff with{" "}
+              <code className="rounded bg-ink-800 px-1">npm run provision-users</code>.
+            </li>
+          </ol>
+          <p className="mt-3 text-[11.5px] text-mist-400">
+            Both files are idempotent — re-running them is safe.
+          </p>
+        </Card>
+      )}
       </div>
     </div>
   );
