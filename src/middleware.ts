@@ -65,6 +65,12 @@ function isPublic(pathname: string): boolean {
   return (
     pathname.startsWith("/_next/") ||
     pathname === "/favicon.ico" ||
+    // The browser asks for these before anyone has signed in — they are drawn
+    // on the tab of the sign-in page itself — and they carry no data. Gating
+    // them just meant the product had no icon until you were already inside it.
+    pathname === "/icon.svg" ||
+    pathname === "/apple-icon.png" ||
+    pathname.startsWith("/brand/") ||
     pathname.startsWith("/renders/") ||
     pathname.startsWith("/samples/") ||
     // Showcase media only — never the /showcase page itself, which stays gated.

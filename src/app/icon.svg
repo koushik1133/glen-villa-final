@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <style>
+    /* A favicon is composited on the browser's tab strip, which follows the OS
+       theme. The lighter green keeps the mark legible on a dark strip; the
+       brand green is the default everywhere else. */
+    path { stroke: #41a048; }
+    @media (prefers-color-scheme: dark) { path { stroke: #6cc471; } }
+  </style>
+  <g fill="none" stroke-width="5.4" stroke-linecap="square" stroke-linejoin="miter">
+    <path d="M32 9V57"/>
+    <path d="M20.5 25L32 11.5L43.5 25"/>
+    <path d="M16.5 34.5L32 18L47.5 34.5"/>
+    <path d="M12.5 44L32 24.5L51.5 44"/>
+    <path d="M8.5 53.5L32 31L55.5 53.5"/>
+  </g>
+</svg>

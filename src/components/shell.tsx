@@ -11,6 +11,7 @@ import {
   Instagram, Facebook, Linkedin, Youtube, Workflow,
 } from "lucide-react";
 import clsx from "clsx";
+import { GlentreeTree } from "./brand/glentree-tree";
 import type { Brand } from "@/lib/types";
 import { requiredPermissionFor } from "@/lib/auth/page-access";
 
@@ -190,8 +191,11 @@ export function Sidebar({
         <X size={16} strokeWidth={1.75} aria-hidden />
       </button>
       <div className="flex items-center gap-3 px-5 py-5 border-b border-ink-800/40">
-        <div className="relative grid h-9 w-9 place-items-center rounded-2xl bg-gradient-to-br from-brand-400 via-brand-500 to-brand-600 text-sm font-bold text-[var(--a-on)] shadow-lg shadow-brand-500/25 border border-white/20">
-          <span className="font-extrabold tracking-tight">V</span>
+        {/* The client's own mark, in their green. It keeps its brand colour in
+            both themes rather than taking the app accent — a logo that changes
+            colour with a theme toggle stops being a logo. */}
+        <div className="relative grid h-9 w-9 shrink-0 place-items-center rounded-2xl border border-ink-700/60 bg-ink-900/60 text-[color:var(--brand-tree)] shadow-sm">
+          <GlentreeTree size={22} />
           <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-ink-950 bg-good-400" />
         </div>
         <div className="min-w-0 flex-1">

@@ -1207,3 +1207,14 @@ textarea:focus-visible {
 .osf-root .recharts-cartesian-grid line { stroke: var(--color-line); }
 .osf-root .recharts-text { fill: var(--color-muted); font-size: 11px; }
 .osf-root .recharts-tooltip-wrapper { outline: none; }
+
+/* -------------------------------------------------------------------------
+   Brand mark colour. The Glentree tree keeps its own green in both themes —
+   a logo that changes hue with a theme toggle stops reading as a logo — but
+   the dark ground needs the lighter tint to hold contrast against it.
+   ------------------------------------------------------------------------- */
+:root { --brand-tree: #41a048; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --brand-tree: #6cc471; }
+}
+:root[data-theme="dark"] { --brand-tree: #6cc471; }
