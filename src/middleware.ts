@@ -139,6 +139,83 @@ function securityHeaders(nonce: string, isDev: boolean, secure: boolean): Record
   };
 }
 
+/* -------------------------------------------------------------------------- */
+/* Auth verdict cache                                                          */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * `getUser()` is a network round-trip to Supabase — measured at ~160ms — and it
+ * ran on EVERY request that was not explicitly public. That included every RSC
+ * prefetch, and the WhatsApp workspace renders around fifty links, so simply
+ * opening it queued dozens of 160ms auth calls that starved the navigation the
+ * operator had actually clicked. The screen felt broken; nothing was broken
+ * except that the outer fence was being rebuilt from scratch fifty times.
+ *
+ * So the verdict is cached per worker, keyed by the auth cookie itself, for a
+ * few seconds. Three things keep that honest:
+ *
+ *  - The key IS the cookie, so a different (or forged, or rotated) cookie is a
+ *    different key and gets a real verification. One user's verdict can never
+ *    be served to another.
+ *  - This is the coarse gate, not the security boundary. Every page resolves
+ *    the session again through `resolveSession()` and every route calls
+ *    `guard()`/`requirePermission()`; both verify with Supabase. A cookie that
+ *    slips past this cache still cannot read anything.
+ *  - The TTL is deliberately shorter than the session cache's 30s, and token
+ *    rotation still happens on the first request after it lapses — well inside
+ *    the access token's ~1 hour life.
+ *
+ * A sign-out or a token rotation writes new cookies, which is a new key, so
+ * neither waits for the TTL.
+ */
+const AUTH_TTL_MS = 10_000;
+/** Bounded so a long-lived worker cannot accumulate entries without limit. */
+const AUTH_CACHE_MAX = 500;
+
+const authVerdicts = new Map<string, { signedIn: boolean; expiresAt: number }>();
+
+/**
+ * Identity of the request's Supabase session, or null when there is no auth
+ * cookie at all — an anonymous request, which costs nothing and is not cached.
+ *
+ * Supabase splits a large cookie into `.0`, `.1`, … chunks. Every chunk is
+ * folded in, sorted by name so chunk order cannot vary between requests, and
+ * prefixed with its own name so two users' chunks cannot concatenate into the
+ * same string.
+ */
+function authKey(req: NextRequest): string | null {
+  const parts = req.cookies
+    .getAll()
+    .filter((c) => c.name.startsWith("sb-") && c.name.includes("-auth-token"))
+    .sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0))
+    .map((c) => `${c.name}=${c.value}`);
+  return parts.length ? parts.join("&") : null;
+}
+
+function cachedVerdict(key: string, now: number): boolean | null {
+  const hit = authVerdicts.get(key);
+  if (!hit) return null;
+  if (hit.expiresAt <= now) {
+    authVerdicts.delete(key);
+    return null;
+  }
+  return hit.signedIn;
+}
+
+function rememberVerdict(key: string, signedIn: boolean, now: number): void {
+  if (authVerdicts.size >= AUTH_CACHE_MAX) {
+    for (const [k, v] of authVerdicts) {
+      if (v.expiresAt <= now) authVerdicts.delete(k);
+    }
+    // Still full of live entries: drop the oldest insertion to stay bounded.
+    if (authVerdicts.size >= AUTH_CACHE_MAX) {
+      const oldest = authVerdicts.keys().next().value;
+      if (oldest !== undefined) authVerdicts.delete(oldest);
+    }
+  }
+  authVerdicts.set(key, { signedIn, expiresAt: now + AUTH_TTL_MS });
+}
+
 /**
  * Refresh the Supabase session and carry the rotated cookies onto the response.
  *
@@ -217,9 +294,25 @@ export async function middleware(req: NextRequest) {
 
   const base = NextResponse.next({ request: { headers: requestHeaders } });
   const publicPath = isPublic(pathname);
-  const { res: refreshed, signedIn } = publicPath
-    ? { res: base, signedIn: false }
-    : await withRefreshedSession(req, base);
+
+  // A recently verified cookie skips the round-trip. See the note on
+  // `authVerdicts` for why that is safe and what still verifies properly.
+  const key = publicPath ? null : authKey(req);
+  const now = Date.now();
+  const cached = key ? cachedVerdict(key, now) : null;
+
+  let refreshed = base;
+  let signedIn = false;
+  if (!publicPath) {
+    if (cached !== null) {
+      signedIn = cached;
+    } else {
+      const result = await withRefreshedSession(req, base);
+      refreshed = result.res;
+      signedIn = result.signedIn;
+      if (key) rememberVerdict(key, signedIn, now);
+    }
+  }
 
   if (!publicPath) {
     if (!signedIn) {
