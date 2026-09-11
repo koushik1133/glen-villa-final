@@ -30,7 +30,7 @@ export default function StageMove({
         defaultValue={stage}
         onChange={() => form.current?.requestSubmit()}
         aria-label="Move to stage"
-        className="w-full rounded-lg border border-[--color-line] bg-[--color-void] px-2 py-1.5 text-[11px] text-[--color-muted] transition hover:border-[--color-gold-line] hover:text-[--color-ink] focus:border-[--color-gold-line] focus:outline-none"
+        className="w-full rounded-lg border border-[var(--color-line)] bg-[var(--color-void)] px-2 py-1.5 text-[11px] text-[var(--color-muted)] transition hover:border-[var(--color-gold-line)] hover:text-[var(--color-ink)] focus:border-[var(--color-gold-line)] focus:outline-none"
       >
         {PIPELINE_STAGES.map((value) => (
           <option key={value} value={value}>

@@ -139,7 +139,7 @@ export default function Copilot({
                 type="button"
                 disabled={busy}
                 onClick={() => void ask(s)}
-                className="rounded-full border border-[--color-line] bg-[--color-void]/50 px-3 py-1.5 text-[11px] text-[--color-muted] transition hover:border-[--color-gold-line] hover:text-[--color-gold-100] disabled:opacity-40"
+                className="rounded-full border border-[var(--color-line)] bg-[var(--color-void)]/50 px-3 py-1.5 text-[11px] text-[var(--color-muted)] transition hover:border-[var(--color-gold-line)] hover:text-[var(--color-gold-100)] disabled:opacity-40"
               >
                 {s}
               </button>
@@ -148,17 +148,17 @@ export default function Copilot({
         </form>
 
         {error && (
-          <div className="flex items-start gap-2.5 rounded-xl border border-[rgba(244,105,95,0.35)] bg-[rgba(244,105,95,0.08)] p-4 text-sm text-[--color-ink]">
-            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[--color-danger]" aria-hidden />
+          <div className="flex items-start gap-2.5 rounded-xl border border-[rgba(244,105,95,0.35)] bg-[rgba(244,105,95,0.08)] p-4 text-sm text-[var(--color-ink)]">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[var(--color-danger)]" aria-hidden />
             <span>{error}</span>
           </div>
         )}
 
         {answers.length === 0 && !busy && (
-          <div className="rounded-xl border border-dashed border-[--color-line] px-6 py-12 text-center">
-            <Sparkles className="mx-auto h-5 w-5 text-[--color-gold-500]" aria-hidden />
-            <p className="mt-3 text-sm font-medium text-[--color-ink]">Nothing asked yet.</p>
-            <p className="mx-auto mt-2 max-w-md text-sm text-[--color-muted]">
+          <div className="rounded-xl border border-dashed border-[var(--color-line)] px-6 py-12 text-center">
+            <Sparkles className="mx-auto h-5 w-5 text-[var(--color-gold-500)]" aria-hidden />
+            <p className="mt-3 text-sm font-medium text-[var(--color-ink)]">Nothing asked yet.</p>
+            <p className="mx-auto mt-2 max-w-md text-sm text-[var(--color-muted)]">
               Answers are drawn only from the aggregates in the panel beside this one. If a number
               is not in there, the answer will say so rather than estimate it.
             </p>
@@ -167,11 +167,11 @@ export default function Copilot({
 
         {answers.map((a) => (
           <article key={a.id} className="card">
-            <p className="text-sm font-medium text-[--color-gold-100]">{a.question}</p>
-            <div className="mt-3 whitespace-pre-wrap border-l-2 border-[--color-gold-line] pl-4 text-sm leading-relaxed text-[--color-ink]">
+            <p className="text-sm font-medium text-[var(--color-gold-100)]">{a.question}</p>
+            <div className="mt-3 whitespace-pre-wrap border-l-2 border-[var(--color-gold-line)] pl-4 text-sm leading-relaxed text-[var(--color-ink)]">
               {a.answer}
             </div>
-            <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-[--color-line] pt-3 text-[11px] text-[--color-faint]">
+            <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-[var(--color-line)] pt-3 text-[11px] text-[var(--color-faint)]">
               <span>
                 {a.provider} · {a.model}
               </span>
@@ -188,10 +188,10 @@ export default function Copilot({
       <aside className="min-w-0">
         <section className="card xl:sticky xl:top-6">
           <header className="mb-3 flex items-start gap-2.5">
-            <Database className="mt-0.5 h-4 w-4 shrink-0 text-[--color-gold-500]" aria-hidden />
+            <Database className="mt-0.5 h-4 w-4 shrink-0 text-[var(--color-gold-500)]" aria-hidden />
             <div>
-              <h2 className="text-sm font-semibold text-[--color-ink]">What the copilot can see</h2>
-              <p className="mt-1 text-xs leading-relaxed text-[--color-muted]">
+              <h2 className="text-sm font-semibold text-[var(--color-ink)]">What the copilot can see</h2>
+              <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)]">
                 A fixed set of aggregates, re-read on every question. No query tool, no SQL, no
                 access to individual conversations.
               </p>
@@ -212,15 +212,15 @@ export default function Copilot({
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-baseline justify-between gap-3 py-1">
-      <dt className="text-xs text-[--color-muted]">{label}</dt>
-      <dd className="text-xs font-semibold tabular-nums text-[--color-ink]">{value}</dd>
+      <dt className="text-xs text-[var(--color-muted)]">{label}</dt>
+      <dd className="text-xs font-semibold tabular-nums text-[var(--color-ink)]">{value}</dd>
     </div>
   );
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="border-t border-[--color-line] py-2 first:border-t-0 first:pt-0">
+    <div className="border-t border-[var(--color-line)] py-2 first:border-t-0 first:pt-0">
       <p className="label mb-1">{title}</p>
       <dl>{children}</dl>
     </div>
@@ -272,13 +272,13 @@ function ContextSummary({ context }: { context: CopilotContext }) {
       </Section>
 
       {context.unavailable.length > 0 && (
-        <div className="mt-2 rounded-lg border border-[--color-gold-line] bg-[--color-gold-soft] p-3">
-          <p className="text-[11px] font-semibold text-[--color-gold-300]">
+        <div className="mt-2 rounded-lg border border-[var(--color-gold-line)] bg-[var(--color-gold-soft)] p-3">
+          <p className="text-[11px] font-semibold text-[var(--color-gold-300)]">
             Not readable right now — treated as missing, never as zero
           </p>
           <ul className="mt-1 space-y-0.5">
             {context.unavailable.map((u) => (
-              <li key={u} className="text-[11px] text-[--color-muted]">
+              <li key={u} className="text-[11px] text-[var(--color-muted)]">
                 {u}
               </li>
             ))}
@@ -299,14 +299,14 @@ function ContextSummary({ context }: { context: CopilotContext }) {
 function ContextDisclosure({ context, label }: { context: CopilotContext; label: string }) {
   return (
     <details className="group mt-3">
-      <summary className="flex cursor-pointer list-none items-center gap-1.5 text-[11px] font-medium text-[--color-muted] transition hover:text-[--color-gold-100]">
+      <summary className="flex cursor-pointer list-none items-center gap-1.5 text-[11px] font-medium text-[var(--color-muted)] transition hover:text-[var(--color-gold-100)]">
         <ChevronDown
           className="h-3.5 w-3.5 transition-transform group-open:rotate-180"
           aria-hidden
         />
         {label}
       </summary>
-      <pre className="mt-2 max-h-80 overflow-auto rounded-lg border border-[--color-line] bg-[--color-void] p-3 font-mono text-[10px] leading-relaxed text-[--color-muted]">
+      <pre className="mt-2 max-h-80 overflow-auto rounded-lg border border-[var(--color-line)] bg-[var(--color-void)] p-3 font-mono text-[10px] leading-relaxed text-[var(--color-muted)]">
         {JSON.stringify(context, null, 2)}
       </pre>
     </details>

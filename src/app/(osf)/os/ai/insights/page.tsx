@@ -31,10 +31,10 @@ const SEVERITY_TONE: Record<InsightSeverity, BadgeTone> = {
 };
 
 const SEVERITY_RAIL: Record<InsightSeverity, string> = {
-  critical: "border-l-[--color-danger]",
-  warning: "border-l-[--color-warm]",
-  info: "border-l-[--color-info]",
-  success: "border-l-[--color-success]",
+  critical: "border-l-[var(--color-danger)]",
+  warning: "border-l-[var(--color-warm)]",
+  info: "border-l-[var(--color-info)]",
+  success: "border-l-[var(--color-success)]",
 };
 
 function InsightCard({ insight }: { insight: AiInsight }) {
@@ -44,8 +44,8 @@ function InsightCard({ insight }: { insight: AiInsight }) {
     <Card className={`border-l-4 ${SEVERITY_RAIL[insight.severity]}`}>
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <h3 className="text-sm font-semibold text-[--color-ink]">{insight.title}</h3>
-          <p className="mt-1.5 text-sm leading-relaxed text-[--color-muted]">
+          <h3 className="text-sm font-semibold text-[var(--color-ink)]">{insight.title}</h3>
+          <p className="mt-1.5 text-sm leading-relaxed text-[var(--color-muted)]">
             {insight.description}
           </p>
         </div>
@@ -56,11 +56,11 @@ function InsightCard({ insight }: { insight: AiInsight }) {
       </div>
 
       {insight.evidence.length > 0 && (
-        <dl className="mt-4 grid gap-x-6 gap-y-1.5 rounded-xl border border-[--color-line] bg-[--color-void]/40 p-3.5 sm:grid-cols-2">
+        <dl className="mt-4 grid gap-x-6 gap-y-1.5 rounded-xl border border-[var(--color-line)] bg-[var(--color-void)]/40 p-3.5 sm:grid-cols-2">
           {insight.evidence.map((e, i) => (
             <div key={`${e.label}-${i}`} className="flex items-baseline justify-between gap-3">
-              <dt className="text-xs text-[--color-muted]">{e.label}</dt>
-              <dd className="text-sm font-semibold tabular-nums text-[--color-ink]">{e.value}</dd>
+              <dt className="text-xs text-[var(--color-muted)]">{e.label}</dt>
+              <dd className="text-sm font-semibold tabular-nums text-[var(--color-ink)]">{e.value}</dd>
             </div>
           ))}
         </dl>
@@ -69,7 +69,7 @@ function InsightCard({ insight }: { insight: AiInsight }) {
       {details.length > 0 && (
         <ul className="mt-2 space-y-0.5">
           {details.map((e, i) => (
-            <li key={`detail-${i}`} className="text-[11px] text-[--color-faint]">
+            <li key={`detail-${i}`} className="text-[11px] text-[var(--color-faint)]">
               {e.detail}
             </li>
           ))}
@@ -81,24 +81,24 @@ function InsightCard({ insight }: { insight: AiInsight }) {
           {insight.recommendation && (
             <div>
               <p className="label">What to do</p>
-              <p className="mt-1 text-sm text-[--color-ink]">{insight.recommendation}</p>
+              <p className="mt-1 text-sm text-[var(--color-ink)]">{insight.recommendation}</p>
             </div>
           )}
           {insight.expected_impact && (
             <div>
               <p className="label">Expected impact</p>
-              <p className="mt-1 text-sm text-[--color-ink]">{insight.expected_impact}</p>
+              <p className="mt-1 text-sm text-[var(--color-ink)]">{insight.expected_impact}</p>
             </div>
           )}
         </div>
       )}
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[--color-line] pt-3">
-        <div className="flex flex-wrap items-center gap-3 text-[11px] text-[--color-faint]">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--color-line)] pt-3">
+        <div className="flex flex-wrap items-center gap-3 text-[11px] text-[var(--color-faint)]">
           {insight.action_href && (
             <Link
               href={insight.action_href}
-              className="inline-flex items-center gap-1 font-medium text-[--color-gold-300] hover:text-[--color-gold-100]"
+              className="inline-flex items-center gap-1 font-medium text-[var(--color-gold-300)] hover:text-[var(--color-gold-100)]"
             >
               {insight.action_label ?? "Open"}
               <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
@@ -167,8 +167,8 @@ export default async function InsightsPage({
       />
 
       {error && (
-        <div className="mb-6 flex items-start gap-2.5 rounded-xl border border-[rgba(244,105,95,0.35)] bg-[rgba(244,105,95,0.08)] p-4 text-sm text-[--color-ink]">
-          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[--color-danger]" aria-hidden />
+        <div className="mb-6 flex items-start gap-2.5 rounded-xl border border-[rgba(244,105,95,0.35)] bg-[rgba(244,105,95,0.08)] p-4 text-sm text-[var(--color-ink)]">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[var(--color-danger)]" aria-hidden />
           <span>{error}</span>
         </div>
       )}
@@ -201,7 +201,7 @@ export default async function InsightsPage({
             </form>
           }
         >
-          <span className="font-medium text-[--color-ink]">Nothing crosses a threshold.</span>
+          <span className="font-medium text-[var(--color-ink)]">Nothing crosses a threshold.</span>
           <span className="mx-auto mt-2 block max-w-xl">
             Either no run has happened yet, or the current numbers sit below every line worth
             flagging — an objection has to reach {THRESHOLDS.objectionSharePct}% of at least{" "}
@@ -217,9 +217,9 @@ export default async function InsightsPage({
             if (group.length === 0) return null;
             return (
               <section key={severity}>
-                <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-[--color-ink]">
+                <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-[var(--color-ink)]">
                   {SEVERITY_LABELS[severity]}
-                  <span className="pill bg-[--color-raised] text-[--color-muted]">
+                  <span className="pill bg-[var(--color-raised)] text-[var(--color-muted)]">
                     {group.length}
                   </span>
                 </h2>
@@ -234,7 +234,7 @@ export default async function InsightsPage({
         </div>
       )}
 
-      <p className="mt-8 text-xs leading-relaxed text-[--color-faint]">
+      <p className="mt-8 text-xs leading-relaxed text-[var(--color-faint)]">
         A dismissed insight is suppressed for {THRESHOLDS.dismissalCooldownDays} days even if its
         rule keeps firing, and an insight whose condition stops holding is deleted rather than left
         standing — a stale finding is worse than none.

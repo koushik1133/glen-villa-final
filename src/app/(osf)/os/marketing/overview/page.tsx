@@ -131,7 +131,7 @@ export default async function MarketingOverviewPage({ searchParams }: { searchPa
               height={280}
             />
           )}
-          <p className="mt-3 flex items-start gap-1.5 border-t border-[--color-line] pt-3 text-[11px] leading-relaxed text-[--color-faint]">
+          <p className="mt-3 flex items-start gap-1.5 border-t border-[var(--color-line)] pt-3 text-[11px] leading-relaxed text-[var(--color-faint)]">
             <Info size={12} strokeWidth={1.75} aria-hidden className="mt-0.5 shrink-0" />
             Spend has no line on this chart because it has no daily history: each campaign stores one
             running total, overwritten whenever somebody updates it. A spend-over-time series needs the
@@ -158,7 +158,7 @@ export default async function MarketingOverviewPage({ searchParams }: { searchPa
         ) : (
           <div className="-mx-5 overflow-x-auto">
             <table className="w-full min-w-[820px]">
-              <thead className="border-b border-[--color-line]">
+              <thead className="border-b border-[var(--color-line)]">
                 <tr>
                   <th className="th">Platform</th>
                   <th className="th text-right">Spend</th>
@@ -170,14 +170,14 @@ export default async function MarketingOverviewPage({ searchParams }: { searchPa
                   <th className="th text-right">ROAS</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[--color-line]">
+              <tbody className="divide-y divide-[var(--color-line)]">
                 {platforms.map((p) => (
                   <tr key={p.platform} className="row-hover">
                     <td className="td font-medium">{humanise(p.platform)}</td>
                     <td className="td whitespace-nowrap text-right tabular-nums">{rupees(p.spendInr)}</td>
                     <td className="td">
                       <div className="flex items-center gap-2">
-                        <span className="w-11 shrink-0 text-right text-xs tabular-nums text-[--color-muted]">
+                        <span className="w-11 shrink-0 text-right text-xs tabular-nums text-[var(--color-muted)]">
                           {p.spendSharePct === null ? "—" : `${p.spendSharePct}%`}
                         </span>
                         <span className="w-24"><Meter value={p.spendSharePct ?? 0} max={100} /></span>
@@ -186,7 +186,7 @@ export default async function MarketingOverviewPage({ searchParams }: { searchPa
                     <td className="td text-right tabular-nums">{formatNumber(p.leads)}</td>
                     <td className="td">
                       <div className="flex items-center gap-2">
-                        <span className="w-11 shrink-0 text-right text-xs tabular-nums text-[--color-muted]">
+                        <span className="w-11 shrink-0 text-right text-xs tabular-nums text-[var(--color-muted)]">
                           {p.leadSharePct === null ? "—" : `${p.leadSharePct}%`}
                         </span>
                         <span className="w-24">
@@ -210,7 +210,7 @@ export default async function MarketingOverviewPage({ searchParams }: { searchPa
         hint="Straight from villa_campaign_performance. Leads attach to a campaign by exact name match on the lead's campaign field."
         className="mt-5"
         actions={
-          <Link href="/os/marketing/campaigns" className="text-xs text-[--color-muted] transition hover:text-[--color-gold-300]">
+          <Link href="/os/marketing/campaigns" className="text-xs text-[var(--color-muted)] transition hover:text-[var(--color-gold-300)]">
             All campaigns →
           </Link>
         }
@@ -228,7 +228,7 @@ export default async function MarketingOverviewPage({ searchParams }: { searchPa
         ) : (
           <div className="-mx-5 overflow-x-auto">
             <table className="w-full min-w-[860px]">
-              <thead className="border-b border-[--color-line]">
+              <thead className="border-b border-[var(--color-line)]">
                 <tr>
                   <th className="th">Campaign</th>
                   <th className="th">Status</th>
@@ -240,12 +240,12 @@ export default async function MarketingOverviewPage({ searchParams }: { searchPa
                   <th className="th text-right">ROAS</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[--color-line]">
+              <tbody className="divide-y divide-[var(--color-line)]">
                 {topCampaigns.map((c) => (
                   <tr key={c.id} className="row-hover">
                     <td className="td">
                       <span className="font-medium">{c.name}</span>
-                      <span className="block text-xs text-[--color-muted]">{humanise(c.platform)}</span>
+                      <span className="block text-xs text-[var(--color-muted)]">{humanise(c.platform)}</span>
                       <span className="mt-1.5 block w-28">
                         <Meter value={c.spent_inr} max={maxSpend} />
                       </span>
@@ -259,7 +259,7 @@ export default async function MarketingOverviewPage({ searchParams }: { searchPa
                     <td className="td text-right tabular-nums">{pct(c.ctr)}</td>
                     <td className="td text-right tabular-nums">
                       {formatNumber(c.leads)}
-                      <span className="ml-1.5 text-xs text-[--color-faint]">{c.qualified_leads} qual.</span>
+                      <span className="ml-1.5 text-xs text-[var(--color-faint)]">{c.qualified_leads} qual.</span>
                     </td>
                     <td className="td whitespace-nowrap text-right tabular-nums">{rupees(c.cpl_inr)}</td>
                     <td className="td text-right tabular-nums">{formatNumber(c.bookings)}</td>
@@ -273,19 +273,19 @@ export default async function MarketingOverviewPage({ searchParams }: { searchPa
       </Card>
 
       <Card gold title="What these numbers are, exactly" className="mt-5">
-        <ul className="space-y-2.5 text-sm leading-relaxed text-[--color-muted]">
+        <ul className="space-y-2.5 text-sm leading-relaxed text-[var(--color-muted)]">
           <li>
-            <span className="text-[--color-ink]">Spend, impressions and clicks</span> are whatever a
+            <span className="text-[var(--color-ink)]">Spend, impressions and clicks</span> are whatever a
             person last typed on the campaigns page. They are not synced from Meta or Google — no ad API
             client exists in this codebase.
           </li>
           <li>
-            <span className="text-[--color-ink]">Leads</span> are counted by matching a lead&apos;s
+            <span className="text-[var(--color-ink)]">Leads</span> are counted by matching a lead&apos;s
             campaign field against the campaign name, so a typo in either place breaks attribution
             silently. Revenue is booked value on those leads&apos; bookings, excluding cancellations.
           </li>
           <li>
-            <span className="text-[--color-ink]">The date range</span> filters the leads chart only.
+            <span className="text-[var(--color-ink)]">The date range</span> filters the leads chart only.
             Spend has no timestamp to filter on, so every spend, CPL and ROAS figure on this page is
             all-time.
           </li>

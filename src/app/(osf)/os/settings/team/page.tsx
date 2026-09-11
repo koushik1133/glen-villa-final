@@ -34,20 +34,20 @@ function roleLabel(role: string): string {
 function GrantCell({ grant }: { grant: Grant }) {
   if (grant === "full") {
     return (
-      <span className="mx-auto grid h-5 w-5 place-items-center rounded-full bg-[--color-gold-soft] text-[--color-gold-300]">
+      <span className="mx-auto grid h-5 w-5 place-items-center rounded-full bg-[var(--color-gold-soft)] text-[var(--color-gold-300)]">
         <Check size={12} strokeWidth={3} aria-hidden />
       </span>
     );
   }
   if (grant === "own") {
     return (
-      <span className="mx-auto block w-fit rounded-md bg-[rgba(109,168,232,0.14)] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[--color-info]">
+      <span className="mx-auto block w-fit rounded-md bg-[rgba(109,168,232,0.14)] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--color-info)]">
         Own
       </span>
     );
   }
   return (
-    <span className="mx-auto grid h-5 w-5 place-items-center text-[--color-faint]">
+    <span className="mx-auto grid h-5 w-5 place-items-center text-[var(--color-faint)]">
       <Minus size={11} strokeWidth={2.5} aria-hidden />
     </span>
   );
@@ -79,7 +79,7 @@ export default async function TeamSettingsPage({ searchParams }: { searchParams:
       />
 
       {error && (
-        <div className="mb-5 flex items-start gap-2 rounded-xl border border-[rgba(244,105,95,0.3)] bg-[rgba(244,105,95,0.08)] px-4 py-3 text-sm text-[--color-danger]">
+        <div className="mb-5 flex items-start gap-2 rounded-xl border border-[rgba(244,105,95,0.3)] bg-[rgba(244,105,95,0.08)] px-4 py-3 text-sm text-[var(--color-danger)]">
           <AlertCircle size={15} strokeWidth={2} aria-hidden className="mt-0.5 shrink-0" />
           {error}
         </div>
@@ -90,43 +90,43 @@ export default async function TeamSettingsPage({ searchParams }: { searchParams:
         statement about access control; if the caveat came after, most people
         would have already drawn the wrong conclusion.
       */}
-      <div className="mb-5 rounded-2xl border border-[--color-gold-line] bg-[--color-gold-soft] p-5">
-        <h2 className="flex items-center gap-2 text-sm font-semibold text-[--color-gold-300]">
+      <div className="mb-5 rounded-2xl border border-[var(--color-gold-line)] bg-[var(--color-gold-soft)] p-5">
+        <h2 className="flex items-center gap-2 text-sm font-semibold text-[var(--color-gold-300)]">
           <AlertTriangle size={15} strokeWidth={2} aria-hidden />
           These roles are labels, not access control
         </h2>
-        <p className="mt-2 text-sm leading-relaxed text-[--color-ink]">
+        <p className="mt-2 text-sm leading-relaxed text-[var(--color-ink)]">
           This console is gated by <span className="font-semibold">Villa-os&apos;s session</span> and its
           page-access rules, not by anything on this page. Whoever Villa-os lets in can open every page
           here and submit every form, whatever the grid below says. Nothing on this page changes that —
           access is managed in Villa-os settings.
         </p>
-        <div className="mt-4 rounded-xl border border-[--color-line] bg-[--color-void]/50 p-4">
-          <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[--color-faint]">
+        <div className="mt-4 rounded-xl border border-[var(--color-line)] bg-[var(--color-void)]/50 p-4">
+          <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--color-faint)]">
             <LockKeyhole size={12} strokeWidth={2} aria-hidden />
             What real RBAC would take
           </p>
-          <ul className="mt-2.5 space-y-2 text-sm leading-relaxed text-[--color-muted]">
+          <ul className="mt-2.5 space-y-2 text-sm leading-relaxed text-[var(--color-muted)]">
             <li>
-              <span className="text-[--color-ink]">Per-user identity.</span> Supabase Auth or an SSO
+              <span className="text-[var(--color-ink)]">Per-user identity.</span> Supabase Auth or an SSO
               provider issuing a session tied to a person, replacing the one shared password.
             </li>
             <li>
-              <span className="text-[--color-ink]">A role on the session.</span> The middleware would have
+              <span className="text-[var(--color-ink)]">A role on the session.</span> The middleware would have
               to resolve a user id to a{" "}
               <code className="rounded bg-black/40 px-1 py-0.5 text-[11px]">villa_team_members</code> row,
               and every route handler and page load would check the capability it needs before acting —
               hiding a nav link is not a permission.
             </li>
             <li>
-              <span className="text-[--color-ink]">Database policies.</span> Customer tables have RLS
+              <span className="text-[var(--color-ink)]">Database policies.</span> Customer tables have RLS
               enabled with no policy today, and the app reads them with the service-role key, which
               bypasses RLS entirely. Real enforcement means policies keyed on{" "}
               <code className="rounded bg-black/40 px-1 py-0.5 text-[11px]">auth.uid()</code> and dropping
               the service-role key from request paths that serve a user.
             </li>
             <li>
-              <span className="text-[--color-ink]">An audit trail.</span>{" "}
+              <span className="text-[var(--color-ink)]">An audit trail.</span>{" "}
               <code className="rounded bg-black/40 px-1 py-0.5 text-[11px]">villa_activities.actor</code> is
               free text a caller supplies. With identities it would become a foreign key, and &ldquo;who
               reassigned this lead&rdquo; would become answerable.
@@ -142,8 +142,8 @@ export default async function TeamSettingsPage({ searchParams }: { searchParams:
         <div className="-mx-5 overflow-x-auto">
           <table className="w-full min-w-[900px]">
             <thead>
-              <tr className="border-b border-[--color-line]">
-                <th className="th sticky left-0 z-10 bg-[--color-surface]">Capability</th>
+              <tr className="border-b border-[var(--color-line)]">
+                <th className="th sticky left-0 z-10 bg-[var(--color-surface)]">Capability</th>
                 {USER_ROLES.map((role) => (
                   <th key={role} className="th text-center">
                     <span className="block leading-tight">{USER_ROLE_LABELS[role]}</span>
@@ -151,12 +151,12 @@ export default async function TeamSettingsPage({ searchParams }: { searchParams:
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-[--color-line]">
+            <tbody className="divide-y divide-[var(--color-line)]">
               {CAPABILITIES.map((cap) => (
                 <tr key={cap.key} className="row-hover">
-                  <td className="td sticky left-0 z-10 bg-[--color-surface]">
+                  <td className="td sticky left-0 z-10 bg-[var(--color-surface)]">
                     <span className="font-medium">{cap.label}</span>
-                    <span className="mt-0.5 block max-w-[280px] text-xs leading-tight text-[--color-muted]">
+                    <span className="mt-0.5 block max-w-[280px] text-xs leading-tight text-[var(--color-muted)]">
                       {cap.detail}
                     </span>
                   </td>
@@ -171,7 +171,7 @@ export default async function TeamSettingsPage({ searchParams }: { searchParams:
           </table>
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-[--color-line] pt-4 text-xs text-[--color-muted]">
+        <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-[var(--color-line)] pt-4 text-xs text-[var(--color-muted)]">
           <span className="flex items-center gap-2">
             <GrantCell grant="full" /> Full access
           </span>
@@ -194,7 +194,7 @@ export default async function TeamSettingsPage({ searchParams }: { searchParams:
         ) : (
           <div className="-mx-5 overflow-x-auto">
             <table className="w-full min-w-[900px]">
-              <thead className="border-b border-[--color-line]">
+              <thead className="border-b border-[var(--color-line)]">
                 <tr>
                   <th className="th">Person</th>
                   <th className="th">Role</th>
@@ -204,7 +204,7 @@ export default async function TeamSettingsPage({ searchParams }: { searchParams:
                   <th className="th text-right">Joined</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[--color-line]">
+              <tbody className="divide-y divide-[var(--color-line)]">
                 {roster.map((member) => (
                   <RosterRow key={member.id} member={member} />
                 ))}
@@ -253,12 +253,12 @@ export default async function TeamSettingsPage({ searchParams }: { searchParams:
               </Labelled>
             </div>
 
-            <label className="flex items-center gap-2.5 text-sm text-[--color-ink]">
+            <label className="flex items-center gap-2.5 text-sm text-[var(--color-ink)]">
               <input
                 type="checkbox"
                 name="acceptsLeads"
                 defaultChecked
-                className="h-3.5 w-3.5 accent-[--color-gold-500]"
+                className="h-3.5 w-3.5 accent-[var(--color-gold-500)]"
               />
               Include in the round-robin lead rotation
             </label>
@@ -274,8 +274,8 @@ export default async function TeamSettingsPage({ searchParams }: { searchParams:
           <dl className="space-y-3">
             {USER_ROLES.map((role) => (
               <div key={role}>
-                <dt className="text-[13px] font-semibold text-[--color-ink]">{USER_ROLE_LABELS[role]}</dt>
-                <dd className="mt-0.5 text-xs leading-relaxed text-[--color-muted]">
+                <dt className="text-[13px] font-semibold text-[var(--color-ink)]">{USER_ROLE_LABELS[role]}</dt>
+                <dd className="mt-0.5 text-xs leading-relaxed text-[var(--color-muted)]">
                   {USER_ROLE_BLURBS[role]}
                 </dd>
               </div>
@@ -292,7 +292,7 @@ function RosterRow({ member }: { member: TeamRosterMember }) {
     <tr className={`row-hover ${member.is_active ? "" : "opacity-55"}`}>
       <td className="td">
         <span className="font-medium">{member.name}</span>
-        <span className="block text-xs text-[--color-muted]">
+        <span className="block text-xs text-[var(--color-muted)]">
           {member.email ?? member.phone ?? "No contact recorded"}
         </span>
         {!member.is_active && (
@@ -323,7 +323,7 @@ function RosterRow({ member }: { member: TeamRosterMember }) {
           </button>
         </form>
       </td>
-      <td className="td capitalize text-[--color-muted]">{member.department}</td>
+      <td className="td capitalize text-[var(--color-muted)]">{member.department}</td>
       <td className="td">
         {member.accepts_leads ? (
           <Badge tone="success">In rotation</Badge>
@@ -334,7 +334,7 @@ function RosterRow({ member }: { member: TeamRosterMember }) {
       <td className="td text-right tabular-nums">
         {member.quota_inr ? formatCr(member.quota_inr) : "—"}
       </td>
-      <td className="td text-right text-[--color-muted]">{formatDate(member.joined_at)}</td>
+      <td className="td text-right text-[var(--color-muted)]">{formatDate(member.joined_at)}</td>
     </tr>
   );
 }
@@ -351,7 +351,7 @@ function Labelled({
   return (
     <label className="block">
       <span className="label">{label}</span>
-      {hint && <span className="mt-0.5 block text-[11px] leading-tight text-[--color-faint]">{hint}</span>}
+      {hint && <span className="mt-0.5 block text-[11px] leading-tight text-[var(--color-faint)]">{hint}</span>}
       <span className="mt-1.5 block">{children}</span>
     </label>
   );

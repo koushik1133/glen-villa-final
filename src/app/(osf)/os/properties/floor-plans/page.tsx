@@ -82,7 +82,7 @@ export default async function FloorPlansPage({
             }
           >
             No floor, site or master plan is on record.{" "}
-            <code className="rounded bg-[--color-canvas] px-1.5 py-0.5 text-xs">villa_assets</code>{" "}
+            <code className="rounded bg-[var(--color-canvas)] px-1.5 py-0.5 text-xs">villa_assets</code>{" "}
             holds nothing of those kinds, so the agent has no layout to send when a buyer asks for one.
           </Empty>
         </Card>
@@ -136,7 +136,7 @@ export default async function FloorPlansPage({
                   actions={
                     <Link
                       href={`/os/properties/projects/${group.slug}`}
-                      className="text-xs text-[--color-gold-300] underline underline-offset-2"
+                      className="text-xs text-[var(--color-gold-300)] underline underline-offset-2"
                     >
                       Dossier
                     </Link>
@@ -145,10 +145,10 @@ export default async function FloorPlansPage({
                   <div className="space-y-5">
                     {group.sections.map((section) => (
                       <section key={section.key}>
-                        <h3 className="mb-2.5 flex items-center gap-2 border-b border-[--color-line] pb-2 text-xs font-semibold uppercase tracking-[0.12em] text-[--color-gold-300]">
+                        <h3 className="mb-2.5 flex items-center gap-2 border-b border-[var(--color-line)] pb-2 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--color-gold-300)]">
                           <Ruler size={12} strokeWidth={2} aria-hidden />
                           {section.label}
-                          <span className="ml-auto font-normal normal-case tracking-normal text-[--color-faint]">
+                          <span className="ml-auto font-normal normal-case tracking-normal text-[var(--color-faint)]">
                             {formatNumber(section.assets.length)}
                           </span>
                         </h3>
@@ -202,12 +202,12 @@ function KindPill({
       href={href}
       className={`pill border transition ${
         active
-          ? "border-[--color-gold-line] bg-[--color-gold-soft] text-[--color-gold-100]"
-          : "border-[--color-line] bg-[--color-surface] text-[--color-muted] hover:border-[--color-line-strong] hover:text-[--color-ink]"
+          ? "border-[var(--color-gold-line)] bg-[var(--color-gold-soft)] text-[var(--color-gold-100)]"
+          : "border-[var(--color-line)] bg-[var(--color-surface)] text-[var(--color-muted)] hover:border-[var(--color-line-strong)] hover:text-[var(--color-ink)]"
       }`}
     >
       {label}
-      <span className="tabular-nums text-[--color-faint]">{count}</span>
+      <span className="tabular-nums text-[var(--color-faint)]">{count}</span>
     </Link>
   );
 }
@@ -216,10 +216,10 @@ function PlanCard({ asset }: { asset: AssetRow }) {
   const image = isImageAsset(asset);
 
   return (
-    <li className="overflow-hidden rounded-xl border border-[--color-line] bg-[--color-void]/40 transition hover:border-[--color-line-strong]">
+    <li className="overflow-hidden rounded-xl border border-[var(--color-line)] bg-[var(--color-void)]/40 transition hover:border-[var(--color-line-strong)]">
       <a href={asset.url} target="_blank" rel="noreferrer noopener" className="block">
         <div
-          className="relative flex h-36 items-center justify-center border-b border-[--color-line] bg-[--color-canvas]"
+          className="relative flex h-36 items-center justify-center border-b border-[var(--color-line)] bg-[var(--color-canvas)]"
           style={
             image
               ? {
@@ -231,14 +231,14 @@ function PlanCard({ asset }: { asset: AssetRow }) {
           }
         >
           {!image && (
-            <div className="flex flex-col items-center gap-1.5 text-[--color-muted]">
+            <div className="flex flex-col items-center gap-1.5 text-[var(--color-muted)]">
               <FileText size={26} strokeWidth={1.4} aria-hidden />
               <span className="text-[11px] font-semibold tracking-wide">{assetExtension(asset)}</span>
             </div>
           )}
 
           {asset.is_ai_generated && (
-            <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-[rgba(10,10,12,0.85)] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[--color-warm] ring-1 ring-[rgba(239,180,92,0.45)]">
+            <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-[rgba(10,10,12,0.85)] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--color-warm)] ring-1 ring-[rgba(239,180,92,0.45)]">
               <Wand2 size={10} strokeWidth={2.2} aria-hidden />
               Artist&rsquo;s impression
             </span>
@@ -246,12 +246,12 @@ function PlanCard({ asset }: { asset: AssetRow }) {
         </div>
 
         <div className="p-3.5">
-          <p className="flex items-start justify-between gap-2 text-sm leading-snug text-[--color-ink]">
+          <p className="flex items-start justify-between gap-2 text-sm leading-snug text-[var(--color-ink)]">
             <span className="min-w-0 flex-1">{asset.title}</span>
-            <ExternalLink size={13} strokeWidth={1.75} className="mt-0.5 shrink-0 text-[--color-faint]" aria-hidden />
+            <ExternalLink size={13} strokeWidth={1.75} className="mt-0.5 shrink-0 text-[var(--color-faint)]" aria-hidden />
           </p>
           {asset.description && (
-            <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-[--color-muted]">
+            <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-[var(--color-muted)]">
               {asset.description}
             </p>
           )}
@@ -268,7 +268,7 @@ function PlanCard({ asset }: { asset: AssetRow }) {
       </a>
 
       {asset.is_ai_generated && (
-        <p className="border-t border-[rgba(239,180,92,0.25)] bg-[rgba(239,180,92,0.06)] px-3.5 py-2 text-[11px] leading-relaxed text-[--color-warm]">
+        <p className="border-t border-[rgba(239,180,92,0.25)] bg-[rgba(239,180,92,0.06)] px-3.5 py-2 text-[11px] leading-relaxed text-[var(--color-warm)]">
           Computer-generated. It depicts an intended design, not a built villa, and must be described
           that way to a buyer.
         </p>

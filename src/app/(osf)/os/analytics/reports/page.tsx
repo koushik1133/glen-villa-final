@@ -62,13 +62,13 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
                 <div className="flex gap-8">
                   <div>
                     <p className="label">Rows</p>
-                    <p className="mt-1 text-2xl font-semibold tabular-nums text-[--color-ink]">
+                    <p className="mt-1 text-2xl font-semibold tabular-nums text-[var(--color-ink)]">
                       {formatNumber(rows)}
                     </p>
                   </div>
                   <div>
                     <p className="label">Columns</p>
-                    <p className="mt-1 text-2xl font-semibold tabular-nums text-[--color-muted]">
+                    <p className="mt-1 text-2xl font-semibold tabular-nums text-[var(--color-muted)]">
                       {meta.columns}
                     </p>
                   </div>
@@ -91,7 +91,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
               </div>
 
               {meta.capped && rows > EXPORT_ROW_LIMIT && (
-                <p className="mt-4 border-t border-[--color-line] pt-3 text-xs text-[--color-warm]">
+                <p className="mt-4 border-t border-[var(--color-line)] pt-3 text-xs text-[var(--color-warm)]">
                   This export is capped at {formatNumber(EXPORT_ROW_LIMIT)} rows, so{" "}
                   {formatNumber(rows - EXPORT_ROW_LIMIT)} of the {formatNumber(rows)} above will not be in the file —
                   the newest are kept. Narrow the date range to export the rest.
@@ -99,7 +99,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
               )}
 
               {!meta.ranged && (
-                <p className="mt-4 border-t border-[--color-line] pt-3 text-xs text-[--color-muted]">
+                <p className="mt-4 border-t border-[var(--color-line)] pt-3 text-xs text-[var(--color-muted)]">
                   The date range does not apply here — this report reads a reporting view that aggregates over all
                   time, so a filtered export would not reconcile with the numbers on screen.
                 </p>
@@ -111,10 +111,10 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
 
       <Card title="Formats" className="mt-5">
         <div className="flex items-start gap-3">
-          <Info size={16} strokeWidth={1.75} aria-hidden className="mt-0.5 shrink-0 text-[--color-info]" />
-          <div className="space-y-3 text-sm leading-relaxed text-[--color-muted]">
+          <Info size={16} strokeWidth={1.75} aria-hidden className="mt-0.5 shrink-0 text-[var(--color-info)]" />
+          <div className="space-y-3 text-sm leading-relaxed text-[var(--color-muted)]">
             <p>
-              <span className="font-medium text-[--color-ink]">CSV is the only export this build produces.</span> PDF
+              <span className="font-medium text-[var(--color-ink)]">CSV is the only export this build produces.</span> PDF
               export is not built. Rendering one server-side needs a PDF library this project does not carry, and
               adding a dependency for it is a decision for whoever owns the deployment, not something to slip in
               behind a download button.

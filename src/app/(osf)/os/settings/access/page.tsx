@@ -40,19 +40,19 @@ export default async function AccessPage({ searchParams }: { searchParams: Promi
       <>
         <PageHeader title="Access & roles" sub="Sign-in is managed by Villa-os" />
         <Card title="This console does not control who can sign in">
-          <p className="text-sm text-[--color-muted]">
+          <p className="text-sm text-[var(--color-muted)]">
             Access to VillaOS is granted by Villa-os&apos;s own session and page rules. This
             module&apos;s per-user sign-in is not active, so nothing shown here would decide who
             gets in.
           </p>
-          <p className="mt-3 text-sm text-[--color-muted]">
+          <p className="mt-3 text-sm text-[var(--color-muted)]">
             Manage people and their access in{" "}
-            <Link href="/settings" className="text-[--color-gold-500] underline underline-offset-2">
+            <Link href="/settings" className="text-[var(--color-gold-500)] underline underline-offset-2">
               Villa-os settings
             </Link>
             .
           </p>
-          <p className="mt-3 text-xs text-[--color-faint]">
+          <p className="mt-3 text-xs text-[var(--color-faint)]">
             The role list below is unavailable until this module&apos;s own accounts are configured.
           </p>
         </Card>
@@ -68,7 +68,7 @@ export default async function AccessPage({ searchParams }: { searchParams: Promi
         <>
           <PageHeader title="Access & roles" />
           <Card>
-            <p className="text-sm text-[--color-muted]">{e.message}</p>
+            <p className="text-sm text-[var(--color-muted)]">{e.message}</p>
           </Card>
         </>
       );
@@ -107,7 +107,7 @@ export default async function AccessPage({ searchParams }: { searchParams: Promi
 
       {error && (
         <Card>
-          <p className="flex items-center gap-2 text-sm text-[--color-danger]">
+          <p className="flex items-center gap-2 text-sm text-[var(--color-danger)]">
             <AlertTriangle size={14} aria-hidden /> {error}
           </p>
         </Card>
@@ -117,7 +117,7 @@ export default async function AccessPage({ searchParams }: { searchParams: Promi
           almost never intended, so it is surfaced rather than left to be found. */}
       {rolesWithNoPermissions.length > 0 && (
         <Card>
-          <p className="flex items-start gap-2 text-sm text-[--color-danger]">
+          <p className="flex items-start gap-2 text-sm text-[var(--color-danger)]">
             <AlertTriangle size={14} className="mt-0.5 shrink-0" aria-hidden />
             <span>
               <strong>{rolesWithNoPermissions.join(", ")}</strong>{" "}
@@ -141,7 +141,7 @@ export default async function AccessPage({ searchParams }: { searchParams: Promi
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[--color-line] text-left text-xs uppercase tracking-wide text-[--color-muted]">
+                <tr className="border-b border-[var(--color-line)] text-left text-xs uppercase tracking-wide text-[var(--color-muted)]">
                   <th className="py-2 font-medium">Member</th>
                   <th className="py-2 font-medium">Role</th>
                   <th className="py-2 font-medium">Department</th>
@@ -153,10 +153,10 @@ export default async function AccessPage({ searchParams }: { searchParams: Promi
               </thead>
               <tbody>
                 {accounts.map((a) => (
-                  <tr key={a.id} className="border-b border-[--color-line]/60 last:border-0">
+                  <tr key={a.id} className="border-b border-[var(--color-line)]/60 last:border-0">
                     <td className="py-2.5">
                       <div className="font-medium">{a.name}</div>
-                      <div className="text-xs text-[--color-muted]">{a.email ?? "no email"}</div>
+                      <div className="text-xs text-[var(--color-muted)]">{a.email ?? "no email"}</div>
                     </td>
                     <td className="py-2.5">
                       <form action="/api/osf/team" method="POST" className="flex items-center gap-1.5">
@@ -166,7 +166,7 @@ export default async function AccessPage({ searchParams }: { searchParams: Promi
                         <select
                           name="role"
                           defaultValue={a.role}
-                          className="rounded-md border border-[--color-line] bg-white px-2 py-1 text-xs"
+                          className="rounded-md border border-[var(--color-line)] bg-white px-2 py-1 text-xs"
                         >
                           {(isTeamRole(a.role) ? TEAM_ROLES : [a.role as never, ...TEAM_ROLES]).map(
                             (role) => (
@@ -178,13 +178,13 @@ export default async function AccessPage({ searchParams }: { searchParams: Promi
                         </select>
                         <button
                           type="submit"
-                          className="rounded-md border border-[--color-line] px-2 py-1 text-xs hover:bg-[--color-gold-soft]"
+                          className="rounded-md border border-[var(--color-line)] px-2 py-1 text-xs hover:bg-[var(--color-gold-soft)]"
                         >
                           Save
                         </button>
                       </form>
                     </td>
-                    <td className="py-2.5 text-xs text-[--color-muted]">{a.department}</td>
+                    <td className="py-2.5 text-xs text-[var(--color-muted)]">{a.department}</td>
                     <td className="py-2.5">
                       {a.hasLogin ? (
                         <Badge tone="success">Enabled</Badge>
@@ -193,14 +193,14 @@ export default async function AccessPage({ searchParams }: { searchParams: Promi
                       )}
                       {!a.isActive && <Badge tone="danger">Disabled</Badge>}
                     </td>
-                    <td className="py-2.5 text-xs text-[--color-muted]">
+                    <td className="py-2.5 text-xs text-[var(--color-muted)]">
                       {a.permissionCount === 0 ? (
-                        <span className="text-[--color-danger]">none</span>
+                        <span className="text-[var(--color-danger)]">none</span>
                       ) : (
                         `${a.permissionCount} granted`
                       )}
                     </td>
-                    <td className="py-2.5 text-xs text-[--color-muted]">
+                    <td className="py-2.5 text-xs text-[var(--color-muted)]">
                       {a.lastLoginAt ? formatDate(a.lastLoginAt) : "never"}
                     </td>
                     <td className="py-2.5">
@@ -218,11 +218,11 @@ export default async function AccessPage({ searchParams }: { searchParams: Promi
                                 minLength={12}
                                 placeholder="New password"
                                 autoComplete="new-password"
-                                className="w-28 rounded-md border border-[--color-line] bg-white px-2 py-1 text-xs"
+                                className="w-28 rounded-md border border-[var(--color-line)] bg-white px-2 py-1 text-xs"
                               />
                               <button
                                 type="submit"
-                                className="rounded-md border border-[--color-line] px-2 py-1 text-xs hover:bg-[--color-gold-soft]"
+                                className="rounded-md border border-[var(--color-line)] px-2 py-1 text-xs hover:bg-[var(--color-gold-soft)]"
                               >
                                 Reset
                               </button>
@@ -234,7 +234,7 @@ export default async function AccessPage({ searchParams }: { searchParams: Promi
                               <button
                                 type="submit"
                                 title="Deletes the login and ends every active session"
-                                className="rounded-md border border-[--color-line] px-2 py-1 text-xs text-[--color-danger] hover:bg-[rgba(220,80,80,0.08)]"
+                                className="rounded-md border border-[var(--color-line)] px-2 py-1 text-xs text-[var(--color-danger)] hover:bg-[rgba(220,80,80,0.08)]"
                               >
                                 Revoke
                               </button>
@@ -252,13 +252,13 @@ export default async function AccessPage({ searchParams }: { searchParams: Promi
                               minLength={12}
                               placeholder="Set password"
                               autoComplete="new-password"
-                              className="w-28 rounded-md border border-[--color-line] bg-white px-2 py-1 text-xs"
+                              className="w-28 rounded-md border border-[var(--color-line)] bg-white px-2 py-1 text-xs"
                             />
                             <button
                               type="submit"
                               disabled={!a.email}
                               title={a.email ? undefined : "Add an email address first"}
-                              className="flex items-center gap-1 rounded-md bg-[--color-gold-500] px-2 py-1 text-xs text-white hover:bg-[--color-gold-600] disabled:opacity-40"
+                              className="flex items-center gap-1 rounded-md bg-[var(--color-gold-500)] px-2 py-1 text-xs text-white hover:bg-[var(--color-gold-600)] disabled:opacity-40"
                             >
                               <KeyRound size={11} aria-hidden /> Create
                             </button>
@@ -274,7 +274,7 @@ export default async function AccessPage({ searchParams }: { searchParams: Promi
         )}
 
         {withoutLogin.length > 0 && (
-          <p className="mt-3 text-xs text-[--color-muted]">
+          <p className="mt-3 text-xs text-[var(--color-muted)]">
             {withoutLogin.length} active member(s) have no sign-in account. They still receive lead
             assignments and appear in reports, but cannot open the console.
           </p>
@@ -289,7 +289,7 @@ export default async function AccessPage({ searchParams }: { searchParams: Promi
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[--color-line] text-left text-xs uppercase tracking-wide text-[--color-muted]">
+              <tr className="border-b border-[var(--color-line)] text-left text-xs uppercase tracking-wide text-[var(--color-muted)]">
                 <th className="py-2 pr-3 font-medium">Capability</th>
                 {matrix.roles.map((role) => (
                   <th key={role} className="px-2 py-2 text-center font-medium">
@@ -304,7 +304,7 @@ export default async function AccessPage({ searchParams }: { searchParams: Promi
                   <tr>
                     <td
                       colSpan={matrix.roles.length + 1}
-                      className="pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wide text-[--color-faint]"
+                      className="pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wide text-[var(--color-faint)]"
                     >
                       {category}
                     </td>
@@ -312,21 +312,21 @@ export default async function AccessPage({ searchParams }: { searchParams: Promi
                   {matrix.permissions
                     .filter((p) => p.category === category)
                     .map((permission) => (
-                      <tr key={permission.key} className="border-b border-[--color-line]/60">
+                      <tr key={permission.key} className="border-b border-[var(--color-line)]/60">
                         <td className="py-2 pr-3">
                           <div className="font-medium">{permission.label}</div>
-                          <div className="text-xs text-[--color-muted]">{permission.description}</div>
+                          <div className="text-xs text-[var(--color-muted)]">{permission.description}</div>
                         </td>
                         {matrix.roles.map((role) => {
                           const granted = (matrix.byRole[role] ?? []).includes(permission.key);
                           return (
                             <td key={role} className="px-2 py-2 text-center">
                               {granted ? (
-                                <span className="mx-auto grid h-5 w-5 place-items-center rounded-full bg-[--color-gold-soft] text-[--color-gold-300]">
+                                <span className="mx-auto grid h-5 w-5 place-items-center rounded-full bg-[var(--color-gold-soft)] text-[var(--color-gold-300)]">
                                   <Check size={12} strokeWidth={3} aria-hidden />
                                 </span>
                               ) : (
-                                <span className="mx-auto grid h-5 w-5 place-items-center text-[--color-faint]">
+                                <span className="mx-auto grid h-5 w-5 place-items-center text-[var(--color-faint)]">
                                   <Minus size={11} strokeWidth={2.5} aria-hidden />
                                 </span>
                               )}
@@ -341,7 +341,7 @@ export default async function AccessPage({ searchParams }: { searchParams: Promi
           </table>
         </div>
 
-        <p className="mt-3 flex items-start gap-2 text-xs text-[--color-muted]">
+        <p className="mt-3 flex items-start gap-2 text-xs text-[var(--color-muted)]">
           <ShieldCheck size={13} className="mt-0.5 shrink-0" aria-hidden />
           <span>
             Sales roles hold <code>loan:read</code> so they can answer &ldquo;where is my

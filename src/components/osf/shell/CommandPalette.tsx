@@ -200,10 +200,10 @@ export default function CommandPalette({ open, onClose }: { open: boolean; onClo
         role="dialog"
         aria-modal="true"
         aria-label="Search navigation"
-        className="relative w-full max-w-xl overflow-hidden rounded-2xl border border-[--color-line-strong] bg-[--color-surface] shadow-[0_40px_80px_-24px_rgba(0,0,0,0.9)]"
+        className="relative w-full max-w-xl overflow-hidden rounded-2xl border border-[var(--color-line-strong)] bg-[var(--color-surface)] shadow-[0_40px_80px_-24px_rgba(0,0,0,0.9)]"
       >
-        <div className="flex items-center gap-3 border-b border-[--color-line] px-4">
-          <Search size={16} strokeWidth={1.75} aria-hidden className="shrink-0 text-[--color-faint]" />
+        <div className="flex items-center gap-3 border-b border-[var(--color-line)] px-4">
+          <Search size={16} strokeWidth={1.75} aria-hidden className="shrink-0 text-[var(--color-faint)]" />
           <input
             ref={inputRef}
             value={query}
@@ -218,15 +218,15 @@ export default function CommandPalette({ open, onClose }: { open: boolean; onClo
             autoComplete="off"
             spellCheck={false}
             placeholder="Search pages…"
-            className="w-full bg-transparent py-4 text-[15px] text-[--color-ink] placeholder:text-[--color-faint] focus:outline-none"
+            className="w-full bg-transparent py-4 text-[15px] text-[var(--color-ink)] placeholder:text-[var(--color-faint)] focus:outline-none"
           />
-          <kbd className="hidden shrink-0 rounded-md border border-[--color-line] px-1.5 py-0.5 text-[10px] font-medium text-[--color-faint] sm:block">
+          <kbd className="hidden shrink-0 rounded-md border border-[var(--color-line)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--color-faint)] sm:block">
             ESC
           </kbd>
         </div>
 
         {results.length === 0 ? (
-          <p className="px-4 py-10 text-center text-sm text-[--color-muted]">
+          <p className="px-4 py-10 text-center text-sm text-[var(--color-muted)]">
             No page matches “{query.trim()}”.
           </p>
         ) : (
@@ -247,23 +247,23 @@ export default function CommandPalette({ open, onClose }: { open: boolean; onClo
                     onClick={() => go(item.href)}
                     onMouseMove={() => setIndex(i)}
                     className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition ${
-                      selected ? "bg-[--color-gold-soft]" : ""
+                      selected ? "bg-[var(--color-gold-soft)]" : ""
                     }`}
                   >
                     <Icon
                       size={15}
                       strokeWidth={1.75}
                       aria-hidden
-                      className={`shrink-0 ${selected ? "text-[--color-gold-300]" : "text-[--color-faint]"}`}
+                      className={`shrink-0 ${selected ? "text-[var(--color-gold-300)]" : "text-[var(--color-faint)]"}`}
                     />
                     <span
                       className={`flex-1 truncate text-[13px] ${
-                        selected ? "text-[--color-gold-100]" : "text-[--color-ink]"
+                        selected ? "text-[var(--color-gold-100)]" : "text-[var(--color-ink)]"
                       }`}
                     >
                       {item.label}
                     </span>
-                    <span className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.12em] text-[--color-faint]">
+                    <span className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--color-faint)]">
                       {item.group}
                     </span>
                     {selected && (
@@ -271,7 +271,7 @@ export default function CommandPalette({ open, onClose }: { open: boolean; onClo
                         size={13}
                         strokeWidth={2}
                         aria-hidden
-                        className="shrink-0 text-[--color-gold-500]"
+                        className="shrink-0 text-[var(--color-gold-500)]"
                       />
                     )}
                   </button>
@@ -281,14 +281,14 @@ export default function CommandPalette({ open, onClose }: { open: boolean; onClo
           </ul>
         )}
 
-        <div className="flex items-center gap-4 border-t border-[--color-line] px-4 py-2.5 text-[10px] text-[--color-faint]">
+        <div className="flex items-center gap-4 border-t border-[var(--color-line)] px-4 py-2.5 text-[10px] text-[var(--color-faint)]">
           <span className="flex items-center gap-1.5">
-            <kbd className="rounded border border-[--color-line] px-1 py-0.5">↑</kbd>
-            <kbd className="rounded border border-[--color-line] px-1 py-0.5">↓</kbd>
+            <kbd className="rounded border border-[var(--color-line)] px-1 py-0.5">↑</kbd>
+            <kbd className="rounded border border-[var(--color-line)] px-1 py-0.5">↓</kbd>
             navigate
           </span>
           <span className="flex items-center gap-1.5">
-            <kbd className="rounded border border-[--color-line] px-1 py-0.5">↵</kbd>
+            <kbd className="rounded border border-[var(--color-line)] px-1 py-0.5">↵</kbd>
             open
           </span>
           <span className="ml-auto tabular-nums">

@@ -81,15 +81,15 @@ export function VoiceTester() {
           </button>
         )}
         {recording && (
-          <span className="flex items-center gap-2 text-xs text-[--color-danger]">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-[--color-danger]" />
+          <span className="flex items-center gap-2 text-xs text-[var(--color-danger)]">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-[var(--color-danger)]" />
             recording — try Hindi or Telugu too
           </span>
         )}
       </div>
 
       {error && (
-        <p className="mt-4 rounded-lg border border-[--color-danger]/30 bg-[rgba(244,105,95,0.08)] px-3 py-2 text-xs text-[--color-danger]">
+        <p className="mt-4 rounded-lg border border-[var(--color-danger)]/30 bg-[rgba(244,105,95,0.08)] px-3 py-2 text-xs text-[var(--color-danger)]">
           {error}
         </p>
       )}
@@ -100,7 +100,7 @@ export function VoiceTester() {
             <p className="label">
               Transcribed{language ? ` · detected ${language}` : ""}
             </p>
-            <p className="mt-1 rounded-xl bg-[--color-void] px-4 py-3 text-sm">{transcript}</p>
+            <p className="mt-1 rounded-xl bg-[var(--color-void)] px-4 py-3 text-sm">{transcript}</p>
           </div>
           {reply.length > 0 && (
             <div>
@@ -108,7 +108,7 @@ export function VoiceTester() {
               {reply.map((r, i) => (
                 <p
                   key={i}
-                  className="mt-1 whitespace-pre-wrap rounded-xl bg-[--color-gold-soft] px-4 py-3 text-sm"
+                  className="mt-1 whitespace-pre-wrap rounded-xl bg-[var(--color-gold-soft)] px-4 py-3 text-sm"
                 >
                   {r}
                 </p>

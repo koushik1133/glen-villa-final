@@ -45,7 +45,7 @@ function Fact({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <p className="label">{label}</p>
-      <p className="mt-1 text-sm tabular-nums text-[--color-ink]">{value}</p>
+      <p className="mt-1 text-sm tabular-nums text-[var(--color-ink)]">{value}</p>
     </div>
   );
 }
@@ -82,9 +82,9 @@ export default async function ProjectsPage() {
         <SetupNotice missing={[]} detail={schemaError} />
       ) : projects.length === 0 ? (
         <Empty>
-          <p className="font-medium text-[--color-ink]">No active projects.</p>
+          <p className="font-medium text-[var(--color-ink)]">No active projects.</p>
           <p className="mx-auto mt-2 max-w-lg">
-            <code className="rounded bg-[--color-canvas] px-1.5 py-0.5 text-xs">villa_projects</code>{" "}
+            <code className="rounded bg-[var(--color-canvas)] px-1.5 py-0.5 text-xs">villa_projects</code>{" "}
             holds no active row, so every downstream page — villas, inventory, floor plans, amenities —
             has nothing to describe, and the agent has no project to talk about.
           </p>
@@ -125,7 +125,7 @@ function ProjectCard({ project, stats }: { project: ProjectCardRow; stats?: Proj
   return (
     <Card className="flex flex-col gap-4 p-0">
       <div
-        className="relative flex h-44 items-end overflow-hidden rounded-t-2xl border-b border-[--color-line]"
+        className="relative flex h-44 items-end overflow-hidden rounded-t-2xl border-b border-[var(--color-line)]"
         style={{
           backgroundImage: project.cover_image
             ? `${cssUrl(project.cover_image)}, ${PLACEHOLDER}`
@@ -135,19 +135,19 @@ function ProjectCard({ project, stats }: { project: ProjectCardRow; stats?: Proj
         }}
       >
         {!project.cover_image && (
-          <span className="absolute right-5 top-3 font-[family-name:--font-display] text-[76px] leading-none text-[--color-gold-500] opacity-25">
+          <span className="absolute right-5 top-3 font-[family-name:var(--font-display)] text-[76px] leading-none text-[var(--color-gold-500)] opacity-25">
             {project.name.charAt(0)}
           </span>
         )}
-        <div className="relative w-full bg-gradient-to-t from-[--color-void] via-[rgba(10,10,12,0.75)] to-transparent p-4 pt-10">
+        <div className="relative w-full bg-gradient-to-t from-[var(--color-void)] via-[rgba(10,10,12,0.75)] to-transparent p-4 pt-10">
           <div className="flex flex-wrap items-center gap-2">
             {project.status && <Badge tone={statusTone(project.status)}>{project.status}</Badge>}
             {project.phase && <Badge>{project.phase}</Badge>}
           </div>
-          <h2 className="mt-2 font-[family-name:--font-display] text-xl leading-tight text-[--color-ink]">
+          <h2 className="mt-2 font-[family-name:var(--font-display)] text-xl leading-tight text-[var(--color-ink)]">
             {project.name}
           </h2>
-          <p className="mt-0.5 text-xs text-[--color-muted]">{location ?? "Location not recorded"}</p>
+          <p className="mt-0.5 text-xs text-[var(--color-muted)]">{location ?? "Location not recorded"}</p>
         </div>
       </div>
 
@@ -165,19 +165,19 @@ function ProjectCard({ project, stats }: { project: ProjectCardRow; stats?: Proj
           <Fact label="Delivery" value={project.expected_delivery ?? "—"} />
         </div>
 
-        <div className="rounded-xl border border-[--color-line] bg-[--color-void]/40 px-3.5 py-3">
+        <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-void)]/40 px-3.5 py-3">
           <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
             <p className="label">RERA</p>
-            <p className="font-mono text-[11px] text-[--color-ink]">{project.rera_number ?? "Not issued"}</p>
+            <p className="font-mono text-[11px] text-[var(--color-ink)]">{project.rera_number ?? "Not issued"}</p>
           </div>
           <div className="mt-1.5 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
             <p className="label">HMDA permit</p>
-            <p className="font-mono text-[11px] text-[--color-ink]">
+            <p className="font-mono text-[11px] text-[var(--color-ink)]">
               {project.hmda_permit_no ?? "Not recorded"}
             </p>
           </div>
           {project.rera_status && (
-            <p className="mt-2 text-[11px] text-[--color-muted]">RERA status: {project.rera_status}</p>
+            <p className="mt-2 text-[11px] text-[var(--color-muted)]">RERA status: {project.rera_status}</p>
           )}
         </div>
 
@@ -194,15 +194,15 @@ function ProjectCard({ project, stats }: { project: ProjectCardRow; stats?: Proj
         {stats && stats.total > 0 ? (
           <div>
             <div className="mb-1.5 flex items-baseline justify-between text-xs">
-              <span className="text-[--color-muted]">
+              <span className="text-[var(--color-muted)]">
                 {formatNumber(stats.counts.available)} available of {formatNumber(stats.total)} loaded
               </span>
-              <span className="tabular-nums text-[--color-gold-300]">{formatPercent(pct, 0)} absorbed</span>
+              <span className="tabular-nums text-[var(--color-gold-300)]">{formatPercent(pct, 0)} absorbed</span>
             </div>
             <Meter value={sold} max={stats.total} />
           </div>
         ) : (
-          <p className="text-xs text-[--color-faint]">
+          <p className="text-xs text-[var(--color-faint)]">
             No live units loaded — the agent will not quote availability for this project.
           </p>
         )}

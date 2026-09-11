@@ -96,7 +96,7 @@ export default async function BroadcastsPage({ searchParams }: { searchParams: P
       />
 
       {error && (
-        <p className="mb-4 rounded-lg border border-[--color-danger]/30 bg-[rgba(244,105,95,0.08)] px-4 py-3 text-sm text-[--color-danger]">
+        <p className="mb-4 rounded-lg border border-[var(--color-danger)]/30 bg-[rgba(244,105,95,0.08)] px-4 py-3 text-sm text-[var(--color-danger)]">
           {error}
         </p>
       )}
@@ -139,12 +139,12 @@ export default async function BroadcastsPage({ searchParams }: { searchParams: P
           ) : (
             <ul>
               {templates.map((t) => (
-                <li key={t.id} className="flex items-start justify-between gap-3 border-b border-[--color-line] py-3 last:border-0">
+                <li key={t.id} className="flex items-start justify-between gap-3 border-b border-[var(--color-line)] py-3 last:border-0">
                   <div className="min-w-0">
                     <p className="text-sm font-medium">
-                      {t.name} <span className="text-xs text-[--color-muted]">· {t.language} · {t.variables} var</span>
+                      {t.name} <span className="text-xs text-[var(--color-muted)]">· {t.language} · {t.variables} var</span>
                     </p>
-                    <p className="mt-1 line-clamp-2 text-xs text-[--color-muted]">{t.body}</p>
+                    <p className="mt-1 line-clamp-2 text-xs text-[var(--color-muted)]">{t.body}</p>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
                     <Badge tone={TEMPLATE_TONE[t.status] ?? "neutral"}>{t.status}</Badge>
@@ -218,7 +218,7 @@ export default async function BroadcastsPage({ searchParams }: { searchParams: P
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-left text-xs uppercase tracking-wider text-[--color-muted]">
+                  <tr className="text-left text-xs uppercase tracking-wider text-[var(--color-muted)]">
                     <th className="pb-2 pr-4">Broadcast</th>
                     <th className="pb-2 pr-4">Status</th>
                     <th className="pb-2 pr-4 text-right">Audience</th>
@@ -231,10 +231,10 @@ export default async function BroadcastsPage({ searchParams }: { searchParams: P
                 </thead>
                 <tbody>
                   {broadcasts.map((b) => (
-                    <tr key={b.id} className="border-t border-[--color-line]">
+                    <tr key={b.id} className="border-t border-[var(--color-line)]">
                       <td className="py-3 pr-4">
                         <p className="font-medium">{b.name}</p>
-                        <p className="text-xs text-[--color-muted]">
+                        <p className="text-xs text-[var(--color-muted)]">
                           {b.template?.name ?? "—"} · {timeAgo(b.created_at)}
                         </p>
                       </td>

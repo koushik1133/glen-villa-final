@@ -48,7 +48,7 @@ function Field({
     <label className="block">
       <span className="label">{label}</span>
       <div className="mt-1.5">{children}</div>
-      {hint && <p className="mt-1.5 text-[11px] leading-relaxed text-[--color-faint]">{hint}</p>}
+      {hint && <p className="mt-1.5 text-[11px] leading-relaxed text-[var(--color-faint)]">{hint}</p>}
     </label>
   );
 }
@@ -105,9 +105,9 @@ export function RuleBuilder({ languages }: { languages: string[] }) {
 
       {/* ---------------------------------------------------------------- */}
 
-      <fieldset className="rounded-xl border border-[--color-line] bg-[--color-void]/40 p-4">
+      <fieldset className="rounded-xl border border-[var(--color-line)] bg-[var(--color-void)]/40 p-4">
         <legend className="label px-1.5">If — all of these hold</legend>
-        <p className="mb-3 text-[11px] leading-relaxed text-[--color-faint]">
+        <p className="mb-3 text-[11px] leading-relaxed text-[var(--color-faint)]">
           Every row must match. A row with a blank value is skipped, so a rule with no filled rows
           runs on every lead that hits the trigger. Fields are top-level lead columns only.
         </p>
@@ -151,7 +151,7 @@ export function RuleBuilder({ languages }: { languages: string[] }) {
                   onClick={() => setRows(rows.filter((r) => r.uid !== row.uid))}
                   disabled={rows.length === 1}
                   aria-label="Remove condition"
-                  className="mt-1 rounded-lg border border-[--color-line] p-2 text-[--color-faint] transition hover:border-[--color-line-strong] hover:text-[--color-ink] disabled:opacity-30"
+                  className="mt-1 rounded-lg border border-[var(--color-line)] p-2 text-[var(--color-faint)] transition hover:border-[var(--color-line-strong)] hover:text-[var(--color-ink)] disabled:opacity-30"
                 >
                   <X className="h-3.5 w-3.5" aria-hidden />
                 </button>
@@ -168,13 +168,13 @@ export function RuleBuilder({ languages }: { languages: string[] }) {
         >
           <Plus className="h-3.5 w-3.5" aria-hidden />
           Add condition
-          {rows.length >= MAX_CONDITIONS && <span className="text-[--color-faint]">(max {MAX_CONDITIONS})</span>}
+          {rows.length >= MAX_CONDITIONS && <span className="text-[var(--color-faint)]">(max {MAX_CONDITIONS})</span>}
         </button>
       </fieldset>
 
       {/* ---------------------------------------------------------------- */}
 
-      <fieldset className="rounded-xl border border-[--color-line] bg-[--color-void]/40 p-4">
+      <fieldset className="rounded-xl border border-[var(--color-line)] bg-[var(--color-void)]/40 p-4">
         <legend className="label px-1.5">Then — do this</legend>
 
         <select
@@ -276,25 +276,25 @@ export function RuleBuilder({ languages }: { languages: string[] }) {
                   <input name="actionDepartment" placeholder="sales" className="field" />
                 </Field>
               </div>
-              <label className="flex items-start gap-2.5 text-sm text-[--color-ink]">
-                <input type="checkbox" name="actionMatchLeadLanguage" className="mt-0.5 size-4 accent-[--color-gold-500]" />
+              <label className="flex items-start gap-2.5 text-sm text-[var(--color-ink)]">
+                <input type="checkbox" name="actionMatchLeadLanguage" className="mt-0.5 size-4 accent-[var(--color-gold-500)]" />
                 <span>
                   Match the lead&apos;s own preferred language
-                  <span className="mt-0.5 block text-[11px] text-[--color-faint]">
+                  <span className="mt-0.5 block text-[11px] text-[var(--color-faint)]">
                     Overrides the choice above, per lead.
                   </span>
                 </span>
               </label>
-              <label className="flex items-start gap-2.5 text-sm text-[--color-ink]">
-                <input type="checkbox" name="actionReassign" className="mt-0.5 size-4 accent-[--color-gold-500]" />
+              <label className="flex items-start gap-2.5 text-sm text-[var(--color-ink)]">
+                <input type="checkbox" name="actionReassign" className="mt-0.5 size-4 accent-[var(--color-gold-500)]" />
                 <span>
                   Reassign leads that already have an owner
-                  <span className="mt-0.5 block text-[11px] text-[--color-faint]">
+                  <span className="mt-0.5 block text-[11px] text-[var(--color-faint)]">
                     Off by default — a rep mid-conversation should not lose the lead under them.
                   </span>
                 </span>
               </label>
-              <p className="text-[11px] leading-relaxed text-[--color-faint]">
+              <p className="text-[11px] leading-relaxed text-[var(--color-faint)]">
                 Picks the eligible rep holding the fewest open leads. With no active row in
                 villa_team_members accepting leads, the action is skipped and the reason is written
                 to the run log — it never invents an owner.
@@ -315,7 +315,7 @@ export function RuleBuilder({ languages }: { languages: string[] }) {
                   <input name="actionDelayHours" type="number" min={0} defaultValue={24} className="field" />
                 </Field>
               </div>
-              <p className="text-[11px] leading-relaxed text-[--color-faint]">
+              <p className="text-[11px] leading-relaxed text-[var(--color-faint)]">
                 This queues a follow-up rather than sending one. Whether WhatsApp will accept free
                 text or demand a template depends on how long the 24-hour window has left, and only
                 the dispatcher knows that at send time.
@@ -328,7 +328,7 @@ export function RuleBuilder({ languages }: { languages: string[] }) {
               <Field label="Send after (hours)">
                 <input name="actionDelayHours" type="number" min={0} defaultValue={24} className="field" />
               </Field>
-              <p className="text-[11px] leading-relaxed text-[--color-faint]">
+              <p className="text-[11px] leading-relaxed text-[var(--color-faint)]">
                 No copy is drafted now. The dispatcher writes it against the conversation as it
                 stands at send time.
               </p>
@@ -338,8 +338,8 @@ export function RuleBuilder({ languages }: { languages: string[] }) {
       </fieldset>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <label className="flex items-center gap-2.5 text-sm text-[--color-ink]">
-          <input type="checkbox" name="isActive" className="size-4 accent-[--color-gold-500]" />
+        <label className="flex items-center gap-2.5 text-sm text-[var(--color-ink)]">
+          <input type="checkbox" name="isActive" className="size-4 accent-[var(--color-gold-500)]" />
           Activate immediately
         </label>
         <button type="submit" className="btn-gold">

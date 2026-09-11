@@ -105,15 +105,15 @@ export default async function AttributionPage({ searchParams }: { searchParams: 
       </div>
 
       {multi.truncated && (
-        <div className="mt-5 flex items-start gap-3 rounded-2xl border border-[--color-line-strong] bg-[--color-raised] p-4">
+        <div className="mt-5 flex items-start gap-3 rounded-2xl border border-[var(--color-line-strong)] bg-[var(--color-raised)] p-4">
           <AlertTriangle
             size={15}
             strokeWidth={1.75}
             aria-hidden
-            className="mt-0.5 shrink-0 text-[--color-warm]"
+            className="mt-0.5 shrink-0 text-[var(--color-warm)]"
           />
-          <p className="text-xs leading-relaxed text-[--color-muted]">
-            <span className="font-medium text-[--color-ink]">This is a partial read.</span> The touch log hit the
+          <p className="text-xs leading-relaxed text-[var(--color-muted)]">
+            <span className="font-medium text-[var(--color-ink)]">This is a partial read.</span> The touch log hit the
             query cap of {formatNumber(multi.totalTouches)} rows for this period. Touches are read oldest-first, so
             the most recent ones are the ones missing — journeys that continued past the cut-off show the wrong last
             channel, and the last-touch column below understates whatever is closing deals. Narrow the date range
@@ -131,10 +131,10 @@ export default async function AttributionPage({ searchParams }: { searchParams: 
         >
           <div className="grid gap-4 sm:grid-cols-2">
             {closer && (
-              <div className="rounded-xl border border-[--color-line] bg-[--color-void]/40 p-4">
+              <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-void)]/40 p-4">
                 <p className="label">Closes more than it opens</p>
-                <p className="mt-1.5 text-lg font-semibold text-[--color-ink]">{humanise(closer.channel)}</p>
-                <p className="mt-1 text-xs text-[--color-muted]">
+                <p className="mt-1.5 text-lg font-semibold text-[var(--color-ink)]">{humanise(closer.channel)}</p>
+                <p className="mt-1 text-xs text-[var(--color-muted)]">
                   Last touch on {formatNumber(closer.lastTouches)} journeys, first touch on only{" "}
                   {formatNumber(closer.firstTouches)} — a swing of {signed(closer.swing)}. First-touch reporting
                   undercounts it.
@@ -142,10 +142,10 @@ export default async function AttributionPage({ searchParams }: { searchParams: 
               </div>
             )}
             {opener && (
-              <div className="rounded-xl border border-[--color-line] bg-[--color-void]/40 p-4">
+              <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-void)]/40 p-4">
                 <p className="label">Opens more than it closes</p>
-                <p className="mt-1.5 text-lg font-semibold text-[--color-ink]">{humanise(opener.channel)}</p>
-                <p className="mt-1 text-xs text-[--color-muted]">
+                <p className="mt-1.5 text-lg font-semibold text-[var(--color-ink)]">{humanise(opener.channel)}</p>
+                <p className="mt-1 text-xs text-[var(--color-muted)]">
                   First touch on {formatNumber(opener.firstTouches)} journeys but last touch on only{" "}
                   {formatNumber(opener.lastTouches)} — a swing of {signed(opener.swing)}. It discovers buyers other
                   channels finish.
@@ -189,7 +189,7 @@ export default async function AttributionPage({ searchParams }: { searchParams: 
           ) : (
             <div className="-mx-5 overflow-x-auto">
               <table className="w-full min-w-[600px]">
-                <thead className="border-b border-[--color-line]">
+                <thead className="border-b border-[var(--color-line)]">
                   <tr>
                     <th className="th">Source</th>
                     <th className="th">Campaign</th>
@@ -199,11 +199,11 @@ export default async function AttributionPage({ searchParams }: { searchParams: 
                     <th className="th text-right">Avg score</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[--color-line]">
+                <tbody className="divide-y divide-[var(--color-line)]">
                   {sources.map((s) => (
                     <tr key={`${s.source}|${s.campaign ?? ""}`} className="row-hover">
                       <td className="td font-medium">{humanise(s.source)}</td>
-                      <td className="td text-[--color-muted]">{s.campaign ?? "—"}</td>
+                      <td className="td text-[var(--color-muted)]">{s.campaign ?? "—"}</td>
                       <td className="td text-right">
                         <span className="tabular-nums">{formatNumber(s.leads)}</span>
                         <div className="mt-1.5 ml-auto w-20">
@@ -212,11 +212,11 @@ export default async function AttributionPage({ searchParams }: { searchParams: 
                       </td>
                       <td className="td text-right tabular-nums">
                         {formatNumber(s.qualified)}
-                        <span className="ml-1.5 text-xs text-[--color-faint]">
+                        <span className="ml-1.5 text-xs text-[var(--color-faint)]">
                           {pct(rate(s.qualified, s.leads))}
                         </span>
                       </td>
-                      <td className="td text-right tabular-nums text-[--color-hot]">{formatNumber(s.hot)}</td>
+                      <td className="td text-right tabular-nums text-[var(--color-hot)]">{formatNumber(s.hot)}</td>
                       <td className="td text-right tabular-nums">
                         {s.avgScore === null ? "—" : s.avgScore.toFixed(1)}
                       </td>
@@ -237,7 +237,7 @@ export default async function AttributionPage({ searchParams }: { searchParams: 
           ) : (
             <div className="-mx-5 overflow-x-auto">
               <table className="w-full min-w-[600px]">
-                <thead className="border-b border-[--color-line]">
+                <thead className="border-b border-[var(--color-line)]">
                   <tr>
                     <th className="th">Channel</th>
                     <th className="th text-right">Touches</th>
@@ -248,22 +248,22 @@ export default async function AttributionPage({ searchParams }: { searchParams: 
                     <th className="th text-right">Swing</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[--color-line]">
+                <tbody className="divide-y divide-[var(--color-line)]">
                   {multi.channels.map((c) => (
                     <tr key={c.channel} className="row-hover">
                       <td className="td font-medium">{humanise(c.channel)}</td>
                       <td className="td text-right tabular-nums">{formatNumber(c.touches)}</td>
-                      <td className="td text-right tabular-nums text-[--color-muted]">{pct(c.share)}</td>
+                      <td className="td text-right tabular-nums text-[var(--color-muted)]">{pct(c.share)}</td>
                       <td className="td text-right tabular-nums">{formatNumber(c.leads)}</td>
                       <td className="td text-right tabular-nums">{formatNumber(c.firstTouches)}</td>
                       <td className="td text-right tabular-nums">{formatNumber(c.lastTouches)}</td>
                       <td
                         className={`td text-right tabular-nums ${
                           c.swing > 0
-                            ? "text-[--color-success]"
+                            ? "text-[var(--color-success)]"
                             : c.swing < 0
-                              ? "text-[--color-danger]"
-                              : "text-[--color-faint]"
+                              ? "text-[var(--color-danger)]"
+                              : "text-[var(--color-faint)]"
                         }`}
                       >
                         {signed(c.swing)}
@@ -287,7 +287,7 @@ export default async function AttributionPage({ searchParams }: { searchParams: 
         ) : (
           <div className="-mx-5 overflow-x-auto">
             <table className="w-full min-w-[720px]">
-              <thead className="border-b border-[--color-line]">
+              <thead className="border-b border-[var(--color-line)]">
                 <tr>
                   <th className="th">Lead</th>
                   <th className="th">Path</th>
@@ -295,13 +295,13 @@ export default async function AttributionPage({ searchParams }: { searchParams: 
                   <th className="th text-right">Last touch</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[--color-line]">
+              <tbody className="divide-y divide-[var(--color-line)]">
                 {multi.journeys.slice(0, JOURNEY_LIMIT).map((j) => (
                   <tr key={j.leadId} className="row-hover">
                     <td className="td">
                       <Link
                         href={`/os/crm/leads/${j.leadId}`}
-                        className="font-medium transition hover:text-[--color-gold-300]"
+                        className="font-medium transition hover:text-[var(--color-gold-300)]"
                       >
                         {j.name ?? j.phone ?? "Unnamed lead"}
                       </Link>
@@ -311,15 +311,15 @@ export default async function AttributionPage({ searchParams }: { searchParams: 
                         {j.path.map((channel, i) => (
                           <span key={`${channel}-${i}`} className="flex items-center gap-1">
                             {i > 0 && (
-                              <ChevronRight size={11} strokeWidth={2} aria-hidden className="text-[--color-faint]" />
+                              <ChevronRight size={11} strokeWidth={2} aria-hidden className="text-[var(--color-faint)]" />
                             )}
                             <span
                               className={`pill ${
                                 i === 0
-                                  ? "bg-[rgba(109,168,232,0.14)] text-[--color-info]"
+                                  ? "bg-[rgba(109,168,232,0.14)] text-[var(--color-info)]"
                                   : i === j.path.length - 1
-                                    ? "bg-[--color-gold-soft] text-[--color-gold-300]"
-                                    : "bg-[--color-raised] text-[--color-muted]"
+                                    ? "bg-[var(--color-gold-soft)] text-[var(--color-gold-300)]"
+                                    : "bg-[var(--color-raised)] text-[var(--color-muted)]"
                               }`}
                             >
                               {humanise(channel)}
@@ -329,13 +329,13 @@ export default async function AttributionPage({ searchParams }: { searchParams: 
                       </div>
                     </td>
                     <td className="td text-right tabular-nums">{j.touches}</td>
-                    <td className="td text-right text-[--color-muted]">{timeAgo(j.lastAt)}</td>
+                    <td className="td text-right text-[var(--color-muted)]">{timeAgo(j.lastAt)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
             {multi.journeys.length > JOURNEY_LIMIT && (
-              <p className="mt-3 px-5 text-xs text-[--color-faint]">
+              <p className="mt-3 px-5 text-xs text-[var(--color-faint)]">
                 {formatNumber(multi.journeys.length - JOURNEY_LIMIT)} more journeys in this period.
               </p>
             )}

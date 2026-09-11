@@ -3,8 +3,12 @@ import { verifyChallenge, verifySignature } from "@/lib/osf/whatsapp/verify";
 import { markRead, sendText } from "@/lib/osf/whatsapp/client";
 import { deliverToWhatsApp } from "@/lib/osf/whatsapp/deliver";
 import { recordStatuses } from "@/lib/osf/whatsapp/receipts";
-import { transcribeVoiceNote } from "@/lib/osf/whatsapp/media";
+import { downloadMedia, transcribeVoiceNote } from "@/lib/osf/whatsapp/media";
 import { handleInbound, type InboundAttribution } from "@/lib/osf/conversation";
+import {
+  describeMedia, type InboundMedia, type InboundMediaKind,
+} from "@/lib/osf/whatsapp/inbound-media";
+import type { WhatsAppInboundMessage } from "@/lib/osf/whatsapp/types";
 import { textFrom, type WhatsAppWebhookBody } from "@/lib/osf/whatsapp/types";
 
 export const runtime = "nodejs";
@@ -27,6 +31,22 @@ export async function GET(request: Request) {
     status: 200,
     headers: { "Content-Type": "text/plain" },
   });
+}
+
+/**
+ * The media id, kind and filename on a Meta inbound message, if it carries any.
+ * Sticker is included: WhatsApp counts it as media and a customer who replies
+ * with one has still replied.
+ */
+function mediaRefOf(
+  m: WhatsAppInboundMessage,
+): { id: string; kind: InboundMediaKind; filename: string | null } | null {
+  if (m.audio?.id) return { id: m.audio.id, kind: "audio", filename: null };
+  if (m.image?.id) return { id: m.image.id, kind: "image", filename: null };
+  if (m.video?.id) return { id: m.video.id, kind: "video", filename: null };
+  if (m.document?.id)
+    return { id: m.document.id, kind: "document", filename: m.document.filename ?? null };
+  return null;
 }
 
 export async function POST(request: Request) {
@@ -87,6 +107,25 @@ async function processWebhook(body: WhatsAppWebhookBody) {
         // A voice note carries no text, so transcribe it before anything else —
         // otherwise textFrom() yields a placeholder and the agent can only ask
         // the customer to type it out. Indian buyers send these constantly.
+        // Download whatever the customer actually sent, so the thread keeps the
+        // file and not merely a transcript or a caption. A failed download must
+        // not lose the message, so it degrades to text-only.
+        const ref = mediaRefOf(message);
+        let media: InboundMedia | null = null;
+        if (ref) {
+          try {
+            const file = await downloadMedia(ref.id);
+            media = {
+              kind: ref.kind,
+              bytes: file.bytes,
+              mimeType: file.mimeType,
+              filename: ref.filename,
+            };
+          } catch (e) {
+            console.error(`[whatsapp] media download failed for ${ref.id}`, e);
+          }
+        }
+
         let text: string | null;
         if (message.type === "audio" && message.audio?.id) {
           const transcript = await transcribeVoiceNote(message.audio.id);
@@ -102,6 +141,10 @@ async function processWebhook(body: WhatsAppWebhookBody) {
           text = textFrom(message);
         }
 
+        // An image, document or sticker sent with no caption has no text. This
+        // used to `continue`, so the message was never recorded at all and the
+        // thread disagreed with the customer's own phone about what they sent.
+        if (!text && ref) text = describeMedia(ref.kind, ref.filename);
         if (!text) continue;
 
         // Click-to-WhatsApp ads carry the originating ad on the first message.
@@ -124,6 +167,7 @@ async function processWebhook(body: WhatsAppWebhookBody) {
             channel: "whatsapp",
             waMessageId: message.id,
             attribution,
+            media,
             deliver: (reply) => deliverToWhatsApp(message.from, reply),
           });
 

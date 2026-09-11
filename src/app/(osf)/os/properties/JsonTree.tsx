@@ -18,7 +18,7 @@ import type { JsonEntry, JsonNode } from "@/lib/osf/properties";
 
 export function JsonTree({ node, depth = 0 }: { node: JsonNode; depth?: number }) {
   if (node.kind === "text") {
-    return <p className="text-sm leading-relaxed text-[--color-ink]">{node.value}</p>;
+    return <p className="text-sm leading-relaxed text-[var(--color-ink)]">{node.value}</p>;
   }
 
   if (node.kind === "list") {
@@ -29,8 +29,8 @@ export function JsonTree({ node, depth = 0 }: { node: JsonNode; depth?: number }
       return (
         <ul className="space-y-1.5">
           {node.items.map((item, index) => (
-            <li key={index} className="flex gap-2 text-sm leading-relaxed text-[--color-ink]">
-              <span aria-hidden className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[--color-gold-500]" />
+            <li key={index} className="flex gap-2 text-sm leading-relaxed text-[var(--color-ink)]">
+              <span aria-hidden className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-[var(--color-gold-500)]" />
               <span>{item}</span>
             </li>
           ))}
@@ -42,7 +42,7 @@ export function JsonTree({ node, depth = 0 }: { node: JsonNode; depth?: number }
         {node.items.map((item, index) => (
           <li
             key={index}
-            className="rounded-lg border border-[--color-line] bg-[--color-void]/50 px-2.5 py-1 text-xs text-[--color-ink]"
+            className="rounded-lg border border-[var(--color-line)] bg-[var(--color-void)]/50 px-2.5 py-1 text-xs text-[var(--color-ink)]"
           >
             {item}
           </li>
@@ -64,16 +64,16 @@ function JsonBranch({ entry, depth }: { entry: JsonEntry; depth: number }) {
   // A named leaf ("Sahavas" with nothing under it) is a fact in its own right,
   // so it survives as a row rather than being dropped for having no children.
   if (!entry.node) {
-    return <p className="text-sm text-[--color-ink]">{entry.label}</p>;
+    return <p className="text-sm text-[var(--color-ink)]">{entry.label}</p>;
   }
 
   // A single scalar reads better as "Label — value" on one line than as a
   // heading with a one-word paragraph beneath it.
   if (entry.node.kind === "text") {
     return (
-      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 border-b border-[--color-line] pb-2 last:border-0 last:pb-0">
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 border-b border-[var(--color-line)] pb-2 last:border-0 last:pb-0">
         <span className="label shrink-0">{entry.label}</span>
-        <span className="text-sm text-[--color-ink]">{entry.node.value}</span>
+        <span className="text-sm text-[var(--color-ink)]">{entry.node.value}</span>
       </div>
     );
   }
@@ -81,8 +81,8 @@ function JsonBranch({ entry, depth }: { entry: JsonEntry; depth: number }) {
   if (depth === 0) {
     return (
       <section>
-        <h3 className="mb-2.5 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[--color-gold-300]">
-          <span aria-hidden className="h-px w-4 bg-[--color-gold-line]" />
+        <h3 className="mb-2.5 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-[var(--color-gold-300)]">
+          <span aria-hidden className="h-px w-4 bg-[var(--color-gold-line)]" />
           {entry.label}
         </h3>
         <JsonTree node={entry.node} depth={depth + 1} />
@@ -91,7 +91,7 @@ function JsonBranch({ entry, depth }: { entry: JsonEntry; depth: number }) {
   }
 
   return (
-    <div className="border-l border-[--color-line] pl-3.5">
+    <div className="border-l border-[var(--color-line)] pl-3.5">
       <p className="label mb-1.5">{entry.label}</p>
       <JsonTree node={entry.node} depth={depth + 1} />
     </div>

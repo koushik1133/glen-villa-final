@@ -38,20 +38,20 @@ export const UNIT_STATUS_LABELS: Record<UnitStatus, string> = {
  * rather than as a wall of noise.
  */
 export const UNIT_STATUS_TILE: Record<UnitStatus, string> = {
-  available: "border-[rgba(94,201,141,0.35)] bg-[rgba(94,201,141,0.13)] text-[--color-success]",
-  under_booking: "border-[rgba(239,180,92,0.35)] bg-[rgba(239,180,92,0.13)] text-[--color-warm]",
-  reserved: "border-[rgba(109,168,232,0.35)] bg-[rgba(109,168,232,0.13)] text-[--color-info]",
-  sold: "border-[--color-line-strong] bg-[--color-raised] text-[--color-muted]",
-  blocked: "border-dashed border-[--color-line] bg-transparent text-[--color-faint]",
+  available: "border-[rgba(94,201,141,0.35)] bg-[rgba(94,201,141,0.13)] text-[var(--color-success)]",
+  under_booking: "border-[rgba(239,180,92,0.35)] bg-[rgba(239,180,92,0.13)] text-[var(--color-warm)]",
+  reserved: "border-[rgba(109,168,232,0.35)] bg-[rgba(109,168,232,0.13)] text-[var(--color-info)]",
+  sold: "border-[var(--color-line-strong)] bg-[var(--color-raised)] text-[var(--color-muted)]",
+  blocked: "border-dashed border-[var(--color-line)] bg-transparent text-[var(--color-faint)]",
 };
 
 /** Solid swatch for the legend and the per-type count pills. */
 export const UNIT_STATUS_DOT: Record<UnitStatus, string> = {
-  available: "bg-[--color-success]",
-  under_booking: "bg-[--color-warm]",
-  reserved: "bg-[--color-info]",
-  sold: "bg-[--color-line-strong]",
-  blocked: "bg-[--color-line]",
+  available: "bg-[var(--color-success)]",
+  under_booking: "bg-[var(--color-warm)]",
+  reserved: "bg-[var(--color-info)]",
+  sold: "bg-[var(--color-line-strong)]",
+  blocked: "bg-[var(--color-line)]",
 };
 
 export type StatusCounts = Record<UnitStatus, number>;

@@ -83,7 +83,7 @@ export function ConversationList({
   params?: Record<string, string | undefined>;
 }) {
   return (
-    <ul className="divide-y divide-[--color-line]">
+    <ul className="divide-y divide-[var(--color-line)]">
       {conversations.map((conversation) => {
         const active = conversation.id === activeId;
         const lead = conversation.lead;
@@ -92,29 +92,29 @@ export function ConversationList({
             <Link
               href={buildHref(basePath, params, conversation.id)}
               className={`block px-4 py-3.5 transition-colors ${
-                active ? "bg-[--color-gold-soft]" : "hover:bg-[--color-raised]"
+                active ? "bg-[var(--color-gold-soft)]" : "hover:bg-[var(--color-raised)]"
               }`}
               style={active ? { boxShadow: "inset 2px 0 0 0 var(--color-gold-500)" } : undefined}
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-2">
-                  <span className="shrink-0 text-[--color-faint]">
+                  <span className="shrink-0 text-[var(--color-faint)]">
                     <ChannelIcon channel={conversation.channel} />
                   </span>
                   <p
                     className={`truncate text-sm font-medium ${
-                      active ? "text-[--color-gold-100]" : "text-[--color-ink]"
+                      active ? "text-[var(--color-gold-100)]" : "text-[var(--color-ink)]"
                     }`}
                   >
                     {lead?.name?.trim() || (lead ? `+${lead.phone}` : "Unknown contact")}
                   </p>
                 </div>
-                <span className="shrink-0 text-[11px] tabular-nums text-[--color-faint]">
+                <span className="shrink-0 text-[11px] tabular-nums text-[var(--color-faint)]">
                   {timeAgo(conversation.last_message_at)}
                 </span>
               </div>
 
-              <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-[--color-muted]">
+              <p className="mt-1.5 line-clamp-2 text-xs leading-relaxed text-[var(--color-muted)]">
                 {conversation.preview
                   ? `${ROLE_PREFIX[conversation.preview.role]}${previewText(
                       conversation.preview.body,
@@ -144,10 +144,10 @@ export function ConversationList({
 }
 
 const BUBBLE_STYLES: Record<MessageRole, string> = {
-  customer: "bg-[--color-raised] text-[--color-ink] rounded-bl-sm",
-  agent: "bg-[rgba(109,168,232,0.10)] text-[--color-ink] rounded-br-sm border border-[rgba(109,168,232,0.24)]",
-  human_agent: "bg-[--color-gold-soft] text-[--color-gold-100] rounded-br-sm border border-[--color-gold-line]",
-  system: "bg-transparent text-[--color-faint] border border-dashed border-[--color-line]",
+  customer: "bg-[var(--color-raised)] text-[var(--color-ink)] rounded-bl-sm",
+  agent: "bg-[rgba(109,168,232,0.10)] text-[var(--color-ink)] rounded-br-sm border border-[rgba(109,168,232,0.24)]",
+  human_agent: "bg-[var(--color-gold-soft)] text-[var(--color-gold-100)] rounded-br-sm border border-[var(--color-gold-line)]",
+  system: "bg-transparent text-[var(--color-faint)] border border-dashed border-[var(--color-line)]",
 };
 
 const ROLE_LABELS: Record<MessageRole, string> = {
@@ -166,6 +166,60 @@ function messageTime(iso: string): string {
   });
 }
 
+/**
+ * What the customer actually sent, played or shown in place.
+ *
+ * Inbound files live in a PRIVATE bucket, so `media_url` on those rows is a
+ * storage path rather than a URL; it is read back through /api/osf/media,
+ * which checks a permission and then redirects to a short-lived signed URL.
+ * Agent-sent media (the brochure) already carries a full public URL, so an
+ * absolute value is passed straight through.
+ *
+ * A voice note gets a real player and an image renders inline: making someone
+ * download a file to find out whether it is the PAN card they asked for is the
+ * kind of friction that stops a checklist being worked.
+ */
+function Attachment({ kind, url }: { kind: string | null; url: string }) {
+  const href = /^https?:\/\//.test(url) ? url : `/api/osf/media/${url}`;
+
+  if (kind === "audio") {
+    return (
+      <audio
+        controls
+        preload="none"
+        src={href}
+        className="mt-2 h-9 w-full max-w-[280px]"
+        aria-label="Voice note from the customer"
+      />
+    );
+  }
+
+  if (kind === "image" || kind === "sticker") {
+    return (
+      <a href={href} target="_blank" rel="noreferrer" className="mt-2 block">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={href}
+          alt={kind === "sticker" ? "Sticker from the customer" : "Photo from the customer"}
+          className="max-h-64 w-auto rounded-lg border border-[var(--color-line)]"
+        />
+      </a>
+    );
+  }
+
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      className="mt-2 inline-flex items-center gap-1.5 text-xs text-[var(--color-gold-300)] underline underline-offset-2"
+    >
+      <FileText size={12} strokeWidth={1.75} aria-hidden />
+      {kind?.replace(/_/g, " ") ?? "Attachment"}
+    </a>
+  );
+}
+
 function MessageBubble({ message }: { message: ThreadMessage }) {
   const outbound = message.role === "agent" || message.role === "human_agent";
   const system = message.role === "system";
@@ -176,7 +230,7 @@ function MessageBubble({ message }: { message: ThreadMessage }) {
       <div className={`max-w-[78%] ${system ? "max-w-full" : ""}`}>
         <div className={`rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${BUBBLE_STYLES[message.role]}`}>
           {template && (
-            <p className="mb-1 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[--color-gold-300]">
+            <p className="mb-1 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--color-gold-300)]">
               <FileText size={11} strokeWidth={2} aria-hidden />
               Approved template
             </p>
@@ -186,24 +240,16 @@ function MessageBubble({ message }: { message: ThreadMessage }) {
               {template ? message.body.replace(/^\[template: /, "").replace(/\]/, "") : message.body}
             </p>
           ) : (
-            <p className="italic text-[--color-muted]">No text</p>
+            <p className="italic text-[var(--color-muted)]">No text</p>
           )}
 
           {message.media_url && (
-            <a
-              href={message.media_url}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-2 inline-flex items-center gap-1.5 text-xs text-[--color-gold-300] underline underline-offset-2"
-            >
-              <FileText size={12} strokeWidth={1.75} aria-hidden />
-              {message.media_kind?.replace(/_/g, " ") ?? "Attachment"}
-            </a>
+            <Attachment kind={message.media_kind} url={message.media_url} />
           )}
         </div>
 
         <p
-          className={`mt-1 px-1 text-[10px] tabular-nums text-[--color-faint] ${
+          className={`mt-1 px-1 text-[10px] tabular-nums text-[var(--color-faint)] ${
             system ? "text-center" : outbound ? "text-right" : ""
           }`}
         >
@@ -237,9 +283,9 @@ export function MessageThread({ messages }: { messages: ThreadMessage[] }) {
       {days.map((group) => (
         <div key={group.day} className="space-y-3">
           <div className="flex items-center gap-3">
-            <span className="h-px flex-1 bg-[--color-line]" />
+            <span className="h-px flex-1 bg-[var(--color-line)]" />
             <span className="label">{group.day}</span>
-            <span className="h-px flex-1 bg-[--color-line]" />
+            <span className="h-px flex-1 bg-[var(--color-line)]" />
           </div>
           {group.items.map((message) => (
             <MessageBubble key={message.id} message={message} />
@@ -264,15 +310,15 @@ export function ThreadHeader({
   children?: React.ReactNode;
 }) {
   return (
-    <header className="flex flex-wrap items-start justify-between gap-4 border-b border-[--color-line] pb-4">
+    <header className="flex flex-wrap items-start justify-between gap-4 border-b border-[var(--color-line)] pb-4">
       <div className="min-w-0">
         <div className="flex items-center gap-2">
-          <h2 className="truncate text-base font-semibold text-[--color-ink]">
+          <h2 className="truncate text-base font-semibold text-[var(--color-ink)]">
             {lead?.name?.trim() || (lead ? `+${lead.phone}` : "Unknown contact")}
           </h2>
           {lead && <TemperaturePill value={lead.lead_temperature} />}
         </div>
-        <p className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-[--color-muted]">
+        <p className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-[var(--color-muted)]">
           <span className="inline-flex items-center gap-1.5">
             <ChannelIcon channel={channel} size={12} />
             {channelLabel(channel)}
@@ -284,7 +330,7 @@ export function ThreadHeader({
           {lead && (
             <Link
               href={`/os/crm/leads/${lead.id}`}
-              className="text-[--color-gold-300] underline underline-offset-2"
+              className="text-[var(--color-gold-300)] underline underline-offset-2"
             >
               Open lead
             </Link>

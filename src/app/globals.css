@@ -1102,3 +1102,91 @@ textarea:focus-visible {
   background: var(--color-line-strong);
   border-radius: 6px;
 }
+
+@layer components {
+  /* --------------------------------------------------------------------
+     Ported /os module component classes.
+     EVERY selector is scoped under .osf-root deliberately: Villa-os defines
+     its own `.card` (a light-aware glass panel), and the ported UI also uses
+     className="card". Unscoped, Villa-os's rule won on equal specificity and
+     the module's panels rendered as near-white boxes carrying near-white
+     text — invisible. `.osf-root .card` outranks `.card`, so each app keeps
+     its own idea of what a card looks like.
+     -------------------------------------------------------------------- */
+
+    /* Glass card. The gradient is what stops large dark panels reading flat. */
+  .osf-root .card {
+      @apply relative rounded-2xl border border-[var(--color-line)] p-5;
+      background: linear-gradient(160deg, var(--color-surface) 0%, var(--color-canvas) 100%);
+      box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.03) inset,
+                  0 12px 32px -12px rgba(0, 0, 0, 0.7);
+    }
+
+  .osf-root .card-gold {
+      @apply border-[var(--color-gold-line)];
+      background: linear-gradient(160deg, rgba(212,175,55,0.07) 0%, var(--color-canvas) 70%);
+    }
+
+  .osf-root .label {
+      @apply text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-faint)];
+    }
+
+  .osf-root .stat {
+      @apply text-3xl font-semibold tabular-nums tracking-tight text-[var(--color-ink)];
+    }
+
+  .osf-root .pill {
+      @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium;
+    }
+
+  .osf-root .th {
+      @apply px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--color-faint)];
+    }
+
+  .osf-root .td {
+      @apply px-4 py-3.5 text-sm text-[var(--color-ink)];
+    }
+
+  .osf-root .row-hover {
+      @apply transition-colors hover:bg-[var(--color-raised)];
+    }
+
+    /* Inputs — dark by default so no field flashes white. */
+  .osf-root .field {
+      @apply w-full rounded-xl border border-[var(--color-line)] bg-[var(--color-void)] px-3 py-2.5 text-sm text-[var(--color-ink)]
+             placeholder:text-[var(--color-faint)]
+             focus:border-[var(--color-gold-line)] focus:outline-none focus:ring-2 focus:ring-[var(--color-gold-soft)];
+    }
+
+  .osf-root .btn-gold {
+      @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold
+             text-[var(--color-void)] transition disabled:opacity-40;
+      background: linear-gradient(135deg, var(--color-gold-300), var(--color-gold-600));
+    }
+  .osf-root .btn-gold:hover:not(:disabled) { filter: brightness(1.08); }
+
+  .osf-root .btn-ghost {
+      @apply inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--color-line)]
+             bg-[var(--color-surface)] px-4 py-2.5 text-sm font-medium text-[var(--color-ink)]
+             transition hover:border-[var(--color-line-strong)] hover:bg-[var(--color-raised)] disabled:opacity-40;
+    }
+
+  .osf-root .nav-link {
+      @apply flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] text-[var(--color-muted)]
+             transition hover:bg-[var(--color-raised)] hover:text-[var(--color-ink)];
+    }
+  .osf-root .nav-link-active {
+      @apply bg-[var(--color-gold-soft)] text-[var(--color-gold-100)];
+      box-shadow: inset 2px 0 0 0 var(--color-gold-500);
+    }
+
+    /* Thin top hairline used to separate the topbar without a hard border. */
+  .osf-root .hairline-gold {
+      background: linear-gradient(90deg, transparent, var(--color-gold-line), transparent);
+    }
+}
+
+/* Recharts paints an SVG; these keep its defaults from fighting the palette. */
+.osf-root .recharts-cartesian-grid line { stroke: var(--color-line); }
+.osf-root .recharts-text { fill: var(--color-muted); font-size: 11px; }
+.osf-root .recharts-tooltip-wrapper { outline: none; }

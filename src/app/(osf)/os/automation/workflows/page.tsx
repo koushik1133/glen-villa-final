@@ -60,9 +60,9 @@ function RuleCard({ automation }: { automation: Automation }) {
     <Card className={automation.is_active ? "" : "opacity-70"}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <h3 className="text-sm font-semibold text-[--color-ink]">{automation.name}</h3>
+          <h3 className="text-sm font-semibold text-[var(--color-ink)]">{automation.name}</h3>
           {automation.description && (
-            <p className="mt-1 text-xs leading-relaxed text-[--color-muted]">
+            <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)]">
               {automation.description}
             </p>
           )}
@@ -78,7 +78,7 @@ function RuleCard({ automation }: { automation: Automation }) {
       </div>
 
       {automation.is_active && dormant && (
-        <p className="mt-3 flex items-start gap-2 rounded-lg border border-[--color-gold-line] bg-[--color-gold-soft] px-3 py-2 text-[11px] leading-relaxed text-[--color-gold-100]">
+        <p className="mt-3 flex items-start gap-2 rounded-lg border border-[var(--color-gold-line)] bg-[var(--color-gold-soft)] px-3 py-2 text-[11px] leading-relaxed text-[var(--color-gold-100)]">
           <AlertTriangle className="mt-px h-3.5 w-3.5 shrink-0" aria-hidden />
           Active, but nothing in this codebase raises{" "}
           <code className="font-mono">{automation.trigger_event}</code> yet, so it will not fire.
@@ -89,14 +89,14 @@ function RuleCard({ automation }: { automation: Automation }) {
         <div>
           <p className="label">If</p>
           {automation.conditions.length === 0 ? (
-            <p className="mt-1.5 text-xs text-[--color-muted]">
+            <p className="mt-1.5 text-xs text-[var(--color-muted)]">
               No conditions — every lead on this trigger.
             </p>
           ) : (
             <ul className="mt-1.5 space-y-1">
               {automation.conditions.map((c, i) => (
-                <li key={`${c.field}-${i}`} className="text-xs text-[--color-ink]">
-                  <span className="text-[--color-faint]">{i === 0 ? "" : "and "}</span>
+                <li key={`${c.field}-${i}`} className="text-xs text-[var(--color-ink)]">
+                  <span className="text-[var(--color-faint)]">{i === 0 ? "" : "and "}</span>
                   {describeCondition(c)}
                 </li>
               ))}
@@ -106,13 +106,13 @@ function RuleCard({ automation }: { automation: Automation }) {
         <div>
           <p className="label">Then</p>
           {automation.actions.length === 0 ? (
-            <p className="mt-1.5 text-xs text-[--color-danger]">
+            <p className="mt-1.5 text-xs text-[var(--color-danger)]">
               No actions configured — this rule matches and then does nothing.
             </p>
           ) : (
             <ul className="mt-1.5 space-y-1">
               {automation.actions.map((a, i) => (
-                <li key={`${a.type}-${i}`} className="text-xs text-[--color-ink]">
+                <li key={`${a.type}-${i}`} className="text-xs text-[var(--color-ink)]">
                   {describeAction(a)}
                 </li>
               ))}
@@ -121,8 +121,8 @@ function RuleCard({ automation }: { automation: Automation }) {
         </div>
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[--color-line] pt-3">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[--color-faint]">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--color-line)] pt-3">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[var(--color-faint)]">
           <span className="tabular-nums">
             {formatNumber(automation.execution_count)} run
             {automation.execution_count === 1 ? "" : "s"}
@@ -162,7 +162,7 @@ function RuleCard({ automation }: { automation: Automation }) {
             <input type="hidden" name="next" value="/os/automation/workflows" />
             <button
               type="submit"
-              className="btn-ghost px-3 py-1.5 text-xs text-[--color-muted] hover:text-[--color-danger]"
+              className="btn-ghost px-3 py-1.5 text-xs text-[var(--color-muted)] hover:text-[var(--color-danger)]"
               title="Deleting a rule deletes its run history too. Pause keeps the audit trail."
             >
               <Trash2 className="h-3.5 w-3.5" aria-hidden />
@@ -223,8 +223,8 @@ export default async function WorkflowsPage({
       />
 
       {error && (
-        <div className="mb-6 flex items-start gap-2.5 rounded-xl border border-[rgba(244,105,95,0.35)] bg-[rgba(244,105,95,0.08)] p-4 text-sm text-[--color-ink]">
-          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[--color-danger]" aria-hidden />
+        <div className="mb-6 flex items-start gap-2.5 rounded-xl border border-[rgba(244,105,95,0.35)] bg-[rgba(244,105,95,0.08)] p-4 text-sm text-[var(--color-ink)]">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[var(--color-danger)]" aria-hidden />
           <span>{error}</span>
         </div>
       )}
@@ -286,30 +286,30 @@ export default async function WorkflowsPage({
               {runs.map((run) => (
                 <li
                   key={run.id}
-                  className="rounded-xl border border-[--color-line] bg-[--color-void]/40 p-3"
+                  className="rounded-xl border border-[var(--color-line)] bg-[var(--color-void)]/40 p-3"
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <span className="min-w-0 text-xs font-medium text-[--color-ink]">
+                    <span className="min-w-0 text-xs font-medium text-[var(--color-ink)]">
                       {run.villa_automations?.name ?? "(rule deleted)"}
                     </span>
-                    <span className="flex shrink-0 items-center gap-1.5 text-[11px] text-[--color-faint]">
+                    <span className="flex shrink-0 items-center gap-1.5 text-[11px] text-[var(--color-faint)]">
                       {run.ok ? (
-                        <CheckCircle className="h-3.5 w-3.5 text-[--color-success]" aria-hidden />
+                        <CheckCircle className="h-3.5 w-3.5 text-[var(--color-success)]" aria-hidden />
                       ) : (
-                        <XCircle className="h-3.5 w-3.5 text-[--color-danger]" aria-hidden />
+                        <XCircle className="h-3.5 w-3.5 text-[var(--color-danger)]" aria-hidden />
                       )}
                       {timeAgo(run.created_at)}
                     </span>
                   </div>
                   {run.detail && (
-                    <pre className="mt-1.5 whitespace-pre-wrap font-mono text-[10px] leading-relaxed text-[--color-muted]">
+                    <pre className="mt-1.5 whitespace-pre-wrap font-mono text-[10px] leading-relaxed text-[var(--color-muted)]">
                       {run.detail}
                     </pre>
                   )}
                   {run.lead_id && (
                     <Link
                       href={`/os/crm/leads/${run.lead_id}`}
-                      className="mt-1.5 inline-block text-[11px] text-[--color-gold-300] hover:text-[--color-gold-100]"
+                      className="mt-1.5 inline-block text-[11px] text-[var(--color-gold-300)] hover:text-[var(--color-gold-100)]"
                     >
                       Open the lead
                     </Link>
@@ -325,20 +325,20 @@ export default async function WorkflowsPage({
         <details className="group">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
             <div>
-              <h2 className="flex items-center gap-2 text-sm font-semibold text-[--color-ink]">
-                <Plus className="h-4 w-4 text-[--color-gold-500]" aria-hidden />
+              <h2 className="flex items-center gap-2 text-sm font-semibold text-[var(--color-ink)]">
+                <Plus className="h-4 w-4 text-[var(--color-gold-500)]" aria-hidden />
                 New rule
               </h2>
-              <p className="mt-1 text-xs text-[--color-muted]">
+              <p className="mt-1 text-xs text-[var(--color-muted)]">
                 Build a trigger, its conditions and the one action it takes.
               </p>
             </div>
             <ChevronDown
-              className="h-4 w-4 shrink-0 text-[--color-muted] transition-transform group-open:rotate-180"
+              className="h-4 w-4 shrink-0 text-[var(--color-muted)] transition-transform group-open:rotate-180"
               aria-hidden
             />
           </summary>
-          <div className="mt-5 border-t border-[--color-line] pt-5">
+          <div className="mt-5 border-t border-[var(--color-line)] pt-5">
             <RuleBuilder languages={languages} />
           </div>
         </details>
@@ -346,7 +346,7 @@ export default async function WorkflowsPage({
 
       {automations.length === 0 ? (
         <Empty>
-          <span className="font-medium text-[--color-ink]">No rules yet.</span>
+          <span className="font-medium text-[var(--color-ink)]">No rules yet.</span>
           <span className="mx-auto mt-2 block max-w-xl">
             Open “New rule” above. Nothing is automated until you write one — this console does not
             ship with hidden defaults acting on your leads.
@@ -356,9 +356,9 @@ export default async function WorkflowsPage({
         <div className="space-y-8">
           {active.length > 0 && (
             <section>
-              <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-[--color-ink]">
+              <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-[var(--color-ink)]">
                 Active
-                <span className="pill bg-[--color-raised] text-[--color-muted]">{active.length}</span>
+                <span className="pill bg-[var(--color-raised)] text-[var(--color-muted)]">{active.length}</span>
               </h2>
               <div className="space-y-4">
                 {active.map((a) => (
@@ -370,9 +370,9 @@ export default async function WorkflowsPage({
 
           {paused.length > 0 && (
             <section>
-              <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-[--color-ink]">
+              <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-[var(--color-ink)]">
                 Paused
-                <span className="pill bg-[--color-raised] text-[--color-muted]">{paused.length}</span>
+                <span className="pill bg-[var(--color-raised)] text-[var(--color-muted)]">{paused.length}</span>
               </h2>
               <div className="space-y-4">
                 {paused.map((a) => (
@@ -384,7 +384,7 @@ export default async function WorkflowsPage({
         </div>
       )}
 
-      <p className="mt-8 text-xs leading-relaxed text-[--color-faint]">
+      <p className="mt-8 text-xs leading-relaxed text-[var(--color-faint)]">
         Deleting a rule cascades to its runs, which is why pause is the first-class action here — a
         paused rule keeps its audit trail. Message actions queue a follow-up rather than sending
         one, because whether WhatsApp will accept free text depends on the 24-hour window as it

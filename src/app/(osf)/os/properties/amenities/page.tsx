@@ -80,7 +80,7 @@ export default async function AmenitiesPage({
             }
           >
             No project has an{" "}
-            <code className="rounded bg-[--color-canvas] px-1.5 py-0.5 text-xs">amenities</code>{" "}
+            <code className="rounded bg-[var(--color-canvas)] px-1.5 py-0.5 text-xs">amenities</code>{" "}
             record. Until one is transcribed from the developer&rsquo;s collateral, the agent answers
             &ldquo;what does the community have?&rdquo; by handing the question to sales.
           </Empty>
@@ -131,11 +131,11 @@ export default async function AmenitiesPage({
                   <li key={entry.projectId} className="flex flex-wrap items-baseline justify-between gap-3">
                     <Link
                       href={`/os/properties/projects/${entry.slug}`}
-                      className="text-sm text-[--color-ink] underline-offset-2 hover:text-[--color-gold-300] hover:underline"
+                      className="text-sm text-[var(--color-ink)] underline-offset-2 hover:text-[var(--color-gold-300)] hover:underline"
                     >
                       {entry.projectName}
                     </Link>
-                    <span className="text-xs text-[--color-faint]">
+                    <span className="text-xs text-[var(--color-faint)]">
                       No amenity recorded — the agent will not describe this community&rsquo;s facilities.
                     </span>
                   </li>
@@ -170,12 +170,12 @@ function ProjectPill({
       href={href}
       className={`pill border transition ${
         active
-          ? "border-[--color-gold-line] bg-[--color-gold-soft] text-[--color-gold-100]"
-          : "border-[--color-line] bg-[--color-surface] text-[--color-muted] hover:border-[--color-line-strong] hover:text-[--color-ink]"
+          ? "border-[var(--color-gold-line)] bg-[var(--color-gold-soft)] text-[var(--color-gold-100)]"
+          : "border-[var(--color-line)] bg-[var(--color-surface)] text-[var(--color-muted)] hover:border-[var(--color-line-strong)] hover:text-[var(--color-ink)]"
       }`}
     >
       {label}
-      <span className="tabular-nums text-[--color-faint]">{count}</span>
+      <span className="tabular-nums text-[var(--color-faint)]">{count}</span>
     </Link>
   );
 }
@@ -185,22 +185,22 @@ function ProjectAmenities({ entry }: { entry: AmenityShowcase }) {
     <section>
       <header className="mb-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <div>
-          <h2 className="font-[family-name:--font-display] text-xl leading-tight text-[--color-ink]">
+          <h2 className="font-[family-name:var(--font-display)] text-xl leading-tight text-[var(--color-ink)]">
             {entry.projectName}
           </h2>
           {entry.location && (
-            <p className="mt-0.5 flex items-center gap-1.5 text-xs text-[--color-muted]">
-              <MapPin size={11} strokeWidth={1.75} className="text-[--color-gold-300]" aria-hidden />
+            <p className="mt-0.5 flex items-center gap-1.5 text-xs text-[var(--color-muted)]">
+              <MapPin size={11} strokeWidth={1.75} className="text-[var(--color-gold-300)]" aria-hidden />
               {entry.location}
             </p>
           )}
         </div>
-        <p className="text-xs text-[--color-muted]">
-          <span className="tabular-nums text-[--color-gold-300]">{formatNumber(entry.total)}</span>{" "}
+        <p className="text-xs text-[var(--color-muted)]">
+          <span className="tabular-nums text-[var(--color-gold-300)]">{formatNumber(entry.total)}</span>{" "}
           amenities in {entry.categories.length} categor{entry.categories.length === 1 ? "y" : "ies"} ·{" "}
           <Link
             href={`/os/properties/projects/${entry.slug}`}
-            className="underline underline-offset-2 hover:text-[--color-ink]"
+            className="underline underline-offset-2 hover:text-[var(--color-ink)]"
           >
             Dossier
           </Link>
@@ -216,19 +216,19 @@ function ProjectAmenities({ entry }: { entry: AmenityShowcase }) {
           return (
             <div key={category.key} className="mb-4 break-inside-avoid">
               <Card>
-                <header className="mb-3 flex items-center gap-2.5 border-b border-[--color-line] pb-2.5">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[--color-gold-line] bg-[--color-gold-soft] text-[--color-gold-300]">
+                <header className="mb-3 flex items-center gap-2.5 border-b border-[var(--color-line)] pb-2.5">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[var(--color-gold-line)] bg-[var(--color-gold-soft)] text-[var(--color-gold-300)]">
                     <Icon size={15} strokeWidth={1.6} aria-hidden />
                   </span>
-                  <h3 className="flex-1 text-sm font-semibold text-[--color-ink]">{category.label}</h3>
+                  <h3 className="flex-1 text-sm font-semibold text-[var(--color-ink)]">{category.label}</h3>
                   {leaves > 0 && (
-                    <span className="text-[11px] tabular-nums text-[--color-faint]">{leaves}</span>
+                    <span className="text-[11px] tabular-nums text-[var(--color-faint)]">{leaves}</span>
                   )}
                 </header>
                 {category.node ? (
                   <JsonTree node={category.node} depth={1} />
                 ) : (
-                  <p className="text-xs text-[--color-faint]">Listed by name only.</p>
+                  <p className="text-xs text-[var(--color-faint)]">Listed by name only.</p>
                 )}
               </Card>
             </div>

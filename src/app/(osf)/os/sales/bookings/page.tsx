@@ -91,7 +91,7 @@ export default async function BookingsPage({ searchParams }: { searchParams: Sea
       />
 
       {error && (
-        <div className="mb-6 rounded-2xl border border-[rgba(244,105,95,0.3)] bg-[rgba(244,105,95,0.08)] p-4 text-sm text-[--color-danger]">
+        <div className="mb-6 rounded-2xl border border-[rgba(244,105,95,0.3)] bg-[rgba(244,105,95,0.08)] p-4 text-sm text-[var(--color-danger)]">
           {error}
         </div>
       )}
@@ -130,7 +130,7 @@ export default async function BookingsPage({ searchParams }: { searchParams: Sea
           <div className="overflow-x-auto">
             <table className="w-full min-w-[900px] border-collapse">
               <thead>
-                <tr className="border-b border-[--color-line]">
+                <tr className="border-b border-[var(--color-line)]">
                   <th className="th">Booking</th>
                   <th className="th">Customer</th>
                   <th className="th">Unit</th>
@@ -141,7 +141,7 @@ export default async function BookingsPage({ searchParams }: { searchParams: Sea
                   <th className="th">Rep</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[--color-line]">
+              <tbody className="divide-y divide-[var(--color-line)]">
                 {bookings.map((b) => (
                   <BookingLine key={b.id} booking={b} totals={totals.get(b.id)} />
                 ))}
@@ -167,34 +167,34 @@ function BookingLine({ booking, totals }: { booking: BookingRow; totals?: Milest
       <td className="td whitespace-nowrap">
         <Link
           href={`/os/sales/bookings/${booking.id}`}
-          className="font-mono text-[13px] text-[--color-gold-300] hover:text-[--color-gold-100]"
+          className="font-mono text-[13px] text-[var(--color-gold-300)] hover:text-[var(--color-gold-100)]"
         >
           {booking.booking_number}
         </Link>
-        <span className="mt-0.5 block text-xs text-[--color-faint]">
+        <span className="mt-0.5 block text-xs text-[var(--color-faint)]">
           {formatDay(booking.booking_date)}
         </span>
       </td>
       <td className="td">
         <span className="block truncate">{booking.customer_name}</span>
-        <span className="mt-0.5 block font-mono text-xs text-[--color-faint]">
+        <span className="mt-0.5 block font-mono text-xs text-[var(--color-faint)]">
           +{booking.customer_phone}
         </span>
       </td>
       <td className="td">
         <span className="block text-[13px]">{unit ?? "—"}</span>
-        <span className="mt-0.5 block text-xs text-[--color-faint]">
+        <span className="mt-0.5 block text-xs text-[var(--color-faint)]">
           {[booking.villa_projects?.name, booking.villa_types?.name].filter(Boolean).join(" · ") || "Not set"}
         </span>
       </td>
       {/* A zero value means nobody has recorded the price, not a free villa. */}
       <td className="td whitespace-nowrap text-right tabular-nums">
-        {booking.value_inr > 0 ? formatCr(booking.value_inr) : <span className="text-[--color-faint]">—</span>}
+        {booking.value_inr > 0 ? formatCr(booking.value_inr) : <span className="text-[var(--color-faint)]">—</span>}
       </td>
       <td className="td whitespace-nowrap text-right tabular-nums">
-        {collected > 0 ? formatCr(collected) : <span className="text-[--color-faint]">—</span>}
+        {collected > 0 ? formatCr(collected) : <span className="text-[var(--color-faint)]">—</span>}
         {booking.token_amount_inr > 0 && (
-          <span className="mt-0.5 block text-xs text-[--color-faint]">
+          <span className="mt-0.5 block text-xs text-[var(--color-faint)]">
             token {formatInr(booking.token_amount_inr)}
           </span>
         )}
@@ -207,8 +207,8 @@ function BookingLine({ booking, totals }: { booking: BookingRow; totals?: Milest
       <td className="td whitespace-nowrap">
         <Badge tone={PAYMENT_STATUS_TONES[payment]}>{PAYMENT_STATUS_LABELS[payment]}</Badge>
       </td>
-      <td className="td whitespace-nowrap text-[13px] text-[--color-muted]">
-        {booking.villa_team_members?.name ?? <span className="text-[--color-faint]">Unassigned</span>}
+      <td className="td whitespace-nowrap text-[13px] text-[var(--color-muted)]">
+        {booking.villa_team_members?.name ?? <span className="text-[var(--color-faint)]">Unassigned</span>}
       </td>
     </tr>
   );
@@ -237,8 +237,8 @@ function NewBookingForm({
     <details className="card group">
       <summary className="flex cursor-pointer list-none items-start justify-between gap-4">
         <div>
-          <h2 className="text-sm font-semibold text-[--color-ink]">New booking</h2>
-          <p className="mt-1 text-xs leading-relaxed text-[--color-muted]">
+          <h2 className="text-sm font-semibold text-[var(--color-ink)]">New booking</h2>
+          <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)]">
             Numbered GS-{year}-NNNN in creation order. The payment schedule is built on the
             booking&rsquo;s own page afterwards.
           </p>
@@ -250,11 +250,11 @@ function NewBookingForm({
         </span>
       </summary>
 
-      <div className="mt-5 border-t border-[--color-line] pt-5">
+      <div className="mt-5 border-t border-[var(--color-line)] pt-5">
         {leads.length === 0 ? (
           <Empty>
             A booking is always raised against a real lead so revenue stays attributable.{" "}
-            <Link href="/os/crm/leads" className="text-[--color-gold-300] underline">
+            <Link href="/os/crm/leads" className="text-[var(--color-gold-300)] underline">
               Start from the leads list
             </Link>
             .

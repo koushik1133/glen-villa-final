@@ -82,7 +82,7 @@ export default function SimulatorPage() {
     <>
       <header className="mb-6">
         <h1 className="text-2xl font-semibold tracking-tight">Simulator</h1>
-        <p className="mt-1 text-sm text-[--color-muted]">
+        <p className="mt-1 text-sm text-[var(--color-muted)]">
           Talk to the agent exactly as a WhatsApp customer would. Same prompt, same tools, same
           CRM writes — nothing is sent to Meta. Everything here shows up as a real lead.
         </p>
@@ -91,13 +91,13 @@ export default function SimulatorPage() {
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <div className="card flex h-[560px] flex-col p-0">
-            <div className="flex items-center justify-between border-b border-[--color-line] px-4 py-3">
+            <div className="flex items-center justify-between border-b border-[var(--color-line)] px-4 py-3">
               <div className="flex items-center gap-2 text-sm">
-                <span className="text-[--color-muted]">Test number</span>
+                <span className="text-[var(--color-muted)]">Test number</span>
                 <input
                   value={phone}
                   onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
-                  className="w-40 rounded-md border border-[--color-line] px-2 py-1 font-mono text-xs"
+                  className="w-40 rounded-md border border-[var(--color-line)] px-2 py-1 font-mono text-xs"
                 />
               </div>
               <button
@@ -106,7 +106,7 @@ export default function SimulatorPage() {
                   setMeta(null);
                   setError(null);
                 }}
-                className="text-xs text-[--color-muted] hover:underline"
+                className="text-xs text-[var(--color-muted)] hover:underline"
               >
                 Clear view
               </button>
@@ -114,7 +114,7 @@ export default function SimulatorPage() {
 
             <div className="flex-1 space-y-3 overflow-y-auto p-4">
               {bubbles.length === 0 && (
-                <p className="pt-16 text-center text-sm text-[--color-muted]">
+                <p className="pt-16 text-center text-sm text-[var(--color-muted)]">
                   Send a message to start.
                 </p>
               )}
@@ -126,8 +126,8 @@ export default function SimulatorPage() {
                   <div
                     className={`max-w-[78%] rounded-2xl px-4 py-2.5 ${
                       b.from === "customer"
-                        ? "rounded-tr-sm bg-[--color-gold-soft]"
-                        : "rounded-tl-sm bg-[--color-canvas]"
+                        ? "rounded-tr-sm bg-[var(--color-gold-soft)]"
+                        : "rounded-tl-sm bg-[var(--color-canvas)]"
                     }`}
                   >
                     {b.text && <p className="whitespace-pre-wrap text-sm">{b.text}</p>}
@@ -145,7 +145,7 @@ export default function SimulatorPage() {
                 </div>
               ))}
               {busy && (
-                <p className="text-xs text-[--color-muted]">agent is typing…</p>
+                <p className="text-xs text-[var(--color-muted)]">agent is typing…</p>
               )}
               {error && (
                 <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-700">
@@ -160,19 +160,19 @@ export default function SimulatorPage() {
                 e.preventDefault();
                 void send(input);
               }}
-              className="flex gap-2 border-t border-[--color-line] p-3"
+              className="flex gap-2 border-t border-[var(--color-line)] p-3"
             >
               <input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Type as the customer…"
-                className="flex-1 rounded-lg border border-[--color-line] px-3 py-2 text-sm"
+                className="flex-1 rounded-lg border border-[var(--color-line)] px-3 py-2 text-sm"
                 disabled={busy}
               />
               <button
                 type="submit"
                 disabled={busy || !input.trim()}
-                className="rounded-lg bg-[--color-gold-500] px-4 py-2 text-sm font-medium text-white disabled:opacity-40"
+                className="rounded-lg bg-[var(--color-gold-500)] px-4 py-2 text-sm font-medium text-white disabled:opacity-40"
               >
                 Send
               </button>
@@ -189,13 +189,13 @@ export default function SimulatorPage() {
                   key={o}
                   onClick={() => void send(o)}
                   disabled={busy}
-                  className="rounded-full border border-[--color-line] px-3 py-1 text-left text-xs hover:bg-[--color-raised] disabled:opacity-40"
+                  className="rounded-full border border-[var(--color-line)] px-3 py-1 text-left text-xs hover:bg-[var(--color-raised)] disabled:opacity-40"
                 >
                   {o}
                 </button>
               ))}
             </div>
-            <p className="mt-3 text-xs text-[--color-muted]">
+            <p className="mt-3 text-xs text-[var(--color-muted)]">
               The last two are the important ones — they test that the agent refuses to invent a
               &ldquo;final price&rdquo; or promise returns.
             </p>
@@ -213,7 +213,7 @@ export default function SimulatorPage() {
                 <Row k="Cache read" v={meta.usage.cacheRead.toLocaleString()} />
                 <Row k="Cache write" v={meta.usage.cacheWrite.toLocaleString()} />
               </dl>
-              <p className="mt-3 border-t border-[--color-line] pt-3 text-xs text-[--color-muted]">
+              <p className="mt-3 border-t border-[var(--color-line)] pt-3 text-xs text-[var(--color-muted)]">
                 Cache read should climb after the first message. If it stays at zero, the prompt
                 prefix is changing between calls.
               </p>
@@ -228,7 +228,7 @@ export default function SimulatorPage() {
 function Row({ k, v }: { k: string; v: string }) {
   return (
     <div className="flex justify-between gap-3">
-      <dt className="text-[--color-muted]">{k}</dt>
+      <dt className="text-[var(--color-muted)]">{k}</dt>
       <dd className="text-right font-medium">{v}</dd>
     </div>
   );

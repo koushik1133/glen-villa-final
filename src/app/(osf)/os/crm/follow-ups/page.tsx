@@ -108,7 +108,7 @@ export default async function FollowUpsPage({
       />
 
       {error && (
-        <div className="mb-6 flex items-start gap-2.5 rounded-2xl border border-[rgba(244,105,95,0.3)] bg-[rgba(244,105,95,0.08)] p-4 text-sm text-[--color-danger]">
+        <div className="mb-6 flex items-start gap-2.5 rounded-2xl border border-[rgba(244,105,95,0.3)] bg-[rgba(244,105,95,0.08)] p-4 text-sm text-[var(--color-danger)]">
           <AlertTriangle size={16} strokeWidth={2} className="mt-0.5 shrink-0" aria-hidden />
           <span>{error}</span>
         </div>
@@ -150,7 +150,7 @@ export default async function FollowUpsPage({
               </>
             ) : (
               <>
-                <code className="rounded bg-[--color-canvas] px-1.5 py-0.5 text-xs">
+                <code className="rounded bg-[var(--color-canvas)] px-1.5 py-0.5 text-xs">
                   villa_follow_ups
                 </code>{" "}
                 is empty. Schedule one above, from a lead&rsquo;s page, or let an automation write one
@@ -169,14 +169,14 @@ export default async function FollowUpsPage({
                 title={section.title}
                 hint={section.hint}
                 actions={
-                  <span className="text-[11px] tabular-nums text-[--color-faint]">
+                  <span className="text-[11px] tabular-nums text-[var(--color-faint)]">
                     {formatNumber(section.rows.length)}
                   </span>
                 }
               >
                 <div className="-mx-5 overflow-x-auto">
                   <table className="w-full min-w-[900px]">
-                    <thead className="border-b border-[--color-line]">
+                    <thead className="border-b border-[var(--color-line)]">
                       <tr>
                         <th className="th">Lead</th>
                         <th className="th">Due</th>
@@ -187,7 +187,7 @@ export default async function FollowUpsPage({
                         <th className="th text-right">Status</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[--color-line]">
+                    <tbody className="divide-y divide-[var(--color-line)]">
                       {section.rows.map((row) => (
                         <FollowUpRow key={row.id} row={row} next={next} now={now} />
                       ))}
@@ -265,22 +265,22 @@ function FollowUpRow({ row, next, now }: { row: CrmFollowUp; next: string; now: 
         {row.lead ? (
           <Link
             href={`/os/crm/leads/${row.lead.id}`}
-            className="font-medium text-[--color-ink] hover:text-[--color-gold-300]"
+            className="font-medium text-[var(--color-ink)] hover:text-[var(--color-gold-300)]"
           >
             {row.lead.name?.trim() || `+${row.lead.phone}`}
           </Link>
         ) : (
-          <span className="text-[--color-faint]">Lead removed</span>
+          <span className="text-[var(--color-faint)]">Lead removed</span>
         )}
         {row.lead?.name && (
-          <span className="mt-0.5 block text-[11px] text-[--color-muted]">+{row.lead.phone}</span>
+          <span className="mt-0.5 block text-[11px] text-[var(--color-muted)]">+{row.lead.phone}</span>
         )}
       </td>
 
       <td className="td whitespace-nowrap">
         <span className="text-sm tabular-nums">{formatDateTime(row.scheduled_at)}</span>
         <span
-          className={`mt-0.5 block text-[11px] ${overdue ? "font-medium text-[--color-danger]" : "text-[--color-muted]"}`}
+          className={`mt-0.5 block text-[11px] ${overdue ? "font-medium text-[var(--color-danger)]" : "text-[var(--color-muted)]"}`}
         >
           {dueLabel(row.scheduled_at, now)}
         </span>
@@ -290,36 +290,36 @@ function FollowUpRow({ row, next, now }: { row: CrmFollowUp; next: string; now: 
 
       <td className="td max-w-sm">
         {row.template_name ? (
-          <span className="font-mono text-[11px] text-[--color-gold-300]">{row.template_name}</span>
+          <span className="font-mono text-[11px] text-[var(--color-gold-300)]">{row.template_name}</span>
         ) : (
-          <span className="text-[11px] text-[--color-faint]">
+          <span className="text-[11px] text-[var(--color-faint)]">
             {row.channel === "whatsapp" ? "Free text — no template recorded" : "Free text"}
           </span>
         )}
         {row.message && (
-          <span className="mt-1 block line-clamp-2 text-xs leading-relaxed text-[--color-muted]">
+          <span className="mt-1 block line-clamp-2 text-xs leading-relaxed text-[var(--color-muted)]">
             {row.message}
           </span>
         )}
         {row.ai_generated && (
-          <span className="mt-1 block text-[10px] uppercase tracking-[0.12em] text-[--color-gold-300]">
+          <span className="mt-1 block text-[10px] uppercase tracking-[0.12em] text-[var(--color-gold-300)]">
             AI drafted
           </span>
         )}
       </td>
 
       <td className="td text-xs">
-        {row.assignee?.name ?? <span className="text-[--color-faint]">Unassigned</span>}
+        {row.assignee?.name ?? <span className="text-[var(--color-faint)]">Unassigned</span>}
       </td>
 
       <td className="td whitespace-nowrap text-xs">
         {row.dispatched_at ? (
-          <span className="inline-flex items-center gap-1 text-[--color-success]">
+          <span className="inline-flex items-center gap-1 text-[var(--color-success)]">
             <Send size={11} strokeWidth={2} aria-hidden />
             {timeAgo(row.dispatched_at)}
           </span>
         ) : (
-          <span className="text-[--color-faint]">Not sent</span>
+          <span className="text-[var(--color-faint)]">Not sent</span>
         )}
       </td>
 
@@ -357,12 +357,12 @@ function NewFollowUpForm({
 }) {
   return (
     <details className="card">
-      <summary className="cursor-pointer list-none text-sm font-semibold text-[--color-ink]">
+      <summary className="cursor-pointer list-none text-sm font-semibold text-[var(--color-ink)]">
         <span className="inline-flex items-center gap-2">
-          <Plus size={14} strokeWidth={2} className="text-[--color-gold-300]" aria-hidden />
+          <Plus size={14} strokeWidth={2} className="text-[var(--color-gold-300)]" aria-hidden />
           Schedule a follow-up
         </span>
-        <span className="ml-2 text-xs font-normal text-[--color-muted]">
+        <span className="ml-2 text-xs font-normal text-[var(--color-muted)]">
           Records the intent. Delivery is a separate step.
         </span>
       </summary>
@@ -457,7 +457,7 @@ function NewFollowUpForm({
           </button>
         </div>
 
-        <p className="text-xs leading-relaxed text-[--color-muted] lg:col-span-12">
+        <p className="text-xs leading-relaxed text-[var(--color-muted)] lg:col-span-12">
           On WhatsApp, free text is only legal within {SERVICE_WINDOW_HOURS} hours of the
           customer&rsquo;s last message. If this is scheduled beyond that, name an approved template
           or Meta will refuse the send.

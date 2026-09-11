@@ -94,12 +94,12 @@ export default async function FunnelPage({ searchParams }: { searchParams: Promi
       {pipeline.biggestDrop && (
         <Card gold className="mt-5">
           <div className="flex items-start gap-3">
-            <TrendingDown size={16} strokeWidth={1.75} aria-hidden className="mt-0.5 shrink-0 text-[--color-gold-500]" />
+            <TrendingDown size={16} strokeWidth={1.75} aria-hidden className="mt-0.5 shrink-0 text-[var(--color-gold-500)]" />
             <div>
-              <p className="text-sm font-semibold text-[--color-ink]">
+              <p className="text-sm font-semibold text-[var(--color-ink)]">
                 The steepest drop is into {pipeline.biggestDrop.label.toLowerCase()}
               </p>
-              <p className="mt-1 text-xs leading-relaxed text-[--color-muted]">
+              <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)]">
                 Only {pct(pipeline.biggestDrop.stepRate)} of the leads that reached the previous stage got this far —{" "}
                 {formatNumber(pipeline.biggestDrop.reached)} of them. Every stage after it is capped by this number, so
                 it is the one worth fixing first.
@@ -130,7 +130,7 @@ export default async function FunnelPage({ searchParams }: { searchParams: Promi
           ) : (
             <div className="-mx-5 overflow-x-auto">
               <table className="w-full min-w-[520px]">
-                <thead className="border-b border-[--color-line]">
+                <thead className="border-b border-[var(--color-line)]">
                   <tr>
                     <th className="th">Stage</th>
                     <th className="th text-right">Here now</th>
@@ -138,38 +138,38 @@ export default async function FunnelPage({ searchParams }: { searchParams: Promi
                     <th className="th text-right">From previous</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[--color-line]">
+                <tbody className="divide-y divide-[var(--color-line)]">
                   {pipeline.rows.map((r) => (
                     <tr key={r.stage} className="row-hover">
                       <td className="td font-medium">{r.label}</td>
-                      <td className="td text-right tabular-nums text-[--color-muted]">
+                      <td className="td text-right tabular-nums text-[var(--color-muted)]">
                         {formatNumber(r.current)}
                       </td>
                       <td className="td text-right tabular-nums">{formatNumber(r.reached)}</td>
                       <td
                         className={`td text-right tabular-nums ${
                           r.stepRate !== null && r.stepRate < 0.4
-                            ? "text-[--color-danger]"
-                            : "text-[--color-ink]"
+                            ? "text-[var(--color-danger)]"
+                            : "text-[var(--color-ink)]"
                         }`}
                       >
                         {pct(r.stepRate)}
                       </td>
                     </tr>
                   ))}
-                  <tr className="border-t border-[--color-line-strong]">
-                    <td className="td font-medium text-[--color-muted]">Lost</td>
-                    <td className="td text-right tabular-nums text-[--color-danger]">
+                  <tr className="border-t border-[var(--color-line-strong)]">
+                    <td className="td font-medium text-[var(--color-muted)]">Lost</td>
+                    <td className="td text-right tabular-nums text-[var(--color-danger)]">
                       {formatNumber(pipeline.lost)}
                     </td>
-                    <td className="td text-right text-[--color-faint]">—</td>
-                    <td className="td text-right text-[--color-faint]">—</td>
+                    <td className="td text-right text-[var(--color-faint)]">—</td>
+                    <td className="td text-right text-[var(--color-faint)]">—</td>
                   </tr>
                 </tbody>
               </table>
               {/* The schema records where a lead is, never where it has been, so a
                   lost lead cannot be placed on the stage it dropped out of. */}
-              <p className="mt-3 px-5 text-xs leading-relaxed text-[--color-faint]">
+              <p className="mt-3 px-5 text-xs leading-relaxed text-[var(--color-faint)]">
                 Lost leads sit outside the rollup: <code>pipeline_stage</code> records where a lead is now, not how far
                 it got before it dropped out, so folding them into a stage would be a guess.
               </p>
@@ -193,13 +193,13 @@ export default async function FunnelPage({ searchParams }: { searchParams: Promi
                 height={Math.max(180, objections.length * 44)}
                 horizontal
               />
-              <ul className="mt-4 space-y-2 border-t border-[--color-line] pt-4">
+              <ul className="mt-4 space-y-2 border-t border-[var(--color-line)] pt-4">
                 {objections.map((o) => (
                   <li key={o.category} className="flex items-baseline justify-between gap-3 text-sm">
-                    <span className="min-w-0 truncate text-[--color-ink]">{humanise(o.category)}</span>
-                    <span className="shrink-0 tabular-nums text-[--color-muted]">
+                    <span className="min-w-0 truncate text-[var(--color-ink)]">{humanise(o.category)}</span>
+                    <span className="shrink-0 tabular-nums text-[var(--color-muted)]">
                       {formatNumber(o.total)}
-                      <span className="ml-2 text-[--color-faint]">
+                      <span className="ml-2 text-[var(--color-faint)]">
                         {o.pct === null ? "—" : formatPercent(o.pct)}
                       </span>
                     </span>
@@ -215,7 +215,7 @@ export default async function FunnelPage({ searchParams }: { searchParams: Promi
           hint="Questions the agent could not answer from the knowledge base. Each one is a gap a human had to fill."
           actions={
             questions.length > 0 ? (
-              <span className="pill bg-[rgba(239,180,92,0.14)] text-[--color-warm]">
+              <span className="pill bg-[rgba(239,180,92,0.14)] text-[var(--color-warm)]">
                 <CircleQuestionMark size={11} strokeWidth={2} aria-hidden />
                 {questions.length}
               </span>
@@ -227,17 +227,17 @@ export default async function FunnelPage({ searchParams }: { searchParams: Promi
               Nothing unanswered. Every question in this period was covered by the approved knowledge base.
             </Empty>
           ) : (
-            <ul className="-my-1 divide-y divide-[--color-line]">
+            <ul className="-my-1 divide-y divide-[var(--color-line)]">
               {questions.map((q) => (
                 <li key={q.id} className="py-3">
                   <div className="flex items-baseline justify-between gap-3">
-                    <span className="label text-[--color-gold-700]">{humanise(q.topic)}</span>
-                    <span className="shrink-0 text-xs tabular-nums text-[--color-faint]">
+                    <span className="label text-[var(--color-gold-700)]">{humanise(q.topic)}</span>
+                    <span className="shrink-0 text-xs tabular-nums text-[var(--color-faint)]">
                       {timeAgo(q.created_at)}
                     </span>
                   </div>
                   {q.verbatim && (
-                    <p className="mt-1 text-sm leading-relaxed text-[--color-ink]">“{q.verbatim}”</p>
+                    <p className="mt-1 text-sm leading-relaxed text-[var(--color-ink)]">“{q.verbatim}”</p>
                   )}
                 </li>
               ))}
@@ -247,7 +247,7 @@ export default async function FunnelPage({ searchParams }: { searchParams: Promi
       </div>
 
       {objections.length > 0 && (
-        <p className="mt-5 text-xs leading-relaxed text-[--color-faint]">
+        <p className="mt-5 text-xs leading-relaxed text-[var(--color-faint)]">
           Objection percentages are shares of the objections logged in this period, not of leads — one lead can raise
           several.
         </p>

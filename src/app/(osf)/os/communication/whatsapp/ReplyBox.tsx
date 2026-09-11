@@ -65,13 +65,13 @@ export default function ReplyBox({
   const next = `/os/communication/whatsapp?c=${conversationId}`;
 
   return (
-    <div className="mt-5 border-t border-[--color-line] pt-4">
+    <div className="mt-5 border-t border-[var(--color-line)] pt-4">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <span
           className={`pill ${
             open
-              ? "bg-[rgba(94,201,141,0.14)] text-[--color-success]"
-              : "bg-[rgba(239,180,92,0.14)] text-[--color-warm]"
+              ? "bg-[rgba(94,201,141,0.14)] text-[var(--color-success)]"
+              : "bg-[rgba(239,180,92,0.14)] text-[var(--color-warm)]"
           }`}
         >
           {open ? <Clock size={12} strokeWidth={2} aria-hidden /> : <Lock size={12} strokeWidth={2} aria-hidden />}
@@ -79,7 +79,7 @@ export default function ReplyBox({
         </span>
 
         {open && (
-          <div className="flex items-center gap-1 rounded-xl border border-[--color-line] bg-[--color-void] p-1">
+          <div className="flex items-center gap-1 rounded-xl border border-[var(--color-line)] bg-[var(--color-void)] p-1">
             {(["text", "template"] as const).map((value) => (
               <button
                 key={value}
@@ -87,8 +87,8 @@ export default function ReplyBox({
                 onClick={() => setMode(value)}
                 className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
                   mode === value
-                    ? "bg-[--color-gold-soft] text-[--color-gold-100]"
-                    : "text-[--color-muted] hover:text-[--color-ink]"
+                    ? "bg-[var(--color-gold-soft)] text-[var(--color-gold-100)]"
+                    : "text-[var(--color-muted)] hover:text-[var(--color-ink)]"
                 }`}
               >
                 {value === "text" ? "Free text" : "Template"}
@@ -99,18 +99,18 @@ export default function ReplyBox({
       </div>
 
       {!open && (
-        <div className="mb-3 rounded-xl border border-[--color-gold-line] bg-[--color-gold-soft] p-4">
-          <h3 className="flex items-center gap-2 text-sm font-semibold text-[--color-gold-300]">
+        <div className="mb-3 rounded-xl border border-[var(--color-gold-line)] bg-[var(--color-gold-soft)] p-4">
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-[var(--color-gold-300)]">
             <Lock size={14} strokeWidth={2} aria-hidden />
             Free text is disabled
           </h3>
-          <p className="mt-1.5 text-sm leading-relaxed text-[--color-ink]">
+          <p className="mt-1.5 text-sm leading-relaxed text-[var(--color-ink)]">
             Meta only accepts a free-form message within 24 hours of the customer&apos;s last
             inbound one. That window has closed, so the only message the WhatsApp Cloud API will
             deliver to this number is a <strong>pre-approved template</strong>. Sending one
             re-opens the window as soon as the customer replies.
           </p>
-          <p className="mt-2 text-xs text-[--color-muted]">
+          <p className="mt-2 text-xs text-[var(--color-muted)]">
             Templates are created and approved in the Meta Business Manager, not here — this box
             takes the approved template&apos;s name.
           </p>
@@ -133,9 +133,9 @@ export default function ReplyBox({
           />
 
           <div className="mt-2.5 flex flex-wrap items-center justify-between gap-3">
-            <p className="text-xs text-[--color-muted]">
+            <p className="text-xs text-[var(--color-muted)]">
               Sending sets{" "}
-              <code className="rounded bg-black/40 px-1.5 py-0.5 text-[11px] text-[--color-gold-100]">
+              <code className="rounded bg-black/40 px-1.5 py-0.5 text-[11px] text-[var(--color-gold-100)]">
                 ai_paused
               </code>{" "}
               so the agent stops replying on this thread.
@@ -143,7 +143,7 @@ export default function ReplyBox({
             <div className="flex items-center gap-3">
               <span
                 className={`text-xs tabular-nums ${
-                  over ? "text-[--color-danger]" : "text-[--color-faint]"
+                  over ? "text-[var(--color-danger)]" : "text-[var(--color-faint)]"
                 }`}
               >
                 {text.length.toLocaleString("en-IN")} / {MAX_TEXT.toLocaleString("en-IN")}
@@ -195,14 +195,14 @@ export default function ReplyBox({
               className="field mt-1.5"
               autoComplete="off"
             />
-            <span className="mt-1.5 block text-xs text-[--color-muted]">
+            <span className="mt-1.5 block text-xs text-[var(--color-muted)]">
               Separate with <code className="rounded bg-black/40 px-1 py-0.5 text-[11px]">|</code>.
               They fill {"{{1}}"}, {"{{2}}"} … in the approved body, in order.
             </span>
           </label>
 
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-xs text-[--color-muted]">
+            <p className="text-xs text-[var(--color-muted)]">
               {templateName.trim()
                 ? `Sends "${templateName.trim().toLowerCase()}" with ${params.length} variable${
                     params.length === 1 ? "" : "s"

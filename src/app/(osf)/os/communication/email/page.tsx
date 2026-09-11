@@ -115,28 +115,28 @@ export default async function EmailPage({
         gold
         title="What it would take to send from here"
         hint="Four things, none of which exist in this deployment today."
-        actions={<Plug size={15} strokeWidth={1.75} className="text-[--color-gold-300]" aria-hidden />}
+        actions={<Plug size={15} strokeWidth={1.75} className="text-[var(--color-gold-300)]" aria-hidden />}
       >
         <ol className="grid gap-3 sm:grid-cols-2">
           {PROVIDER_REQUIREMENTS.map((requirement, index) => (
             <li
               key={requirement.title}
-              className="rounded-xl border border-[--color-line] bg-[--color-void]/50 px-3.5 py-3"
+              className="rounded-xl border border-[var(--color-line)] bg-[var(--color-void)]/50 px-3.5 py-3"
             >
-              <p className="flex items-baseline gap-2 text-sm font-medium text-[--color-ink]">
-                <span className="text-xs tabular-nums text-[--color-gold-300]">
+              <p className="flex items-baseline gap-2 text-sm font-medium text-[var(--color-ink)]">
+                <span className="text-xs tabular-nums text-[var(--color-gold-300)]">
                   {String(index + 1).padStart(2, "0")}
                 </span>
                 {requirement.title}
               </p>
-              <p className="mt-1.5 text-xs leading-relaxed text-[--color-muted]">{requirement.detail}</p>
+              <p className="mt-1.5 text-xs leading-relaxed text-[var(--color-muted)]">{requirement.detail}</p>
             </li>
           ))}
         </ol>
-        <p className="mt-4 border-t border-[--color-gold-line] pt-3 text-xs leading-relaxed text-[--color-muted]">
+        <p className="mt-4 border-t border-[var(--color-gold-line)] pt-3 text-xs leading-relaxed text-[var(--color-muted)]">
           Until all four are in place, a &ldquo;Send&rdquo; button here could only lie. WhatsApp is the
           one channel with a live integration —{" "}
-          <Link href="/os/communication/whatsapp" className="text-[--color-gold-300] underline underline-offset-2">
+          <Link href="/os/communication/whatsapp" className="text-[var(--color-gold-300)] underline underline-offset-2">
             reply there
           </Link>{" "}
           if the message needs to actually arrive.
@@ -147,7 +147,7 @@ export default async function EmailPage({
         className="mb-5"
         title="Compose"
         hint="Drafts a message and opens it in your mail client. Works with zero credentials, because your mail client already has them."
-        actions={<Mail size={15} strokeWidth={1.75} className="text-[--color-muted]" aria-hidden />}
+        actions={<Mail size={15} strokeWidth={1.75} className="text-[var(--color-muted)]" aria-hidden />}
       >
         {leads.length === 0 ? (
           <Empty>
@@ -162,17 +162,17 @@ export default async function EmailPage({
       <Card
         title="Leads with an email"
         hint="Sorted by most recent contact. Opting out blocks every channel, not just WhatsApp."
-        actions={<AtSign size={15} strokeWidth={1.75} className="text-[--color-muted]" aria-hidden />}
+        actions={<AtSign size={15} strokeWidth={1.75} className="text-[var(--color-muted)]" aria-hidden />}
       >
         {leads.length === 0 ? (
           <Empty>
-            <code className="rounded bg-[--color-canvas] px-1.5 py-0.5 text-xs">villa_leads</code>{" "}
+            <code className="rounded bg-[var(--color-canvas)] px-1.5 py-0.5 text-xs">villa_leads</code>{" "}
             holds no row with an email address.
           </Empty>
         ) : (
           <div className="-mx-5 overflow-x-auto">
             <table className="w-full min-w-[880px]">
-              <thead className="border-b border-[--color-line]">
+              <thead className="border-b border-[var(--color-line)]">
                 <tr>
                   <th className="th">Lead</th>
                   <th className="th">Email</th>
@@ -182,7 +182,7 @@ export default async function EmailPage({
                   <th className="th text-right">Last contact</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[--color-line]">
+              <tbody className="divide-y divide-[var(--color-line)]">
                 {leads.map((lead) => (
                   <EmailRow key={lead.id} lead={lead} />
                 ))}
@@ -201,22 +201,22 @@ function EmailRow({ lead }: { lead: EmailLead }) {
       <td className="td">
         <Link
           href={`/os/crm/leads/${lead.id}`}
-          className="font-medium text-[--color-ink] hover:text-[--color-gold-300]"
+          className="font-medium text-[var(--color-ink)] hover:text-[var(--color-gold-300)]"
         >
           {lead.name?.trim() || "Unnamed"}
         </Link>
-        <span className="mt-0.5 block text-[11px] text-[--color-muted]">+{lead.phone}</span>
+        <span className="mt-0.5 block text-[11px] text-[var(--color-muted)]">+{lead.phone}</span>
       </td>
       <td className="td">
         {lead.opted_out ? (
-          <span className="inline-flex items-center gap-1.5 text-xs text-[--color-danger]">
+          <span className="inline-flex items-center gap-1.5 text-xs text-[var(--color-danger)]">
             <Ban size={12} strokeWidth={2} aria-hidden />
             {lead.email} · opted out
           </span>
         ) : (
           <Link
             href={`/os/communication/email?lead=${lead.id}`}
-            className="text-xs text-[--color-gold-300] underline underline-offset-2"
+            className="text-xs text-[var(--color-gold-300)] underline underline-offset-2"
           >
             {lead.email}
           </Link>
@@ -229,10 +229,10 @@ function EmailRow({ lead }: { lead: EmailLead }) {
       <td className="td text-xs">
         <span className="capitalize">{humanise(lead.source)}</span>
         {lead.campaign && (
-          <span className="mt-0.5 block truncate text-[11px] text-[--color-faint]">{lead.campaign}</span>
+          <span className="mt-0.5 block truncate text-[11px] text-[var(--color-faint)]">{lead.campaign}</span>
         )}
       </td>
-      <td className="td whitespace-nowrap text-right text-xs text-[--color-muted]">
+      <td className="td whitespace-nowrap text-right text-xs text-[var(--color-muted)]">
         {timeAgo(lead.last_contact_at)}
       </td>
     </tr>

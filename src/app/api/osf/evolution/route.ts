@@ -2,6 +2,9 @@ import crypto from "node:crypto";
 import { NextResponse, after } from "next/server";
 import { env } from "@/lib/osf/env";
 import { handleInbound } from "@/lib/osf/conversation";
+import {
+  describeMedia, type InboundMedia, type InboundMediaKind,
+} from "@/lib/osf/whatsapp/inbound-media";
 import { db } from "@/lib/osf/supabase";
 import { deliverToEvolution, fetchEvolutionMedia, isOwnSentMessage } from "@/lib/osf/evolution/client";
 import { passesTrigger, isVillaRelated } from "@/lib/osf/whatsapp/trigger";
@@ -51,9 +54,11 @@ interface EvolutionMessage {
   message?: {
     conversation?: string;
     extendedTextMessage?: { text?: string };
-    imageMessage?: { caption?: string };
-    documentMessage?: { caption?: string };
-    audioMessage?: unknown;
+    imageMessage?: { caption?: string; mimetype?: string };
+    documentMessage?: { caption?: string; mimetype?: string; fileName?: string; title?: string };
+    audioMessage?: { mimetype?: string };
+    videoMessage?: { caption?: string; mimetype?: string };
+    stickerMessage?: { mimetype?: string };
     buttonsResponseMessage?: { selectedDisplayText?: string; selectedButtonId?: string };
     listResponseMessage?: { title?: string };
     // A WhatsApp "edit" arrives as a protocolMessage wrapping the new content
@@ -81,6 +86,43 @@ interface EvolutionEvent {
   data?: EvolutionMessage | EvolutionMessage[];
 }
 
+/**
+ * What kind of media this message carries, if any, and where to read its
+ * metadata from. Driven off the message body rather than `messageType` because
+ * Evolution builds differ on the latter's spelling.
+ */
+function mediaKindOf(m: EvolutionMessage): InboundMediaKind | null {
+  const msg = m.message;
+  if (!msg) return null;
+  if (msg.audioMessage) return "audio";
+  if (msg.imageMessage) return "image";
+  if (msg.documentMessage) return "document";
+  if (msg.videoMessage) return "video";
+  if (msg.stickerMessage) return "sticker";
+  return null;
+}
+
+function mediaFilename(m: EvolutionMessage): string | null {
+  const d = m.message?.documentMessage;
+  return d?.fileName ?? d?.title ?? null;
+}
+
+function mediaMimeType(m: EvolutionMessage, kind: InboundMediaKind): string {
+  const msg = m.message;
+  const declared =
+    msg?.audioMessage?.mimetype ??
+    msg?.imageMessage?.mimetype ??
+    msg?.documentMessage?.mimetype ??
+    msg?.videoMessage?.mimetype ??
+    msg?.stickerMessage?.mimetype;
+  if (declared) return declared;
+  const fallback: Record<InboundMediaKind, string> = {
+    audio: "audio/ogg", image: "image/jpeg", document: "application/octet-stream",
+    video: "video/mp4", sticker: "image/webp",
+  };
+  return fallback[kind];
+}
+
 function textFrom(m: EvolutionMessage): string | null {
   const msg = m.message;
   if (!msg) return null;
@@ -91,6 +133,7 @@ function textFrom(m: EvolutionMessage): string | null {
     msg.listResponseMessage?.title ??
     msg.imageMessage?.caption ??
     msg.documentMessage?.caption ??
+    msg.videoMessage?.caption ??
     null
   );
 }
@@ -178,7 +221,24 @@ async function processMessage(m: EvolutionMessage): Promise<void> {
     return;
   }
 
-  const isVoice = m.messageType === "audioMessage" && Boolean(m.key?.id);
+  const kind = mediaKindOf(m);
+  // Fetch the bytes ONCE, for any media type. They used to be fetched only for
+  // audio and then discarded after transcription; now they are kept, so the
+  // thread holds the customer's actual photo, document or recording.
+  let media: InboundMedia | null = null;
+  if (kind && m.key?.id) {
+    const fetched = await fetchEvolutionMedia(m.key.id);
+    if (fetched) {
+      media = {
+        kind,
+        bytes: fetched.bytes,
+        mimeType: fetched.mimeType || mediaMimeType(m, kind),
+        filename: mediaFilename(m),
+      };
+    }
+  }
+
+  const isVoice = kind === "audio" && Boolean(m.key?.id);
   let text: string | null;
   if (isVoice && m.key?.id) {
     // Voice notes do NOT need the "villa" prefix — a caller just speaks. We
@@ -187,15 +247,12 @@ async function processMessage(m: EvolutionMessage): Promise<void> {
     // decrypts it for us, Whisper transcribes it —
     // the same downstream path a Meta voice note takes.
     let transcript: string | null = null;
-    if (transcriptionConfigured()) {
-      const media = await fetchEvolutionMedia(m.key.id);
-      if (media) {
-        try {
-          const result = await transcribeAudio(media.bytes, media.mimeType);
-          transcript = result.text || null;
-        } catch (e) {
-          console.error("[evolution] transcription failed", e);
-        }
+    if (transcriptionConfigured() && media) {
+      try {
+        const result = await transcribeAudio(media.bytes, media.mimeType);
+        transcript = result.text || null;
+      } catch (e) {
+        console.error("[evolution] transcription failed", e);
       }
     }
     text =
@@ -205,6 +262,11 @@ async function processMessage(m: EvolutionMessage): Promise<void> {
     text = textFrom(m);
   }
 
+  // A photo, document or sticker sent with no caption has no text at all. That
+  // used to return here, so the message was never recorded and the thread
+  // disagreed with the customer's own phone about what they had sent. Media
+  // now supplies its own body line instead.
+  if (!text && kind) text = describeMedia(kind, mediaFilename(m));
   if (!text) return;
 
   // Gating, personal-number mode (a trigger word is set):
@@ -214,9 +276,15 @@ async function processMessage(m: EvolutionMessage): Promise<void> {
   //     only if the CONTENT is about the project. A friend's unrelated voice
   //     note transcribes but gets no reply.
   // With no trigger word set (a dedicated business number) everything passes.
+  //
+  // Failing this gate means the agent stays SILENT — it never meant the message
+  // did not happen. It is still recorded below with `reply: false`, because a
+  // customer who sends their PAN card with no caption has given us a document
+  // whether or not a trigger word was typed in front of it.
+  let reply = true;
   if (trigger) {
     const relevant = isVoice ? isVillaRelated(text) : passesTrigger(text, trigger);
-    if (!relevant) return;
+    if (!relevant) reply = false;
   }
 
   const outcome = await handleInbound({
@@ -225,6 +293,8 @@ async function processMessage(m: EvolutionMessage): Promise<void> {
     profileName: m.pushName ?? null,
     channel: "whatsapp",
     waMessageId: m.key?.id ?? null,
+    media,
+    reply,
     deliver: (reply) => deliverToEvolution(phone, reply),
   });
 

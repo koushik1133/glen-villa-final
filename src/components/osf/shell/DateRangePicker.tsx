@@ -60,16 +60,16 @@ export default function DateRangePicker() {
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="flex items-center gap-2 rounded-xl border border-[--color-line] bg-[--color-surface] px-3 py-2 text-[13px] font-medium text-[--color-ink] transition hover:border-[--color-line-strong] hover:bg-[--color-raised]"
+        className="flex items-center gap-2 rounded-xl border border-[var(--color-line)] bg-[var(--color-surface)] px-3 py-2 text-[13px] font-medium text-[var(--color-ink)] transition hover:border-[var(--color-line-strong)] hover:bg-[var(--color-raised)]"
       >
-        <CalendarRange size={14} strokeWidth={1.75} aria-hidden className="text-[--color-gold-500]" />
+        <CalendarRange size={14} strokeWidth={1.75} aria-hidden className="text-[var(--color-gold-500)]" />
         <span className="hidden sm:inline">{preset.label}</span>
         <span className="sm:hidden">{preset.short}</span>
         <ChevronDown
           size={13}
           strokeWidth={2.5}
           aria-hidden
-          className={`text-[--color-faint] transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          className={`text-[var(--color-faint)] transition-transform duration-200 ${open ? "rotate-180" : ""}`}
         />
       </button>
 
@@ -77,7 +77,7 @@ export default function DateRangePicker() {
         <div
           role="listbox"
           aria-label="Date range"
-          className="absolute right-0 z-50 mt-2 w-52 overflow-hidden rounded-xl border border-[--color-line] bg-[--color-surface] p-1.5 shadow-[0_24px_48px_-16px_rgba(0,0,0,0.85)]"
+          className="absolute right-0 z-50 mt-2 w-52 overflow-hidden rounded-xl border border-[var(--color-line)] bg-[var(--color-surface)] p-1.5 shadow-[0_24px_48px_-16px_rgba(0,0,0,0.85)]"
         >
           {RANGE_PRESETS.map((p) => {
             const selected = p.key === current;
@@ -90,12 +90,12 @@ export default function DateRangePicker() {
                 onClick={() => select(p.key)}
                 className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-[13px] transition ${
                   selected
-                    ? "bg-[--color-gold-soft] text-[--color-gold-100]"
-                    : "text-[--color-muted] hover:bg-[--color-raised] hover:text-[--color-ink]"
+                    ? "bg-[var(--color-gold-soft)] text-[var(--color-gold-100)]"
+                    : "text-[var(--color-muted)] hover:bg-[var(--color-raised)] hover:text-[var(--color-ink)]"
                 }`}
               >
                 {p.label}
-                {selected && <Check size={14} strokeWidth={2.5} aria-hidden className="text-[--color-gold-500]" />}
+                {selected && <Check size={14} strokeWidth={2.5} aria-hidden className="text-[var(--color-gold-500)]" />}
               </button>
             );
           })}

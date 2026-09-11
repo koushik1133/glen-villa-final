@@ -76,7 +76,7 @@ export default async function WhatsAppPage({
       {!connected && <SetupNotice missing={WHATSAPP_ENV_VARS} detail="Threads still render from the database, but nothing can be sent until the WhatsApp Cloud API credentials are set." />}
 
       {error && (
-        <div className="mb-6 flex items-start gap-2.5 rounded-2xl border border-[rgba(244,105,95,0.3)] bg-[rgba(244,105,95,0.08)] p-4 text-sm text-[--color-danger]">
+        <div className="mb-6 flex items-start gap-2.5 rounded-2xl border border-[rgba(244,105,95,0.3)] bg-[rgba(244,105,95,0.08)] p-4 text-sm text-[var(--color-danger)]">
           <AlertTriangle size={16} strokeWidth={2} className="mt-0.5 shrink-0" aria-hidden />
           <span>{error}</span>
         </div>
@@ -84,9 +84,9 @@ export default async function WhatsAppPage({
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)]">
         <section className="card overflow-hidden p-0">
-          <header className="flex items-baseline justify-between border-b border-[--color-line] px-4 py-3">
-            <h2 className="text-sm font-semibold text-[--color-ink]">WhatsApp threads</h2>
-            <span className="text-[11px] tabular-nums text-[--color-faint]">
+          <header className="flex items-baseline justify-between border-b border-[var(--color-line)] px-4 py-3">
+            <h2 className="text-sm font-semibold text-[var(--color-ink)]">WhatsApp threads</h2>
+            <span className="text-[11px] tabular-nums text-[var(--color-faint)]">
               {formatNumber(conversations.length)} shown
             </span>
           </header>
@@ -124,21 +124,25 @@ export default async function WhatsAppPage({
                 lead={thread.lead}
                 channel={thread.conversation.channel}
                 status={thread.conversation.status}
-                messageCount={thread.conversation.message_count}
+                // Count the rows being displayed, not the cached tally on the
+                // conversation. That counter is incremented per agent turn and
+                // drifts — it read 54 against 66 stored messages — so the header
+                // contradicted the thread directly beneath it.
+                messageCount={thread.messages.length}
               >
                 {thread.lead && <AiControl leadId={thread.lead.id} paused={thread.lead.ai_paused} conversationId={thread.conversation.id} />}
               </ThreadHeader>
 
               {thread.lead?.ai_paused && (
-                <p className="mt-4 rounded-xl border border-[--color-gold-line] bg-[--color-gold-soft] px-3.5 py-3 text-xs leading-relaxed text-[--color-ink]">
-                  <span className="font-semibold text-[--color-gold-300]">You own this thread.</span>{" "}
+                <p className="mt-4 rounded-xl border border-[var(--color-gold-line)] bg-[var(--color-gold-soft)] px-3.5 py-3 text-xs leading-relaxed text-[var(--color-ink)]">
+                  <span className="font-semibold text-[var(--color-gold-300)]">You own this thread.</span>{" "}
                   The agent will not reply to this customer while it is paused, including to a
                   question it could have answered. Resume it when you are done.
                 </p>
               )}
 
               {thread.lead?.opted_out && (
-                <p className="mt-4 rounded-xl border border-[rgba(244,105,95,0.3)] bg-[rgba(244,105,95,0.08)] px-3.5 py-3 text-xs text-[--color-danger]">
+                <p className="mt-4 rounded-xl border border-[rgba(244,105,95,0.3)] bg-[rgba(244,105,95,0.08)] px-3.5 py-3 text-xs text-[var(--color-danger)]">
                   This customer opted out. Nothing may be sent to them on any channel.
                 </p>
               )}
@@ -148,11 +152,11 @@ export default async function WhatsAppPage({
               </div>
 
               {wrongChannel ? (
-                <p className="mt-5 border-t border-[--color-line] pt-4 text-sm text-[--color-muted]">
+                <p className="mt-5 border-t border-[var(--color-line)] pt-4 text-sm text-[var(--color-muted)]">
                   This is not a WhatsApp thread, so it cannot be replied to from this console.
                 </p>
               ) : thread.lead?.opted_out ? (
-                <p className="mt-5 border-t border-[--color-line] pt-4 text-sm text-[--color-muted]">
+                <p className="mt-5 border-t border-[var(--color-line)] pt-4 text-sm text-[var(--color-muted)]">
                   The composer is withheld because this customer opted out.
                 </p>
               ) : (

@@ -34,15 +34,15 @@ export interface LogActivityInput {
 
 /** Badge label + colour per known activity type. Unknown types fall back. */
 const ACTIVITY_STYLES: Record<string, { label: string; className: string }> = {
-  lead_created: { label: "New lead", className: "bg-[--color-gold-soft] text-[--color-gold-300]" },
+  lead_created: { label: "New lead", className: "bg-[var(--color-gold-soft)] text-[var(--color-gold-300)]" },
   message_received: { label: "Inbound", className: "bg-slate-100 text-slate-700" },
-  message_sent: { label: "Outbound", className: "bg-[--color-raised] text-[--color-gold-600]" },
+  message_sent: { label: "Outbound", className: "bg-[var(--color-raised)] text-[var(--color-gold-600)]" },
   stage_changed: { label: "Stage", className: "bg-indigo-100 text-indigo-700" },
-  handoff: { label: "Handoff", className: "bg-[--color-gold-soft] text-[--color-gold-300]" },
+  handoff: { label: "Handoff", className: "bg-[var(--color-gold-soft)] text-[var(--color-gold-300)]" },
   site_visit: { label: "Site visit", className: "bg-emerald-100 text-emerald-700" },
   follow_up_scheduled: { label: "Follow-up set", className: "bg-amber-100 text-amber-700" },
-  follow_up_sent: { label: "Follow-up sent", className: "bg-[--color-gold-soft] text-[--color-gold-300]" },
-  follow_up_manual: { label: "Needs a human", className: "bg-[--color-gold-soft] text-[--color-gold-300]" },
+  follow_up_sent: { label: "Follow-up sent", className: "bg-[var(--color-gold-soft)] text-[var(--color-gold-300)]" },
+  follow_up_manual: { label: "Needs a human", className: "bg-[var(--color-gold-soft)] text-[var(--color-gold-300)]" },
   follow_up_failed: { label: "Send failed", className: "bg-red-100 text-red-700" },
   follow_up_skipped: { label: "Skipped", className: "bg-slate-100 text-slate-600" },
   inventory_updated: { label: "Inventory", className: "bg-sky-100 text-sky-700" },

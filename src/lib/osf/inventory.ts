@@ -28,9 +28,9 @@ export const UNIT_STATUS_LABELS: Record<UnitStatus, string> = {
 
 /** Board colours. Available reads as the positive state, sold as spent. */
 export const UNIT_STATUS_STYLES: Record<UnitStatus, string> = {
-  available: "border-[--color-gold-500]/40 bg-[--color-raised] text-[--color-gold-300]",
-  blocked: "border-[--color-gold-500]/40 bg-[--color-gold-soft] text-[--color-gold-300]",
-  sold: "border-[--color-line] bg-[--color-canvas] text-[--color-muted]",
+  available: "border-[var(--color-gold-500)]/40 bg-[var(--color-raised)] text-[var(--color-gold-300)]",
+  blocked: "border-[var(--color-gold-500)]/40 bg-[var(--color-gold-soft)] text-[var(--color-gold-300)]",
+  sold: "border-[var(--color-line)] bg-[var(--color-canvas)] text-[var(--color-muted)]",
 };
 
 export interface Unit {

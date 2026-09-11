@@ -45,36 +45,36 @@ const TONE: Record<Recommendation["tone"], BadgeTone> = {
 };
 
 const RAIL: Record<Recommendation["tone"], string> = {
-  gold: "border-l-[--color-gold-500]",
-  info: "border-l-[--color-info]",
-  warning: "border-l-[--color-warm]",
-  success: "border-l-[--color-success]",
+  gold: "border-l-[var(--color-gold-500)]",
+  info: "border-l-[var(--color-info)]",
+  warning: "border-l-[var(--color-warm)]",
+  success: "border-l-[var(--color-success)]",
 };
 
 function RecommendationCard({ rec }: { rec: Recommendation }) {
   return (
     <Card className={`border-l-4 ${RAIL[rec.tone]}`}>
       <div className="flex items-start justify-between gap-4">
-        <p className="text-sm font-medium leading-relaxed text-[--color-ink]">{rec.observation}</p>
+        <p className="text-sm font-medium leading-relaxed text-[var(--color-ink)]">{rec.observation}</p>
         <Badge tone={TONE[rec.tone]}>{CATEGORY_LABEL[rec.category]}</Badge>
       </div>
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <div>
           <p className="label">What it might mean</p>
-          <p className="mt-1 text-sm leading-relaxed text-[--color-muted]">{rec.reading}</p>
+          <p className="mt-1 text-sm leading-relaxed text-[var(--color-muted)]">{rec.reading}</p>
         </div>
         <div>
           <p className="label">Direction</p>
-          <p className="mt-1 text-sm leading-relaxed text-[--color-ink]">{rec.action}</p>
+          <p className="mt-1 text-sm leading-relaxed text-[var(--color-ink)]">{rec.action}</p>
         </div>
       </div>
 
-      <dl className="mt-4 grid gap-x-6 gap-y-1.5 rounded-xl border border-[--color-line] bg-[--color-void]/40 p-3.5 sm:grid-cols-2">
+      <dl className="mt-4 grid gap-x-6 gap-y-1.5 rounded-xl border border-[var(--color-line)] bg-[var(--color-void)]/40 p-3.5 sm:grid-cols-2">
         {rec.evidence.map((e, i) => (
           <div key={`${e.label}-${i}`} className="flex items-baseline justify-between gap-3">
-            <dt className="text-xs text-[--color-muted]">{e.label}</dt>
-            <dd className="text-sm font-semibold tabular-nums text-[--color-ink]">{e.value}</dd>
+            <dt className="text-xs text-[var(--color-muted)]">{e.label}</dt>
+            <dd className="text-sm font-semibold tabular-nums text-[var(--color-ink)]">{e.value}</dd>
           </div>
         ))}
       </dl>
@@ -86,7 +86,7 @@ function AbsorptionTable({ base }: { base: PricingEvidenceBase }) {
   return (
     <div className="-mx-5 overflow-x-auto">
       <table className="w-full min-w-[760px]">
-        <thead className="border-b border-[--color-line]">
+        <thead className="border-b border-[var(--color-line)]">
           <tr>
             <th className="th">Villa type</th>
             <th className="th">Units</th>
@@ -96,7 +96,7 @@ function AbsorptionTable({ base }: { base: PricingEvidenceBase }) {
             <th className="th">Price objections</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-[--color-line]">
+        <tbody className="divide-y divide-[var(--color-line)]">
           {base.types.map((t) => {
             const taken = t.sold + t.reserved + t.underBooking;
             const thin = t.totalUnits < MIN.unitsPerType;
@@ -104,21 +104,21 @@ function AbsorptionTable({ base }: { base: PricingEvidenceBase }) {
               <tr key={t.villaTypeId} className="row-hover">
                 <td className="td">
                   <span className="font-medium">{t.villaType}</span>
-                  <span className="block text-[11px] text-[--color-faint]">{t.projectName}</span>
+                  <span className="block text-[11px] text-[var(--color-faint)]">{t.projectName}</span>
                 </td>
                 <td className="td tabular-nums">{formatNumber(t.totalUnits)}</td>
                 <td className="td tabular-nums">
                   {formatNumber(taken)}
-                  <span className="block text-[11px] text-[--color-faint]">
+                  <span className="block text-[11px] text-[var(--color-faint)]">
                     {t.available} available
                   </span>
                 </td>
                 <td className="td w-44">
                   <div className="mb-1 flex items-baseline justify-between gap-2 text-[11px]">
-                    <span className="tabular-nums text-[--color-gold-300]">
+                    <span className="tabular-nums text-[var(--color-gold-300)]">
                       {formatPercent(t.absorptionPct, 0)}
                     </span>
-                    {thin && <span className="text-[--color-faint]">too few to compare</span>}
+                    {thin && <span className="text-[var(--color-faint)]">too few to compare</span>}
                   </div>
                   <Meter value={taken} max={Math.max(t.totalUnits, 1)} tone={thin ? "info" : "gold"} />
                 </td>
@@ -190,11 +190,11 @@ export default async function RecommendationsPage() {
       </div>
 
       {base.unavailable.length > 0 && (
-        <div className="mb-6 rounded-xl border border-[--color-gold-line] bg-[--color-gold-soft] p-4">
-          <p className="text-sm font-semibold text-[--color-gold-300]">
+        <div className="mb-6 rounded-xl border border-[var(--color-gold-line)] bg-[var(--color-gold-soft)] p-4">
+          <p className="text-sm font-semibold text-[var(--color-gold-300)]">
             Some evidence could not be read
           </p>
-          <p className="mt-1 text-sm text-[--color-muted]">
+          <p className="mt-1 text-sm text-[var(--color-muted)]">
             {base.unavailable.join(", ")}. Rules depending on those tables were skipped rather than
             run against a zero.
           </p>
@@ -210,7 +210,7 @@ export default async function RecommendationsPage() {
       ) : (
         <div className="mb-6">
           <Empty>
-            <span className="font-medium text-[--color-ink]">
+            <span className="font-medium text-[var(--color-ink)]">
               Nothing in the data reaches a threshold worth acting on.
             </span>
             <span className="mx-auto mt-2 block max-w-xl">
@@ -231,8 +231,8 @@ export default async function RecommendationsPage() {
           <ul className="space-y-2.5">
             {blockers.map((b, i) => (
               <li key={i} className="flex items-start gap-2.5">
-                <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[--color-info]" aria-hidden />
-                <span className="text-sm leading-relaxed text-[--color-muted]">{b}</span>
+                <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--color-info)]" aria-hidden />
+                <span className="text-sm leading-relaxed text-[var(--color-muted)]">{b}</span>
               </li>
             ))}
           </ul>
@@ -256,7 +256,7 @@ export default async function RecommendationsPage() {
         >
           <div className="-mx-5 overflow-x-auto">
             <table className="w-full min-w-[560px]">
-              <thead className="border-b border-[--color-line]">
+              <thead className="border-b border-[var(--color-line)]">
                 <tr>
                   <th className="th">Facing</th>
                   <th className="th">Units</th>
@@ -265,14 +265,14 @@ export default async function RecommendationsPage() {
                   <th className="th">Avg chargeable extra</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[--color-line]">
+              <tbody className="divide-y divide-[var(--color-line)]">
                 {base.facings.map((f) => (
                   <tr key={f.facing} className="row-hover">
                     <td className="td capitalize">{f.facing}</td>
                     <td className="td tabular-nums">{formatNumber(f.units)}</td>
                     <td className="td tabular-nums">{formatNumber(f.taken)}</td>
                     <td className="td w-40">
-                      <div className="mb-1 text-[11px] tabular-nums text-[--color-gold-300]">
+                      <div className="mb-1 text-[11px] tabular-nums text-[var(--color-gold-300)]">
                         {formatPercent(f.takenPct, 0)}
                       </div>
                       <Meter
@@ -284,7 +284,7 @@ export default async function RecommendationsPage() {
                     <td className="td tabular-nums">
                       {f.avgExtraSqyd === null ? "—" : `${f.avgExtraSqyd} sq yd`}
                       {f.unitsWithExtra > 0 && (
-                        <span className="block text-[11px] text-[--color-faint]">
+                        <span className="block text-[11px] text-[var(--color-faint)]">
                           on {f.unitsWithExtra} of {f.units}
                         </span>
                       )}
@@ -295,12 +295,12 @@ export default async function RecommendationsPage() {
             </table>
           </div>
 
-          <div className="mt-4 grid gap-4 border-t border-[--color-line] pt-4 sm:grid-cols-2">
+          <div className="mt-4 grid gap-4 border-t border-[var(--color-line)] pt-4 sm:grid-cols-2">
             <div>
               <p className="label">Corner plots</p>
-              <p className="mt-1 text-sm tabular-nums text-[--color-ink]">
+              <p className="mt-1 text-sm tabular-nums text-[var(--color-ink)]">
                 {formatNumber(base.cornerTaken)} of {formatNumber(base.cornerUnits)} taken
-                <span className="ml-2 text-[--color-gold-300]">
+                <span className="ml-2 text-[var(--color-gold-300)]">
                   {formatPercent(
                     base.cornerUnits > 0 ? (100 * base.cornerTaken) / base.cornerUnits : null,
                     0,
@@ -310,9 +310,9 @@ export default async function RecommendationsPage() {
             </div>
             <div>
               <p className="label">Standard plots</p>
-              <p className="mt-1 text-sm tabular-nums text-[--color-ink]">
+              <p className="mt-1 text-sm tabular-nums text-[var(--color-ink)]">
                 {formatNumber(base.standardTaken)} of {formatNumber(base.standardUnits)} taken
-                <span className="ml-2 text-[--color-gold-300]">
+                <span className="ml-2 text-[var(--color-gold-300)]">
                   {formatPercent(
                     base.standardUnits > 0 ? (100 * base.standardTaken) / base.standardUnits : null,
                     0,

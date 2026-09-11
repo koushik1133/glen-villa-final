@@ -214,13 +214,13 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
         </form>
 
         {chips.length > 0 && (
-          <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-[--color-line] pt-4">
+          <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-[var(--color-line)] pt-4">
             <span className="label">Filtering by</span>
             {chips.map((chip) => (
               <Link
                 key={chip.key}
                 href={href(active, chip.key)}
-                className="pill border border-[--color-gold-line] bg-[--color-gold-soft] text-[--color-gold-100] transition hover:bg-[rgba(212,175,55,0.2)]"
+                className="pill border border-[var(--color-gold-line)] bg-[var(--color-gold-soft)] text-[var(--color-gold-100)] transition hover:bg-[rgba(212,175,55,0.2)]"
               >
                 {chip.label}
                 <X className="h-3 w-3" strokeWidth={2.5} />
@@ -252,7 +252,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
         ) : (
           <div className="-mx-5 overflow-x-auto">
             <table className="w-full min-w-[1080px]">
-              <thead className="border-b border-[--color-line]">
+              <thead className="border-b border-[var(--color-line)]">
                 <tr>
                   <th className="th">Lead</th>
                   <th className="th">Temp</th>
@@ -265,7 +265,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
                   <th className="th text-right">Last active</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[--color-line]">
+              <tbody className="divide-y divide-[var(--color-line)]">
                 {leads.map((lead) => (
                   <tr key={lead.id} className="row-hover relative">
                     <td className="td">
@@ -274,11 +274,11 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
                       <Link href={`/os/crm/leads/${lead.id}`} className="after:absolute after:inset-0">
                         <span className="font-medium">{lead.name ?? "Unnamed"}</span>
                       </Link>
-                      <span className="mt-0.5 flex items-center gap-1.5 text-xs text-[--color-muted]">
+                      <span className="mt-0.5 flex items-center gap-1.5 text-xs text-[var(--color-muted)]">
                         +{lead.phone}
-                        {lead.is_nri && <span className="text-[--color-gold-300]">NRI</span>}
-                        {lead.ai_paused && <span className="text-[--color-warm]">AI paused</span>}
-                        {lead.opted_out && <span className="text-[--color-danger]">Opted out</span>}
+                        {lead.is_nri && <span className="text-[var(--color-gold-300)]">NRI</span>}
+                        {lead.ai_paused && <span className="text-[var(--color-warm)]">AI paused</span>}
+                        {lead.opted_out && <span className="text-[var(--color-danger)]">Opted out</span>}
                       </span>
                     </td>
                     <td className="td">
@@ -287,7 +287,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
                     <td className="td">
                       <span className="mb-1.5 block text-xs font-semibold tabular-nums">
                         {lead.lead_score}
-                        <span className="text-[--color-faint]">/100</span>
+                        <span className="text-[var(--color-faint)]">/100</span>
                       </span>
                       <Meter value={lead.lead_score} max={100} />
                     </td>
@@ -303,13 +303,13 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
                     <td className="td text-xs">
                       {lead.source}
                       {lead.campaign && (
-                        <span className="block text-[--color-faint]">{lead.campaign}</span>
+                        <span className="block text-[var(--color-faint)]">{lead.campaign}</span>
                       )}
                     </td>
                     <td className="td text-xs">
-                      {lead.assignee?.name ?? <span className="text-[--color-faint]">Unassigned</span>}
+                      {lead.assignee?.name ?? <span className="text-[var(--color-faint)]">Unassigned</span>}
                     </td>
-                    <td className="td whitespace-nowrap text-right text-xs text-[--color-muted]">
+                    <td className="td whitespace-nowrap text-right text-xs text-[var(--color-muted)]">
                       {timeAgo(lead.last_contact_at)}
                     </td>
                   </tr>

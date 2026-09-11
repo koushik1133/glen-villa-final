@@ -83,7 +83,7 @@ export default async function VillasPage({
               </Link>
             }
           >
-            <code className="rounded bg-[--color-canvas] px-1.5 py-0.5 text-xs">villa_types</code> has
+            <code className="rounded bg-[var(--color-canvas)] px-1.5 py-0.5 text-xs">villa_types</code> has
             no active row. Until a configuration exists the agent has nothing to describe and no floor
             plan to send.
           </Empty>
@@ -157,24 +157,24 @@ function FilterPill({
       href={href}
       className={`pill border transition ${
         active
-          ? "border-[--color-gold-line] bg-[--color-gold-soft] text-[--color-gold-100]"
-          : "border-[--color-line] bg-[--color-surface] text-[--color-muted] hover:border-[--color-line-strong] hover:text-[--color-ink]"
+          ? "border-[var(--color-gold-line)] bg-[var(--color-gold-soft)] text-[var(--color-gold-100)]"
+          : "border-[var(--color-line)] bg-[var(--color-surface)] text-[var(--color-muted)] hover:border-[var(--color-line-strong)] hover:text-[var(--color-ink)]"
       }`}
     >
       {label}
-      <span className="tabular-nums text-[--color-faint]">{count}</span>
+      <span className="tabular-nums text-[var(--color-faint)]">{count}</span>
     </Link>
   );
 }
 
 function Spec({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-[--color-line] bg-[--color-void]/40 px-2.5 py-2">
-      <p className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[--color-faint]">
+    <div className="rounded-lg border border-[var(--color-line)] bg-[var(--color-void)]/40 px-2.5 py-2">
+      <p className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[var(--color-faint)]">
         {icon}
         {label}
       </p>
-      <p className="mt-1 text-sm tabular-nums text-[--color-ink]">{value}</p>
+      <p className="mt-1 text-sm tabular-nums text-[var(--color-ink)]">{value}</p>
     </div>
   );
 }
@@ -195,12 +195,12 @@ function VillaTypeCard({ entry }: { entry: CatalogEntry }) {
       <header>
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h2 className="font-[family-name:--font-display] text-lg leading-tight text-[--color-ink]">
+            <h2 className="font-[family-name:var(--font-display)] text-lg leading-tight text-[var(--color-ink)]">
               {type.name}
             </h2>
             <Link
               href={`/os/properties/projects/${entry.projectSlug}`}
-              className="mt-0.5 block truncate text-xs text-[--color-muted] underline-offset-2 hover:text-[--color-gold-300] hover:underline"
+              className="mt-0.5 block truncate text-xs text-[var(--color-muted)] underline-offset-2 hover:text-[var(--color-gold-300)] hover:underline"
             >
               {entry.projectName}
             </Link>
@@ -248,24 +248,24 @@ function VillaTypeCard({ entry }: { entry: CatalogEntry }) {
         ))}
       </div>
 
-      <div className="rounded-xl border border-[--color-line] bg-[--color-void]/40 px-3.5 py-3">
+      <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-void)]/40 px-3.5 py-3">
         <p className="label">Price</p>
         {type.price_inr !== null ? (
-          <p className="mt-1 text-xl font-semibold tabular-nums text-[--color-gold-300]">
+          <p className="mt-1 text-xl font-semibold tabular-nums text-[var(--color-gold-300)]">
             {formatInr(type.price_inr)}
           </p>
         ) : (
-          <p className="mt-1 text-base font-semibold text-[--color-warm]">Confirm with sales</p>
+          <p className="mt-1 text-base font-semibold text-[var(--color-warm)]">Confirm with sales</p>
         )}
       </div>
 
       {unverified && (
         <div className="rounded-xl border border-[rgba(239,180,92,0.3)] bg-[rgba(239,180,92,0.07)] px-3.5 py-3">
-          <p className="flex items-center gap-1.5 text-xs font-semibold text-[--color-warm]">
+          <p className="flex items-center gap-1.5 text-xs font-semibold text-[var(--color-warm)]">
             <AlertTriangle size={12} strokeWidth={2} aria-hidden />
             Not approved for quoting
           </p>
-          <p className="mt-1.5 text-xs leading-relaxed text-[--color-muted]">
+          <p className="mt-1.5 text-xs leading-relaxed text-[var(--color-muted)]">
             {type.verification_note?.trim() || missingFactsSentence(type.price_inr, type.bedrooms)}
           </p>
         </div>
@@ -273,23 +273,23 @@ function VillaTypeCard({ entry }: { entry: CatalogEntry }) {
 
       <div className="mt-auto">
         {unitTotal === 0 ? (
-          <p className="text-xs text-[--color-faint]">
+          <p className="text-xs text-[var(--color-faint)]">
             No units loaded — availability for this type cannot be quoted.
           </p>
         ) : (
           <>
             <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1">
               {UNIT_STATUSES.filter((status) => units[status] > 0).map((status) => (
-                <span key={status} className="flex items-center gap-1.5 text-[11px] text-[--color-muted]">
+                <span key={status} className="flex items-center gap-1.5 text-[11px] text-[var(--color-muted)]">
                   <span className={`h-2 w-2 rounded-sm ${UNIT_STATUS_DOT[status]}`} aria-hidden />
                   {UNIT_STATUS_LABELS[status]}
-                  <span className="tabular-nums text-[--color-faint]">{units[status]}</span>
+                  <span className="tabular-nums text-[var(--color-faint)]">{units[status]}</span>
                 </span>
               ))}
             </div>
             <Meter value={absorbed} max={unitTotal} />
-            <p className="mt-1.5 text-[11px] text-[--color-muted]">
-              <span className="tabular-nums text-[--color-success]">{formatNumber(units.available)}</span>{" "}
+            <p className="mt-1.5 text-[11px] text-[var(--color-muted)]">
+              <span className="tabular-nums text-[var(--color-success)]">{formatNumber(units.available)}</span>{" "}
               available of {formatNumber(unitTotal)} loaded
             </p>
           </>

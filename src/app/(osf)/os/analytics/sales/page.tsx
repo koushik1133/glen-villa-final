@@ -30,7 +30,7 @@ function SplitTable({ groups, heading }: { groups: VelocityGroup[]; heading: str
   return (
     <div className="-mx-5 overflow-x-auto">
       <table className="w-full min-w-[480px]">
-        <thead className="border-b border-[--color-line]">
+        <thead className="border-b border-[var(--color-line)]">
           <tr>
             <th className="th">{heading}</th>
             <th className="th text-right">Bookings</th>
@@ -38,7 +38,7 @@ function SplitTable({ groups, heading }: { groups: VelocityGroup[]; heading: str
             <th className="th text-right">Revenue</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-[--color-line]">
+        <tbody className="divide-y divide-[var(--color-line)]">
           {groups.map((g) => (
             <tr key={g.key} className="row-hover">
               <td className="td font-medium">{humanise(g.key)}</td>
@@ -133,7 +133,7 @@ export default async function SalesAnalyticsPage({ searchParams }: { searchParam
             hint="Every measured booking, bucketed. A long right tail means deals are being worked, not lost."
             className="mt-5"
             actions={
-              <span className="pill bg-[--color-raised] text-[--color-muted]">
+              <span className="pill bg-[var(--color-raised)] text-[var(--color-muted)]">
                 <Timer size={11} strokeWidth={2} aria-hidden />
                 {formatNumber(counted)} measured
               </span>
@@ -166,7 +166,7 @@ export default async function SalesAnalyticsPage({ searchParams }: { searchParam
       )}
 
       {v.excluded > 0 && (
-        <p className="mt-5 text-xs leading-relaxed text-[--color-faint]">
+        <p className="mt-5 text-xs leading-relaxed text-[var(--color-faint)]">
           {formatNumber(v.excluded)} booking{v.excluded === 1 ? " was" : "s were"} left out of every figure above:
           the booking was created before the lead&rsquo;s first contact, so the elapsed time is negative and cannot
           be a close time. They are counted here rather than silently dropped.

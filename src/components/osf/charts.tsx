@@ -225,17 +225,17 @@ export function FunnelChart({ stages }: { stages: { label: string; value: number
         return (
           <div key={s.label}>
             <div className="mb-1.5 flex items-baseline justify-between text-xs">
-              <span className="text-[--color-ink]">{s.label}</span>
-              <span className="tabular-nums text-[--color-muted]">
+              <span className="text-[var(--color-ink)]">{s.label}</span>
+              <span className="tabular-nums text-[var(--color-muted)]">
                 {s.value.toLocaleString("en-IN")}
                 {stepPct !== null && (
-                  <span className={stepPct < 40 ? "ml-2 text-[--color-danger]" : "ml-2 text-[--color-faint]"}>
+                  <span className={stepPct < 40 ? "ml-2 text-[var(--color-danger)]" : "ml-2 text-[var(--color-faint)]"}>
                     {stepPct.toFixed(0)}% of previous
                   </span>
                 )}
               </span>
             </div>
-            <div className="h-7 overflow-hidden rounded-lg bg-[--color-line]">
+            <div className="h-7 overflow-hidden rounded-lg bg-[var(--color-line)]">
               <div
                 className="flex h-full items-center rounded-lg transition-all"
                 style={{

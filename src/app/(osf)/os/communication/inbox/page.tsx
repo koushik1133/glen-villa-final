@@ -32,13 +32,13 @@ function FilterPill({
       href={href}
       className={`pill border transition ${
         active
-          ? "border-[--color-gold-line] bg-[--color-gold-soft] text-[--color-gold-100]"
-          : "border-[--color-line] bg-[--color-surface] text-[--color-muted] hover:border-[--color-line-strong] hover:text-[--color-ink]"
+          ? "border-[var(--color-gold-line)] bg-[var(--color-gold-soft)] text-[var(--color-gold-100)]"
+          : "border-[var(--color-line)] bg-[var(--color-surface)] text-[var(--color-muted)] hover:border-[var(--color-line-strong)] hover:text-[var(--color-ink)]"
       }`}
     >
       {children}
       {count !== undefined && (
-        <span className="tabular-nums text-[--color-faint]">{formatNumber(count)}</span>
+        <span className="tabular-nums text-[var(--color-faint)]">{formatNumber(count)}</span>
       )}
     </Link>
   );
@@ -92,7 +92,7 @@ export default async function InboxPage({
       />
 
       {error && (
-        <div className="mb-6 rounded-2xl border border-[rgba(244,105,95,0.3)] bg-[rgba(244,105,95,0.08)] p-4 text-sm text-[--color-danger]">
+        <div className="mb-6 rounded-2xl border border-[rgba(244,105,95,0.3)] bg-[rgba(244,105,95,0.08)] p-4 text-sm text-[var(--color-danger)]">
           {error}
         </div>
       )}
@@ -136,9 +136,9 @@ export default async function InboxPage({
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)]">
         <section className="card overflow-hidden p-0">
-          <header className="flex items-baseline justify-between border-b border-[--color-line] px-4 py-3">
-            <h2 className="text-sm font-semibold text-[--color-ink]">Conversations</h2>
-            <span className="text-[11px] tabular-nums text-[--color-faint]">
+          <header className="flex items-baseline justify-between border-b border-[var(--color-line)] px-4 py-3">
+            <h2 className="text-sm font-semibold text-[var(--color-ink)]">Conversations</h2>
+            <span className="text-[11px] tabular-nums text-[var(--color-faint)]">
               {formatNumber(conversations.length)} shown
             </span>
           </header>
@@ -185,7 +185,7 @@ export default async function InboxPage({
               </ThreadHeader>
 
               {thread.conversation.summary && (
-                <p className="mt-4 rounded-xl border border-[--color-line] bg-[--color-void] p-3 text-xs leading-relaxed text-[--color-muted]">
+                <p className="mt-4 rounded-xl border border-[var(--color-line)] bg-[var(--color-void)] p-3 text-xs leading-relaxed text-[var(--color-muted)]">
                   <span className="label mr-2">AI summary</span>
                   {thread.conversation.summary}
                 </p>
@@ -196,7 +196,7 @@ export default async function InboxPage({
               </div>
 
               {thread.conversation.channel !== "whatsapp" && (
-                <p className="mt-4 border-t border-[--color-line] pt-4 text-xs text-[--color-muted]">
+                <p className="mt-4 border-t border-[var(--color-line)] pt-4 text-xs text-[var(--color-muted)]">
                   {channelLabel(thread.conversation.channel)} has no send integration wired up in
                   this app, so this thread is read-only.
                 </p>

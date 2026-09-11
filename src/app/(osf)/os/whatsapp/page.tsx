@@ -20,19 +20,19 @@ const LABEL: Record<string, string> = {
 
 function CheckRow({ check }: { check: Check }) {
   return (
-    <li className="flex items-start justify-between gap-4 border-b border-[--color-line] py-3.5 last:border-0">
+    <li className="flex items-start justify-between gap-4 border-b border-[var(--color-line)] py-3.5 last:border-0">
       <div className="min-w-0">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">{check.label}</span>
           {check.blocking && check.state !== "ok" && (
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-[--color-danger]">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-danger)]">
               blocks go-live
             </span>
           )}
         </div>
-        <p className="mt-1 text-xs leading-relaxed text-[--color-muted]">{check.detail}</p>
+        <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)]">{check.detail}</p>
         {check.fix && check.state !== "ok" && (
-          <p className="mt-1 text-xs text-[--color-gold-300]">→ {check.fix}</p>
+          <p className="mt-1 text-xs text-[var(--color-gold-300)]">→ {check.fix}</p>
         )}
       </div>
       <Badge tone={TONE[check.state]}>{LABEL[check.state]}</Badge>
@@ -73,22 +73,22 @@ export default async function WhatsAppPage() {
             <dl className="space-y-3 text-sm">
               <div>
                 <dt className="label">Callback URL</dt>
-                <dd className="mt-1 break-all rounded-lg bg-[--color-void] px-3 py-2 font-mono text-xs">
+                <dd className="mt-1 break-all rounded-lg bg-[var(--color-void)] px-3 py-2 font-mono text-xs">
                   {(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "")}
                   /api/osf/whatsapp
                 </dd>
               </div>
               <div>
                 <dt className="label">Verify token</dt>
-                <dd className="mt-1 text-xs text-[--color-muted]">
+                <dd className="mt-1 text-xs text-[var(--color-muted)]">
                   The value of WHATSAPP_VERIFY_TOKEN in your .env.local — type the same string
                   into Meta.
                 </dd>
               </div>
               <div>
                 <dt className="label">Subscribe to</dt>
-                <dd className="mt-1 text-xs text-[--color-muted]">
-                  The <code className="text-[--color-gold-300]">messages</code> field. That one
+                <dd className="mt-1 text-xs text-[var(--color-muted)]">
+                  The <code className="text-[var(--color-gold-300)]">messages</code> field. That one
                   covers text, voice notes, images and button replies.
                 </dd>
               </div>
@@ -96,13 +96,13 @@ export default async function WhatsAppPage() {
           </Card>
 
           <Card title="Testing locally" hint="Meta cannot call localhost.">
-            <p className="text-xs leading-relaxed text-[--color-muted]">
+            <p className="text-xs leading-relaxed text-[var(--color-muted)]">
               Expose this machine with a tunnel, then use the https URL it prints as the callback:
             </p>
-            <code className="mt-2 block rounded-lg bg-[--color-void] px-3 py-2 font-mono text-xs">
+            <code className="mt-2 block rounded-lg bg-[var(--color-void)] px-3 py-2 font-mono text-xs">
               npx ngrok http 3000
             </code>
-            <p className="mt-3 text-xs leading-relaxed text-[--color-muted]">
+            <p className="mt-3 text-xs leading-relaxed text-[var(--color-muted)]">
               Set NEXT_PUBLIC_APP_URL to that same https URL, or brochure links the agent sends
               will point at localhost and fail when WhatsApp tries to fetch them.
             </p>

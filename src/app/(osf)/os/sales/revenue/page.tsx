@@ -146,12 +146,12 @@ export default async function RevenuePage({
           {AGING_BUCKETS.map((bucket) => {
             const b = aging.buckets[bucket];
             return (
-              <div key={bucket} className="rounded-xl border border-[--color-line] bg-[--color-void]/40 px-4 py-3.5">
+              <div key={bucket} className="rounded-xl border border-[var(--color-line)] bg-[var(--color-void)]/40 px-4 py-3.5">
                 <p className="label">{bucket} days</p>
-                <p className="mt-2 text-xl font-semibold tabular-nums text-[--color-ink]">
+                <p className="mt-2 text-xl font-semibold tabular-nums text-[var(--color-ink)]">
                   {b.amountInr > 0 ? formatInr(b.amountInr) : "—"}
                 </p>
-                <p className="mt-1 text-xs text-[--color-muted]">
+                <p className="mt-1 text-xs text-[var(--color-muted)]">
                   {b.count === 0 ? "Nothing overdue" : `${b.count} milestone${b.count === 1 ? "" : "s"}`}
                 </p>
               </div>
@@ -165,7 +165,7 @@ export default async function RevenuePage({
           <div className="overflow-x-auto">
             <table className="w-full min-w-[720px] border-collapse">
               <thead>
-                <tr className="border-b border-[--color-line]">
+                <tr className="border-b border-[var(--color-line)]">
                   <th className="th">Booking</th>
                   <th className="th">Customer</th>
                   <th className="th">Milestone</th>
@@ -174,23 +174,23 @@ export default async function RevenuePage({
                   <th className="th text-right">Amount</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[--color-line]">
+              <tbody className="divide-y divide-[var(--color-line)]">
                 {aging.rows.map((row) => (
                   <tr key={row.id} className="row-hover">
                     <td className="td">
                       <Link
                         href={`/os/sales/bookings/${row.bookingId}`}
-                        className="font-mono text-[13px] text-[--color-gold-300] hover:text-[--color-gold-100]"
+                        className="font-mono text-[13px] text-[var(--color-gold-300)] hover:text-[var(--color-gold-100)]"
                       >
                         {row.bookingNumber}
                       </Link>
                     </td>
                     <td className="td">{row.customerName}</td>
-                    <td className="td text-[--color-muted]">{row.milestone}</td>
+                    <td className="td text-[var(--color-muted)]">{row.milestone}</td>
                     <td className="td tabular-nums">{formatDay(row.dueDate)}</td>
                     <td
                       className={`td text-right tabular-nums ${
-                        row.daysOverdue > 90 ? "text-[--color-danger]" : "text-[--color-warm]"
+                        row.daysOverdue > 90 ? "text-[var(--color-danger)]" : "text-[var(--color-warm)]"
                       }`}
                     >
                       {row.daysOverdue}
@@ -200,11 +200,11 @@ export default async function RevenuePage({
                 ))}
               </tbody>
               <tfoot>
-                <tr className="border-t border-[--color-line-strong]">
-                  <td className="td text-xs uppercase tracking-[0.12em] text-[--color-faint]" colSpan={5}>
+                <tr className="border-t border-[var(--color-line-strong)]">
+                  <td className="td text-xs uppercase tracking-[0.12em] text-[var(--color-faint)]" colSpan={5}>
                     Total overdue
                   </td>
-                  <td className="td text-right font-semibold tabular-nums text-[--color-danger]">
+                  <td className="td text-right font-semibold tabular-nums text-[var(--color-danger)]">
                     {formatInr(aging.totalInr)}
                   </td>
                 </tr>
@@ -250,13 +250,13 @@ function SplitCard({
             horizontal
             height={Math.max(180, top.length * 46 + 60)}
           />
-          <ul className="mt-4 space-y-2 border-t border-[--color-line] pt-4">
+          <ul className="mt-4 space-y-2 border-t border-[var(--color-line)] pt-4">
             {top.map((s) => (
               <li key={s.label} className="flex items-baseline justify-between gap-4 text-xs">
-                <span className="min-w-0 truncate text-[--color-ink]">{s.label}</span>
-                <span className="shrink-0 tabular-nums text-[--color-muted]">
+                <span className="min-w-0 truncate text-[var(--color-ink)]">{s.label}</span>
+                <span className="shrink-0 tabular-nums text-[var(--color-muted)]">
                   {s.bookings} booking{s.bookings === 1 ? "" : "s"} ·{" "}
-                  <span className="text-[--color-gold-300]">{formatCr(s.bookedInr)}</span>
+                  <span className="text-[var(--color-gold-300)]">{formatCr(s.bookedInr)}</span>
                 </span>
               </li>
             ))}

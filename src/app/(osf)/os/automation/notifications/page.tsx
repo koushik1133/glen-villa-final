@@ -50,10 +50,10 @@ const SEVERITY_TONE: Record<InsightSeverity, BadgeTone> = {
 };
 
 const SEVERITY_RAIL: Record<InsightSeverity, string> = {
-  critical: "bg-[--color-danger]",
-  warning: "bg-[--color-warm]",
-  success: "bg-[--color-success]",
-  info: "bg-[--color-info]",
+  critical: "bg-[var(--color-danger)]",
+  warning: "bg-[var(--color-warm)]",
+  success: "bg-[var(--color-success)]",
+  info: "bg-[var(--color-info)]",
 };
 
 /** Rows read per page. Beyond this the filters are the way through the list. */
@@ -93,8 +93,8 @@ function Chip({
       href={to}
       className={`rounded-full border px-3 py-1.5 text-[11px] font-medium transition ${
         active
-          ? "border-[--color-gold-line] bg-[--color-gold-soft] text-[--color-gold-100]"
-          : "border-[--color-line] bg-[--color-void]/50 text-[--color-muted] hover:border-[--color-line-strong] hover:text-[--color-ink]"
+          ? "border-[var(--color-gold-line)] bg-[var(--color-gold-soft)] text-[var(--color-gold-100)]"
+          : "border-[var(--color-line)] bg-[var(--color-void)]/50 text-[var(--color-muted)] hover:border-[var(--color-line-strong)] hover:text-[var(--color-ink)]"
       }`}
     >
       {children}
@@ -117,8 +117,8 @@ function NotificationRow({ n, back }: { n: Notification; back: string }) {
           <span
             className={
               n.is_read
-                ? "text-sm text-[--color-muted]"
-                : "text-sm font-semibold text-[--color-ink]"
+                ? "text-sm text-[var(--color-muted)]"
+                : "text-sm font-semibold text-[var(--color-ink)]"
             }
           >
             {n.title}
@@ -126,10 +126,10 @@ function NotificationRow({ n, back }: { n: Notification; back: string }) {
           <Badge tone={SEVERITY_TONE[n.severity]}>{n.severity.toUpperCase()}</Badge>
         </div>
         {n.description && (
-          <p className="mt-1 text-xs leading-relaxed text-[--color-muted]">{n.description}</p>
+          <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)]">{n.description}</p>
         )}
-        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[--color-faint]">
-          <Link href={href("all", n.kind)} className="font-mono hover:text-[--color-gold-100]">
+        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[var(--color-faint)]">
+          <Link href={href("all", n.kind)} className="font-mono hover:text-[var(--color-gold-100)]">
             {n.kind}
           </Link>
           <span>·</span>
@@ -139,7 +139,7 @@ function NotificationRow({ n, back }: { n: Notification; back: string }) {
               <span>·</span>
               <Link
                 href={target}
-                className="inline-flex items-center gap-1 font-medium text-[--color-gold-300] hover:text-[--color-gold-100]"
+                className="inline-flex items-center gap-1 font-medium text-[var(--color-gold-300)] hover:text-[var(--color-gold-100)]"
               >
                 Open
                 <ArrowUpRight className="h-3 w-3" aria-hidden />
@@ -165,13 +165,13 @@ function NotificationRow({ n, back }: { n: Notification; back: string }) {
 
 function SourceRule({ rule, back }: { rule: NotifyingRule; back: string }) {
   return (
-    <div className="rounded-xl border border-[--color-line] bg-[--color-void]/40 p-3.5">
+    <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-void)]/40 p-3.5">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-sm font-medium text-[--color-ink]">{rule.automation.name}</p>
+          <p className="text-sm font-medium text-[var(--color-ink)]">{rule.automation.name}</p>
           <Link
             href={href("all", rule.kind)}
-            className="mt-0.5 inline-block font-mono text-[11px] text-[--color-faint] hover:text-[--color-gold-100]"
+            className="mt-0.5 inline-block font-mono text-[11px] text-[var(--color-faint)] hover:text-[var(--color-gold-100)]"
           >
             {rule.kind}
           </Link>
@@ -185,14 +185,14 @@ function SourceRule({ rule, back }: { rule: NotifyingRule; back: string }) {
         {rule.notices.map((n, i) => (
           <li key={`${n.title}-${i}`} className="flex items-center gap-2 text-xs">
             <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${SEVERITY_RAIL[n.severity]}`} />
-            <span className="min-w-0 truncate text-[--color-ink]">{n.title}</span>
-            <span className="shrink-0 text-[11px] text-[--color-faint]">{n.severity}</span>
+            <span className="min-w-0 truncate text-[var(--color-ink)]">{n.title}</span>
+            <span className="shrink-0 text-[11px] text-[var(--color-faint)]">{n.severity}</span>
           </li>
         ))}
       </ul>
 
-      <div className="mt-3 flex items-center justify-between gap-3 border-t border-[--color-line] pt-2.5">
-        <span className="text-[11px] tabular-nums text-[--color-faint]">
+      <div className="mt-3 flex items-center justify-between gap-3 border-t border-[var(--color-line)] pt-2.5">
+        <span className="text-[11px] tabular-nums text-[var(--color-faint)]">
           {formatNumber(rule.automation.execution_count)} run
           {rule.automation.execution_count === 1 ? "" : "s"}
         </span>
@@ -275,8 +275,8 @@ export default async function NotificationsPage({
       />
 
       {params.error && (
-        <div className="mb-6 flex items-start gap-2.5 rounded-xl border border-[rgba(244,105,95,0.35)] bg-[rgba(244,105,95,0.08)] p-4 text-sm text-[--color-ink]">
-          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[--color-danger]" aria-hidden />
+        <div className="mb-6 flex items-start gap-2.5 rounded-xl border border-[rgba(244,105,95,0.35)] bg-[rgba(244,105,95,0.08)] p-4 text-sm text-[var(--color-ink)]">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[var(--color-danger)]" aria-hidden />
           <span>{params.error}</span>
         </div>
       )}
@@ -308,7 +308,7 @@ export default async function NotificationsPage({
                 <Chip key={f.key} active={read === f.key} to={href(f.key, kind)}>
                   {f.label}
                   {f.key === "unread" && summary.unread > 0 && (
-                    <span className="ml-1.5 tabular-nums text-[--color-gold-300]">
+                    <span className="ml-1.5 tabular-nums text-[var(--color-gold-300)]">
                       {summary.unread}
                     </span>
                   )}
@@ -338,7 +338,7 @@ export default async function NotificationsPage({
               >
                 {read !== "all" || kind ? (
                   <>
-                    <span className="font-medium text-[--color-ink]">Nothing matches.</span>
+                    <span className="font-medium text-[var(--color-ink)]">Nothing matches.</span>
                     <span className="mx-auto mt-2 block max-w-md">
                       {summary.total > 0
                         ? `There ${summary.total === 1 ? "is" : "are"} ${formatNumber(summary.total)} notification${summary.total === 1 ? "" : "s"} outside this filter.`
@@ -347,7 +347,7 @@ export default async function NotificationsPage({
                   </>
                 ) : (
                   <>
-                    <span className="font-medium text-[--color-ink]">Nothing has happened yet.</span>
+                    <span className="font-medium text-[var(--color-ink)]">Nothing has happened yet.</span>
                     <span className="mx-auto mt-2 block max-w-md">
                       Rules with a “create a notification” action write here when they match. Until
                       one exists and fires, this stays empty.
@@ -357,13 +357,13 @@ export default async function NotificationsPage({
               </Empty>
             ) : (
               <>
-                <ul className="divide-y divide-[--color-line]">
+                <ul className="divide-y divide-[var(--color-line)]">
                   {notifications.map((n) => (
                     <NotificationRow key={n.id} n={n} back={back} />
                   ))}
                 </ul>
                 {notifications.length >= LIST_LIMIT && (
-                  <p className="mt-4 border-t border-[--color-line] pt-3 text-[11px] text-[--color-faint]">
+                  <p className="mt-4 border-t border-[var(--color-line)] pt-3 text-[11px] text-[var(--color-faint)]">
                     Showing the newest {LIST_LIMIT}. Narrow by kind or read state to reach older
                     rows.
                   </p>
@@ -390,14 +390,14 @@ export default async function NotificationsPage({
                   <li key={k.kind}>
                     <Link
                       href={href(read, k.kind)}
-                      className={`flex items-baseline justify-between gap-3 rounded-lg px-2.5 py-2 text-xs transition hover:bg-[--color-raised] ${
-                        kind === k.kind ? "bg-[--color-gold-soft]" : ""
+                      className={`flex items-baseline justify-between gap-3 rounded-lg px-2.5 py-2 text-xs transition hover:bg-[var(--color-raised)] ${
+                        kind === k.kind ? "bg-[var(--color-gold-soft)]" : ""
                       }`}
                     >
-                      <span className="min-w-0 truncate font-mono text-[--color-ink]">{k.kind}</span>
-                      <span className="shrink-0 tabular-nums text-[--color-muted]">
+                      <span className="min-w-0 truncate font-mono text-[var(--color-ink)]">{k.kind}</span>
+                      <span className="shrink-0 tabular-nums text-[var(--color-muted)]">
                         {k.unread > 0 && (
-                          <span className="text-[--color-gold-300]">{k.unread} new · </span>
+                          <span className="text-[var(--color-gold-300)]">{k.unread} new · </span>
                         )}
                         {formatNumber(k.total)}
                       </span>
@@ -426,8 +426,8 @@ export default async function NotificationsPage({
                   </Link>
                 }
               >
-                <BellOff className="mx-auto mb-3 h-5 w-5 text-[--color-faint]" aria-hidden />
-                <span className="font-medium text-[--color-ink]">
+                <BellOff className="mx-auto mb-3 h-5 w-5 text-[var(--color-faint)]" aria-hidden />
+                <span className="font-medium text-[var(--color-ink)]">
                   No rule writes notifications.
                 </span>
                 <span className="mx-auto mt-2 block max-w-md">

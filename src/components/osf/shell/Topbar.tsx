@@ -24,13 +24,13 @@ export default function Topbar({
   const hint = useShortcutHint();
 
   return (
-    <header className="sticky top-0 z-30 border-b border-[--color-line] bg-[--color-void]/85 backdrop-blur-xl">
+    <header className="sticky top-0 z-30 border-b border-[var(--color-line)] bg-[var(--color-void)]/85 backdrop-blur-xl">
       <div className="flex h-16 items-center gap-3 px-4 lg:px-8">
         <button
           type="button"
           onClick={onOpenDrawer}
           aria-label="Open navigation"
-          className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-[--color-line] bg-[--color-surface] text-[--color-muted] transition hover:bg-[--color-raised] hover:text-[--color-ink] lg:hidden"
+          className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-[var(--color-line)] bg-[var(--color-surface)] text-[var(--color-muted)] transition hover:bg-[var(--color-raised)] hover:text-[var(--color-ink)] lg:hidden"
         >
           <Menu size={16} strokeWidth={1.75} aria-hidden />
         </button>
@@ -42,16 +42,16 @@ export default function Topbar({
         <button
           type="button"
           onClick={onOpenPalette}
-          className="group flex h-9 min-w-0 flex-1 items-center gap-2.5 rounded-xl border border-[--color-line] bg-[--color-void] px-3 text-left transition hover:border-[--color-line-strong] hover:bg-[--color-surface] sm:max-w-sm"
+          className="group flex h-9 min-w-0 flex-1 items-center gap-2.5 rounded-xl border border-[var(--color-line)] bg-[var(--color-void)] px-3 text-left transition hover:border-[var(--color-line-strong)] hover:bg-[var(--color-surface)] sm:max-w-sm"
         >
           <Search
             size={14}
             strokeWidth={1.75}
             aria-hidden
-            className="shrink-0 text-[--color-faint] transition-colors group-hover:text-[--color-muted]"
+            className="shrink-0 text-[var(--color-faint)] transition-colors group-hover:text-[var(--color-muted)]"
           />
-          <span className="min-w-0 flex-1 truncate text-[13px] text-[--color-faint]">Search pages…</span>
-          <kbd className="hidden shrink-0 rounded-md border border-[--color-line] bg-[--color-surface] px-1.5 py-0.5 text-[10px] font-medium tabular-nums text-[--color-faint] sm:block">
+          <span className="min-w-0 flex-1 truncate text-[13px] text-[var(--color-faint)]">Search pages…</span>
+          <kbd className="hidden shrink-0 rounded-md border border-[var(--color-line)] bg-[var(--color-surface)] px-1.5 py-0.5 text-[10px] font-medium tabular-nums text-[var(--color-faint)] sm:block">
             {hint}
           </kbd>
         </button>
@@ -62,7 +62,7 @@ export default function Topbar({
             statically rendered route would fail the build rather than degrade.
           */}
           <Suspense
-            fallback={<div className="h-9 w-[92px] rounded-xl border border-[--color-line] bg-[--color-surface] sm:w-[150px]" />}
+            fallback={<div className="h-9 w-[92px] rounded-xl border border-[var(--color-line)] bg-[var(--color-surface)] sm:w-[150px]" />}
           >
             <DateRangePicker />
           </Suspense>
@@ -70,7 +70,7 @@ export default function Topbar({
           <Link
             href="/os/automation/notifications"
             aria-label="Notifications"
-            className="grid h-9 w-9 place-items-center rounded-xl border border-[--color-line] bg-[--color-surface] text-[--color-muted] transition hover:bg-[--color-raised] hover:text-[--color-ink]"
+            className="grid h-9 w-9 place-items-center rounded-xl border border-[var(--color-line)] bg-[var(--color-surface)] text-[var(--color-muted)] transition hover:bg-[var(--color-raised)] hover:text-[var(--color-ink)]"
           >
             <Bell size={15} strokeWidth={1.75} aria-hidden />
           </Link>

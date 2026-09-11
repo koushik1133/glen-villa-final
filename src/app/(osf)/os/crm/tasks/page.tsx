@@ -89,7 +89,7 @@ export default async function TasksPage({
       />
 
       {error && (
-        <div className="mb-6 flex items-start gap-2.5 rounded-2xl border border-[rgba(244,105,95,0.3)] bg-[rgba(244,105,95,0.08)] p-4 text-sm text-[--color-danger]">
+        <div className="mb-6 flex items-start gap-2.5 rounded-2xl border border-[rgba(244,105,95,0.3)] bg-[rgba(244,105,95,0.08)] p-4 text-sm text-[var(--color-danger)]">
           <AlertTriangle size={16} strokeWidth={2} className="mt-0.5 shrink-0" aria-hidden />
           <span>{error}</span>
         </div>
@@ -132,7 +132,7 @@ export default async function TasksPage({
               </>
             ) : (
               <>
-                <code className="rounded bg-[--color-canvas] px-1.5 py-0.5 text-xs">villa_tasks</code>{" "}
+                <code className="rounded bg-[var(--color-canvas)] px-1.5 py-0.5 text-xs">villa_tasks</code>{" "}
                 is empty. Tasks are created here, from a lead&rsquo;s page, or by an automation when a
                 conversation goes quiet.
               </>
@@ -238,17 +238,17 @@ function StatusColumn({
 
   return (
     <section className="card flex flex-col gap-3 p-0">
-      <header className="flex items-baseline justify-between gap-3 border-b border-[--color-line] px-4 py-3">
-        <h2 className="text-sm font-semibold text-[--color-ink]">{TASK_STATUS_LABELS[status]}</h2>
-        <span className="flex items-center gap-2 text-[11px] tabular-nums text-[--color-faint]">
-          {late > 0 && <span className="text-[--color-danger]">{late} late</span>}
+      <header className="flex items-baseline justify-between gap-3 border-b border-[var(--color-line)] px-4 py-3">
+        <h2 className="text-sm font-semibold text-[var(--color-ink)]">{TASK_STATUS_LABELS[status]}</h2>
+        <span className="flex items-center gap-2 text-[11px] tabular-nums text-[var(--color-faint)]">
+          {late > 0 && <span className="text-[var(--color-danger)]">{late} late</span>}
           {formatNumber(tasks.length)}
         </span>
       </header>
 
       <div className="flex flex-col gap-2.5 px-4 pb-4">
         {tasks.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-[--color-line] px-3 py-6 text-center text-xs text-[--color-faint]">
+          <p className="rounded-xl border border-dashed border-[var(--color-line)] px-3 py-6 text-center text-xs text-[var(--color-faint)]">
             Nothing {TASK_STATUS_LABELS[status].toLowerCase()}.
           </p>
         ) : (
@@ -267,24 +267,24 @@ function TaskCard({ task, next, now }: { task: CrmTask; next: string; now: numbe
       className={`rounded-xl border px-3.5 py-3 ${
         overdue
           ? "border-[rgba(244,105,95,0.3)] bg-[rgba(244,105,95,0.06)]"
-          : "border-[--color-line] bg-[--color-void]/40"
+          : "border-[var(--color-line)] bg-[var(--color-void)]/40"
       }`}
     >
       <div className="flex items-start justify-between gap-2.5">
-        <p className="text-sm leading-snug text-[--color-ink]">{task.title}</p>
+        <p className="text-sm leading-snug text-[var(--color-ink)]">{task.title}</p>
         <Badge tone={PRIORITY_TONES[task.priority] ?? "neutral"}>{PRIORITY_LABELS[task.priority]}</Badge>
       </div>
 
       {task.description && (
-        <p className="mt-1.5 line-clamp-3 text-xs leading-relaxed text-[--color-muted]">
+        <p className="mt-1.5 line-clamp-3 text-xs leading-relaxed text-[var(--color-muted)]">
           {task.description}
         </p>
       )}
 
-      <p className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] text-[--color-faint]">
+      <p className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] text-[var(--color-faint)]">
         <span className="inline-flex items-center gap-1">
           <Clock size={11} strokeWidth={2} aria-hidden />
-          <span className={overdue ? "font-medium text-[--color-danger]" : ""}>
+          <span className={overdue ? "font-medium text-[var(--color-danger)]" : ""}>
             {task.due_at ? dueLabel(task.due_at, now) : "No due date"}
           </span>
         </span>
@@ -293,14 +293,14 @@ function TaskCard({ task, next, now }: { task: CrmTask; next: string; now: numbe
       </p>
 
       <p className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px]">
-        <span className="inline-flex items-center gap-1 text-[--color-muted]">
+        <span className="inline-flex items-center gap-1 text-[var(--color-muted)]">
           <User size={11} strokeWidth={2} aria-hidden />
-          {task.assignee?.name ?? <span className="text-[--color-faint]">Unassigned</span>}
+          {task.assignee?.name ?? <span className="text-[var(--color-faint)]">Unassigned</span>}
         </span>
         {task.lead && (
           <Link
             href={`/os/crm/leads/${task.lead.id}`}
-            className="text-[--color-gold-300] underline underline-offset-2"
+            className="text-[var(--color-gold-300)] underline underline-offset-2"
           >
             {task.lead.name?.trim() || `+${task.lead.phone}`}
           </Link>
@@ -308,7 +308,7 @@ function TaskCard({ task, next, now }: { task: CrmTask; next: string; now: numbe
       </p>
 
       {task.status === "completed" ? (
-        <p className="mt-2 border-t border-[--color-line] pt-2 text-[11px] text-[--color-success]">
+        <p className="mt-2 border-t border-[var(--color-line)] pt-2 text-[11px] text-[var(--color-success)]">
           Completed {timeAgo(task.completed_at)}
         </p>
       ) : (
@@ -347,12 +347,12 @@ function NewTaskForm({
 }) {
   return (
     <details className="card">
-      <summary className="cursor-pointer list-none text-sm font-semibold text-[--color-ink]">
+      <summary className="cursor-pointer list-none text-sm font-semibold text-[var(--color-ink)]">
         <span className="inline-flex items-center gap-2">
-          <Plus size={14} strokeWidth={2} className="text-[--color-gold-300]" aria-hidden />
+          <Plus size={14} strokeWidth={2} className="text-[var(--color-gold-300)]" aria-hidden />
           New task
         </span>
-        <span className="ml-2 text-xs font-normal text-[--color-muted]">
+        <span className="ml-2 text-xs font-normal text-[var(--color-muted)]">
           Assign work to a rep, optionally against a lead.
         </span>
       </summary>

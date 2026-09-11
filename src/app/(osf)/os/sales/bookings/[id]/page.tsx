@@ -83,7 +83,7 @@ export default async function BookingDetailPage({
       />
 
       {error && (
-        <div className="mb-6 rounded-2xl border border-[rgba(244,105,95,0.3)] bg-[rgba(244,105,95,0.08)] p-4 text-sm text-[--color-danger]">
+        <div className="mb-6 rounded-2xl border border-[rgba(244,105,95,0.3)] bg-[rgba(244,105,95,0.08)] p-4 text-sm text-[var(--color-danger)]">
           {error}
         </div>
       )}
@@ -125,25 +125,25 @@ export default async function BookingDetailPage({
           >
             <StatusRail booking={booking} />
 
-            <div className="mt-5 grid grid-cols-2 gap-4 border-t border-[--color-line] pt-4 sm:grid-cols-3">
+            <div className="mt-5 grid grid-cols-2 gap-4 border-t border-[var(--color-line)] pt-4 sm:grid-cols-3">
               <Fact label="Booked" value={formatDay(booking.booking_date)} />
               <Fact label="Agreement signed" value={formatDay(booking.agreement_date)} />
               <Fact label="Registered" value={formatDay(booking.registration_date)} />
             </div>
 
             {!cancelled && (
-              <form action="/api/osf/sales" method="POST" className="mt-4 border-t border-[--color-line] pt-4">
+              <form action="/api/osf/sales" method="POST" className="mt-4 border-t border-[var(--color-line)] pt-4">
                 <input type="hidden" name="action" value="booking-status" />
                 <input type="hidden" name="bookingId" value={booking.id} />
                 <button
                   type="submit"
                   name="status"
                   value="cancelled"
-                  className="btn-ghost px-3 py-1.5 text-xs text-[--color-danger]"
+                  className="btn-ghost px-3 py-1.5 text-xs text-[var(--color-danger)]"
                 >
                   Cancel this booking
                 </button>
-                <span className="ml-3 text-xs text-[--color-faint]">
+                <span className="ml-3 text-xs text-[var(--color-faint)]">
                   Drops it out of revenue and receivables. The record and its schedule stay.
                 </span>
               </form>
@@ -157,11 +157,11 @@ export default async function BookingDetailPage({
           >
             <div className="mb-4">
               <div className="mb-1.5 flex items-baseline justify-between text-xs">
-                <span className="text-[--color-muted]">
+                <span className="text-[var(--color-muted)]">
                   {formatInr(collected)} collected of {formatInr(booking.value_inr)}
                 </span>
                 {unscheduled > 0 && payments.length > 0 && (
-                  <span className="tabular-nums text-[--color-warm]">
+                  <span className="tabular-nums text-[var(--color-warm)]">
                     {formatInr(unscheduled)} not yet scheduled
                   </span>
                 )}
@@ -178,7 +178,7 @@ export default async function BookingDetailPage({
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[560px] border-collapse">
                   <thead>
-                    <tr className="border-b border-[--color-line]">
+                    <tr className="border-b border-[var(--color-line)]">
                       <th className="th">Milestone</th>
                       <th className="th">Due</th>
                       <th className="th text-right">Amount</th>
@@ -186,7 +186,7 @@ export default async function BookingDetailPage({
                       <th className="th" />
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[--color-line]">
+                  <tbody className="divide-y divide-[var(--color-line)]">
                     {payments.map((p) => (
                       <PaymentLine key={p.id} payment={p} bookingId={booking.id} today={today} />
                     ))}
@@ -198,7 +198,7 @@ export default async function BookingDetailPage({
             <form
               action="/api/osf/sales"
               method="POST"
-              className="mt-4 grid gap-3 border-t border-[--color-line] pt-4 sm:grid-cols-[2fr_1fr_1fr_auto]"
+              className="mt-4 grid gap-3 border-t border-[var(--color-line)] pt-4 sm:grid-cols-[2fr_1fr_1fr_auto]"
             >
               <input type="hidden" name="action" value="add-payment" />
               <input type="hidden" name="bookingId" value={booking.id} />
@@ -262,7 +262,7 @@ export default async function BookingDetailPage({
           )}
 
           {booking.notes && (
-            <p className="mt-4 rounded-xl border border-[--color-line] bg-[--color-void]/40 px-3.5 py-3 text-sm text-[--color-muted]">
+            <p className="mt-4 rounded-xl border border-[var(--color-line)] bg-[var(--color-void)]/40 px-3.5 py-3 text-sm text-[var(--color-muted)]">
               {booking.notes}
             </p>
           )}
@@ -300,29 +300,29 @@ function StatusRail({ booking }: { booking: BookingRow }) {
                 disabled={isCurrent || cancelled}
                 className={`w-full rounded-xl border px-3 py-2.5 text-left transition disabled:cursor-default ${
                   isCurrent
-                    ? "border-[--color-gold-line] bg-[--color-gold-soft]"
+                    ? "border-[var(--color-gold-line)] bg-[var(--color-gold-soft)]"
                     : reached
-                      ? "border-[--color-line] bg-[--color-surface]"
-                      : "border-dashed border-[--color-line] bg-transparent hover:border-[--color-line-strong] hover:bg-[--color-raised]"
+                      ? "border-[var(--color-line)] bg-[var(--color-surface)]"
+                      : "border-dashed border-[var(--color-line)] bg-transparent hover:border-[var(--color-line-strong)] hover:bg-[var(--color-raised)]"
                 } ${cancelled ? "opacity-40" : ""}`}
               >
                 <span className="flex items-center gap-1.5">
                   <span
-                    className={`label ${isCurrent ? "text-[--color-gold-300]" : reached ? "text-[--color-muted]" : ""}`}
+                    className={`label ${isCurrent ? "text-[var(--color-gold-300)]" : reached ? "text-[var(--color-muted)]" : ""}`}
                   >
                     Step {i + 1}
                   </span>
                   {reached && !isCurrent && (
-                    <Check size={11} strokeWidth={2.5} aria-hidden className="text-[--color-success]" />
+                    <Check size={11} strokeWidth={2.5} aria-hidden className="text-[var(--color-success)]" />
                   )}
                 </span>
                 <span
                   className={`mt-1 block text-[13px] ${
                     isCurrent
-                      ? "font-semibold text-[--color-gold-100]"
+                      ? "font-semibold text-[var(--color-gold-100)]"
                       : reached
-                        ? "text-[--color-ink]"
-                        : "text-[--color-faint]"
+                        ? "text-[var(--color-ink)]"
+                        : "text-[var(--color-faint)]"
                   }`}
                 >
                   {BOOKING_STATUS_LABELS[step]}
@@ -333,7 +333,7 @@ function StatusRail({ booking }: { booking: BookingRow }) {
         })}
       </ol>
       {cancelled && (
-        <p className="mt-3 text-xs text-[--color-danger]">
+        <p className="mt-3 text-xs text-[var(--color-danger)]">
           This booking is cancelled. Its value is excluded from revenue and its milestones from
           receivables.
         </p>
@@ -360,11 +360,11 @@ function PaymentLine({
     <tr className="row-hover">
       <td className="td">{payment.milestone}</td>
       <td className="td tabular-nums">
-        <span className={late ? "text-[--color-danger]" : undefined}>
+        <span className={late ? "text-[var(--color-danger)]" : undefined}>
           {formatDay(payment.due_date)}
         </span>
         {payment.paid_date && (
-          <span className="mt-0.5 block text-xs text-[--color-faint]">
+          <span className="mt-0.5 block text-xs text-[var(--color-faint)]">
             paid {formatDay(payment.paid_date)}
           </span>
         )}
@@ -393,7 +393,7 @@ function Fact({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <p className="label">{label}</p>
-      <p className="mt-1 text-sm tabular-nums text-[--color-ink]">{value}</p>
+      <p className="mt-1 text-sm tabular-nums text-[var(--color-ink)]">{value}</p>
     </div>
   );
 }
@@ -415,12 +415,12 @@ function Row({
       <dd
         className={`min-w-0 truncate text-right text-sm ${mono ? "font-mono text-[13px] " : ""}${
           tone === "success"
-            ? "text-[--color-success]"
+            ? "text-[var(--color-success)]"
             : tone === "warning"
-              ? "text-[--color-warm]"
+              ? "text-[var(--color-warm)]"
               : value
-                ? "text-[--color-ink]"
-                : "text-[--color-faint]"
+                ? "text-[var(--color-ink)]"
+                : "text-[var(--color-faint)]"
         }`}
       >
         {value || "—"}

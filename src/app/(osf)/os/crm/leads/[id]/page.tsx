@@ -106,7 +106,7 @@ export default async function LeadDetailPage({
     <>
       <Link
         href="/os/crm/leads"
-        className="mb-4 inline-flex items-center gap-1.5 text-sm text-[--color-muted] transition hover:text-[--color-ink]"
+        className="mb-4 inline-flex items-center gap-1.5 text-sm text-[var(--color-muted)] transition hover:text-[var(--color-ink)]"
       >
         <ArrowLeft size={14} strokeWidth={2} aria-hidden />
         All leads
@@ -134,7 +134,7 @@ export default async function LeadDetailPage({
       />
 
       {error && (
-        <div className="mb-6 flex items-start gap-2.5 rounded-2xl border border-[rgba(244,105,95,0.3)] bg-[rgba(244,105,95,0.08)] p-4 text-sm text-[--color-danger]">
+        <div className="mb-6 flex items-start gap-2.5 rounded-2xl border border-[rgba(244,105,95,0.3)] bg-[rgba(244,105,95,0.08)] p-4 text-sm text-[var(--color-danger)]">
           <AlertTriangle size={16} strokeWidth={2} className="mt-0.5 shrink-0" aria-hidden />
           <span>{error}</span>
         </div>
@@ -155,7 +155,7 @@ export default async function LeadDetailPage({
             }
           >
             {lead.ai_summary && (
-              <p className="mb-4 rounded-xl border border-[--color-line] bg-[--color-void] p-3.5 text-xs leading-relaxed text-[--color-muted]">
+              <p className="mb-4 rounded-xl border border-[var(--color-line)] bg-[var(--color-void)] p-3.5 text-xs leading-relaxed text-[var(--color-muted)]">
                 <span className="label mr-2">AI summary</span>
                 {lead.ai_summary}
               </p>
@@ -192,14 +192,14 @@ export default async function LeadDetailPage({
                 {activities.map((activity, index) => (
                   <li key={activity.id} className="relative flex gap-3 pb-4 last:pb-0">
                     <div className="flex flex-col items-center">
-                      <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[--color-gold-500]" />
+                      <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[var(--color-gold-500)]" />
                       {index < activities.length - 1 && (
-                        <span className="w-px flex-1 bg-[--color-line]" />
+                        <span className="w-px flex-1 bg-[var(--color-line)]" />
                       )}
                     </div>
                     <div className="min-w-0 flex-1 pb-1">
-                      <p className="text-sm text-[--color-ink]">{activity.description}</p>
-                      <p className="mt-0.5 text-[11px] text-[--color-faint]">
+                      <p className="text-sm text-[var(--color-ink)]">{activity.description}</p>
+                      <p className="mt-0.5 text-[11px] text-[var(--color-faint)]">
                         {humanise(activity.activity_type)}
                         {activity.actor && ` · ${activity.actor}`}
                         {activity.channel && ` · ${humanise(activity.channel)}`}
@@ -220,14 +220,14 @@ export default async function LeadDetailPage({
           <Card title="Lead score" hint="Internal only — never quoted to the customer.">
             <div className="mb-3 flex items-baseline gap-2">
               <span className="stat">{lead.lead_score}</span>
-              <span className="text-sm text-[--color-faint]">/ 100</span>
+              <span className="text-sm text-[var(--color-faint)]">/ 100</span>
               <span className="ml-auto">
                 <TemperaturePill value={lead.lead_temperature} />
               </span>
             </div>
             <Meter value={lead.lead_score} max={100} />
             {lead.sentiment && (
-              <p className="mt-3 text-xs text-[--color-muted]">
+              <p className="mt-3 text-xs text-[var(--color-muted)]">
                 <span className="label mr-1.5">Sentiment</span>
                 {humanise(lead.sentiment)}
               </p>
@@ -250,7 +250,7 @@ export default async function LeadDetailPage({
               ]}
             />
             {lead.amenities_of_interest && lead.amenities_of_interest.length > 0 && (
-              <div className="mt-4 border-t border-[--color-line] pt-3">
+              <div className="mt-4 border-t border-[var(--color-line)] pt-3">
                 <p className="label mb-2">Amenities asked about</p>
                 <div className="flex flex-wrap gap-1.5">
                   {lead.amenities_of_interest.map((amenity) => (
@@ -262,7 +262,7 @@ export default async function LeadDetailPage({
               </div>
             )}
             {lead.requirements_notes && (
-              <p className="mt-4 border-t border-[--color-line] pt-3 text-xs leading-relaxed text-[--color-muted]">
+              <p className="mt-4 border-t border-[var(--color-line)] pt-3 text-xs leading-relaxed text-[var(--color-muted)]">
                 {lead.requirements_notes}
               </p>
             )}
@@ -283,7 +283,7 @@ export default async function LeadDetailPage({
             />
             <Collateral lead={lead} />
             {lead.notes && (
-              <p className="mt-4 border-t border-[--color-line] pt-3 text-xs leading-relaxed text-[--color-muted]">
+              <p className="mt-4 border-t border-[var(--color-line)] pt-3 text-xs leading-relaxed text-[var(--color-muted)]">
                 {lead.notes}
               </p>
             )}
@@ -304,7 +304,7 @@ function Facts({ rows }: { rows: Array<[string, string]> }) {
       {rows.map(([label, value]) => (
         <div key={label} className="flex items-baseline justify-between gap-4">
           <dt className="label shrink-0">{label}</dt>
-          <dd className="truncate text-right text-sm text-[--color-ink]">{value}</dd>
+          <dd className="truncate text-right text-sm text-[var(--color-ink)]">{value}</dd>
         </div>
       ))}
     </dl>
@@ -321,8 +321,8 @@ function Facts({ rows }: { rows: Array<[string, string]> }) {
 function ScorePanel({ signals }: { signals: ScoreSignal[] }) {
   const groups: ScoreSignal["group"][] = ["Intent", "Requirements", "Contactability"];
   return (
-    <div className="mt-4 space-y-3 border-t border-[--color-line] pt-4">
-      <p className="text-[11px] leading-relaxed text-[--color-faint]">
+    <div className="mt-4 space-y-3 border-t border-[var(--color-line)] pt-4">
+      <p className="text-[11px] leading-relaxed text-[var(--color-faint)]">
         Qualification facts on record. A blank one is a question nobody has asked yet, not a
         negative.
       </p>
@@ -333,19 +333,19 @@ function ScorePanel({ signals }: { signals: ScoreSignal[] }) {
           <div key={group}>
             <div className="mb-1.5 flex items-baseline justify-between">
               <p className="label">{group}</p>
-              <p className="text-[11px] tabular-nums text-[--color-faint]">
+              <p className="text-[11px] tabular-nums text-[var(--color-faint)]">
                 {known}/{rows.length} known
               </p>
             </div>
             <ul className="space-y-1">
               {rows.map((signal) => (
                 <li key={signal.label} className="flex items-baseline justify-between gap-3 text-xs">
-                  <span className={signal.value ? "text-[--color-muted]" : "text-[--color-faint]"}>
+                  <span className={signal.value ? "text-[var(--color-muted)]" : "text-[var(--color-faint)]"}>
                     {signal.label}
                   </span>
                   <span
                     className={`truncate text-right capitalize ${
-                      signal.value ? "text-[--color-ink]" : "text-[--color-faint]"
+                      signal.value ? "text-[var(--color-ink)]" : "text-[var(--color-faint)]"
                     }`}
                   >
                     {signal.value ?? "Not asked"}
@@ -368,7 +368,7 @@ function Collateral({ lead }: { lead: CrmLead }) {
     ["Video", lead.video_sent],
   ];
   return (
-    <div className="mt-4 border-t border-[--color-line] pt-3">
+    <div className="mt-4 border-t border-[var(--color-line)] pt-3">
       <p className="label mb-2">Collateral sent</p>
       <div className="flex flex-wrap gap-1.5">
         {items.map(([label, sent]) => (
@@ -376,8 +376,8 @@ function Collateral({ lead }: { lead: CrmLead }) {
             key={label}
             className={`pill ${
               sent
-                ? "bg-[rgba(94,201,141,0.14)] text-[--color-success]"
-                : "border border-dashed border-[--color-line] text-[--color-faint]"
+                ? "bg-[rgba(94,201,141,0.14)] text-[var(--color-success)]"
+                : "border border-dashed border-[var(--color-line)] text-[var(--color-faint)]"
             }`}
           >
             {sent && <CheckCircle size={11} strokeWidth={2} aria-hidden />}
@@ -413,7 +413,7 @@ function ActionsCard({ lead, team, next }: { lead: CrmLead; team: TeamRef[]; nex
           </div>
         </form>
 
-        <form action="/api/osf/crm" method="POST" className="space-y-2 border-t border-[--color-line] pt-4">
+        <form action="/api/osf/crm" method="POST" className="space-y-2 border-t border-[var(--color-line)] pt-4">
           <input type="hidden" name="action" value="set_stage" />
           <input type="hidden" name="leadId" value={lead.id} />
           <input type="hidden" name="next" value={next} />
@@ -432,14 +432,14 @@ function ActionsCard({ lead, team, next }: { lead: CrmLead; team: TeamRef[]; nex
           </div>
         </form>
 
-        <form action="/api/osf/crm" method="POST" className="border-t border-[--color-line] pt-4">
+        <form action="/api/osf/crm" method="POST" className="border-t border-[var(--color-line)] pt-4">
           <input type="hidden" name="action" value="set_ai_paused" />
           <input type="hidden" name="leadId" value={lead.id} />
           <input type="hidden" name="next" value={next} />
           {/* Absent checkbox field means false, which is exactly "resume". */}
           {!lead.ai_paused && <input type="hidden" name="paused" value="on" />}
           <p className="label mb-2">AI agent</p>
-          <p className="mb-2.5 text-xs leading-relaxed text-[--color-muted]">
+          <p className="mb-2.5 text-xs leading-relaxed text-[var(--color-muted)]">
             {lead.ai_paused
               ? "Paused. The agent will not answer this customer at all until it is resumed."
               : "Answering. Replying by hand from the WhatsApp console pauses it automatically."}
@@ -450,20 +450,20 @@ function ActionsCard({ lead, team, next }: { lead: CrmLead; team: TeamRef[]; nex
           </button>
         </form>
 
-        <form action="/api/osf/crm" method="POST" className="space-y-2 border-t border-[--color-line] pt-4">
+        <form action="/api/osf/crm" method="POST" className="space-y-2 border-t border-[var(--color-line)] pt-4">
           <input type="hidden" name="action" value="set_future_prospect" />
           <input type="hidden" name="leadId" value={lead.id} />
           <input type="hidden" name="next" value={next} />
           <p className="label">Future prospect</p>
-          <p className="text-xs leading-relaxed text-[--color-muted]">
+          <p className="text-xs leading-relaxed text-[var(--color-muted)]">
             Parks a casual enquiry out of the active pipeline with a date to reconnect. The nudge is
             only scheduled if a date is set.
           </p>
           {lead.is_future_prospect ? (
             <>
-              <p className="text-xs text-[--color-ink]">
+              <p className="text-xs text-[var(--color-ink)]">
                 Parked, reconnect{" "}
-                <span className="text-[--color-gold-300]">{formatDateTime(lead.reconnect_at)}</span>
+                <span className="text-[var(--color-gold-300)]">{formatDateTime(lead.reconnect_at)}</span>
               </p>
               <button type="submit" className="btn-ghost w-full justify-center">
                 Return to active pipeline
@@ -526,14 +526,14 @@ function TasksCard({
                 return (
                   <li
                     key={task.id}
-                    className="rounded-xl border border-[--color-line] bg-[--color-void]/40 px-3.5 py-3"
+                    className="rounded-xl border border-[var(--color-line)] bg-[var(--color-void)]/40 px-3.5 py-3"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <p
                         className={`text-sm ${
                           task.status === "completed"
-                            ? "text-[--color-faint] line-through"
-                            : "text-[--color-ink]"
+                            ? "text-[var(--color-faint)] line-through"
+                            : "text-[var(--color-ink)]"
                         }`}
                       >
                         {task.title}
@@ -542,9 +542,9 @@ function TasksCard({
                         {task.priority}
                       </Badge>
                     </div>
-                    <p className="mt-1 flex flex-wrap items-center gap-x-2 text-[11px] text-[--color-faint]">
+                    <p className="mt-1 flex flex-wrap items-center gap-x-2 text-[11px] text-[var(--color-faint)]">
                       <span>{TASK_STATUS_LABELS[task.status] ?? task.status}</span>
-                      <span className={overdue ? "text-[--color-danger]" : ""}>
+                      <span className={overdue ? "text-[var(--color-danger)]" : ""}>
                         {dueLabel(task.due_at, now)}
                       </span>
                       {task.assignee && <span>{task.assignee.name}</span>}
@@ -581,8 +581,8 @@ function TasksCard({
             </ul>
           )}
 
-          <details className="mt-3 rounded-xl border border-dashed border-[--color-line] px-3.5 py-3">
-            <summary className="cursor-pointer text-xs font-medium text-[--color-muted]">
+          <details className="mt-3 rounded-xl border border-dashed border-[var(--color-line)] px-3.5 py-3">
+            <summary className="cursor-pointer text-xs font-medium text-[var(--color-muted)]">
               <Plus size={12} strokeWidth={2} className="mr-1 inline" aria-hidden />
               New task
             </summary>
@@ -628,8 +628,8 @@ function TasksCard({
             </ul>
           )}
 
-          <details className="mt-3 rounded-xl border border-dashed border-[--color-line] px-3.5 py-3">
-            <summary className="cursor-pointer text-xs font-medium text-[--color-muted]">
+          <details className="mt-3 rounded-xl border border-dashed border-[var(--color-line)] px-3.5 py-3">
+            <summary className="cursor-pointer text-xs font-medium text-[var(--color-muted)]">
               <Plus size={12} strokeWidth={2} className="mr-1 inline" aria-hidden />
               New follow-up
             </summary>
@@ -681,26 +681,26 @@ function FollowUpRow({
 }) {
   const overdue = isFollowUpOverdue(followUp, now);
   return (
-    <li className="rounded-xl border border-[--color-line] bg-[--color-void]/40 px-3.5 py-3">
+    <li className="rounded-xl border border-[var(--color-line)] bg-[var(--color-void)]/40 px-3.5 py-3">
       <div className="flex items-start justify-between gap-3">
-        <p className="text-sm text-[--color-ink]">{formatDateTime(followUp.scheduled_at)}</p>
+        <p className="text-sm text-[var(--color-ink)]">{formatDateTime(followUp.scheduled_at)}</p>
         <Badge tone={FOLLOWUP_STATUS_TONES[followUp.status as FollowUpStatus] ?? "neutral"}>
           {followUp.status}
         </Badge>
       </div>
-      <p className="mt-1 flex flex-wrap items-center gap-x-2 text-[11px] text-[--color-faint]">
+      <p className="mt-1 flex flex-wrap items-center gap-x-2 text-[11px] text-[var(--color-faint)]">
         <span className="capitalize">{humanise(followUp.channel)}</span>
-        <span className={overdue ? "text-[--color-danger]" : ""}>
+        <span className={overdue ? "text-[var(--color-danger)]" : ""}>
           {dueLabel(followUp.scheduled_at, now)}
         </span>
         <span>{followUp.dispatched_at ? `Dispatched ${timeAgo(followUp.dispatched_at)}` : "Not dispatched"}</span>
-        {followUp.ai_generated && <span className="text-[--color-gold-300]">AI drafted</span>}
+        {followUp.ai_generated && <span className="text-[var(--color-gold-300)]">AI drafted</span>}
       </p>
       {followUp.template_name && (
-        <p className="mt-1.5 font-mono text-[11px] text-[--color-gold-300]">{followUp.template_name}</p>
+        <p className="mt-1.5 font-mono text-[11px] text-[var(--color-gold-300)]">{followUp.template_name}</p>
       )}
       {followUp.message && (
-        <p className="mt-1.5 text-xs leading-relaxed text-[--color-muted]">{followUp.message}</p>
+        <p className="mt-1.5 text-xs leading-relaxed text-[var(--color-muted)]">{followUp.message}</p>
       )}
       {followUp.status !== "completed" && (
         <form action="/api/osf/crm" method="POST" className="mt-2">
@@ -727,16 +727,16 @@ function SiteVisits({ visits }: { visits: CrmSiteVisit[] }) {
       {visits.map((visit) => (
         <li
           key={visit.id}
-          className="rounded-xl border border-[--color-line] bg-[--color-void]/40 px-4 py-3.5"
+          className="rounded-xl border border-[var(--color-line)] bg-[var(--color-void)]/40 px-4 py-3.5"
         >
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
-              <p className="flex items-center gap-1.5 text-sm text-[--color-ink]">
-                <MapPin size={13} strokeWidth={1.75} className="text-[--color-gold-300]" aria-hidden />
+              <p className="flex items-center gap-1.5 text-sm text-[var(--color-ink)]">
+                <MapPin size={13} strokeWidth={1.75} className="text-[var(--color-gold-300)]" aria-hidden />
                 {visit.project?.name ?? "Project not recorded"}
-                <span className="text-[--color-faint]">· {humanise(visit.visit_type)}</span>
+                <span className="text-[var(--color-faint)]">· {humanise(visit.visit_type)}</span>
               </p>
-              <p className="mt-1 flex flex-wrap items-center gap-x-2.5 text-[11px] text-[--color-faint]">
+              <p className="mt-1 flex flex-wrap items-center gap-x-2.5 text-[11px] text-[var(--color-faint)]">
                 <span>
                   {visit.scheduled_at
                     ? formatDateTime(visit.scheduled_at)
@@ -752,7 +752,7 @@ function SiteVisits({ visits }: { visits: CrmSiteVisit[] }) {
             <Badge tone={VISIT_TONES[visit.status] ?? "neutral"}>{humanise(visit.status)}</Badge>
           </div>
           {(visit.outcome || visit.feedback || visit.notes) && (
-            <p className="mt-2 border-t border-[--color-line] pt-2 text-xs leading-relaxed text-[--color-muted]">
+            <p className="mt-2 border-t border-[var(--color-line)] pt-2 text-xs leading-relaxed text-[var(--color-muted)]">
               {[visit.outcome, visit.feedback, visit.notes].filter(Boolean).join(" — ")}
             </p>
           )}
@@ -783,20 +783,20 @@ function Journey({
       <ol className="flex min-w-max items-stretch gap-0 px-1">
         {touchpoints.map((touchpoint, index) => (
           <li key={touchpoint.id} className="flex items-stretch">
-            <div className="w-48 rounded-xl border border-[--color-line] bg-[--color-void]/40 px-3.5 py-3">
-              <p className="flex items-center gap-1.5 text-xs font-medium capitalize text-[--color-ink]">
-                <Route size={12} strokeWidth={1.75} className="text-[--color-gold-300]" aria-hidden />
+            <div className="w-48 rounded-xl border border-[var(--color-line)] bg-[var(--color-void)]/40 px-3.5 py-3">
+              <p className="flex items-center gap-1.5 text-xs font-medium capitalize text-[var(--color-ink)]">
+                <Route size={12} strokeWidth={1.75} className="text-[var(--color-gold-300)]" aria-hidden />
                 {humanise(touchpoint.channel)}
               </p>
               {touchpoint.campaign && (
-                <p className="mt-1 truncate text-[11px] text-[--color-gold-300]">{touchpoint.campaign}</p>
+                <p className="mt-1 truncate text-[11px] text-[var(--color-gold-300)]">{touchpoint.campaign}</p>
               )}
               {touchpoint.detail && (
-                <p className="mt-1 line-clamp-3 text-[11px] leading-relaxed text-[--color-muted]">
+                <p className="mt-1 line-clamp-3 text-[11px] leading-relaxed text-[var(--color-muted)]">
                   {touchpoint.detail}
                 </p>
               )}
-              <p className="mt-2 flex items-center gap-1 text-[10px] text-[--color-faint]">
+              <p className="mt-2 flex items-center gap-1 text-[10px] text-[var(--color-faint)]">
                 <Clock size={10} strokeWidth={2} aria-hidden />
                 {formatDateTime(touchpoint.occurred_at)}
                 {index > 0 &&
@@ -807,7 +807,7 @@ function Journey({
               </p>
             </div>
             {index < touchpoints.length - 1 && (
-              <span className="mx-1 self-center text-[--color-line-strong]">→</span>
+              <span className="mx-1 self-center text-[var(--color-line-strong)]">→</span>
             )}
           </li>
         ))}

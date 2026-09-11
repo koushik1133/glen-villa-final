@@ -66,7 +66,7 @@ export default async function TeamPerformancePage({
       />
 
       {error && (
-        <div className="mb-6 rounded-2xl border border-[rgba(244,105,95,0.3)] bg-[rgba(244,105,95,0.08)] p-4 text-sm text-[--color-danger]">
+        <div className="mb-6 rounded-2xl border border-[rgba(244,105,95,0.3)] bg-[rgba(244,105,95,0.08)] p-4 text-sm text-[var(--color-danger)]">
           {error}
         </div>
       )}
@@ -96,7 +96,7 @@ export default async function TeamPerformancePage({
           <div className="overflow-x-auto">
             <table className="w-full min-w-[900px] border-collapse">
               <thead>
-                <tr className="border-b border-[--color-line]">
+                <tr className="border-b border-[var(--color-line)]">
                   <th className="th w-10">#</th>
                   <th className="th">Member</th>
                   <th className="th text-right">Leads</th>
@@ -108,7 +108,7 @@ export default async function TeamPerformancePage({
                   <th className="th w-48">Quota</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[--color-line]">
+              <tbody className="divide-y divide-[var(--color-line)]">
                 {leaderboard.map((row, i) => (
                   <LeaderRow key={row.id} row={row} rank={i + 1} />
                 ))}
@@ -151,7 +151,7 @@ export default async function TeamPerformancePage({
           <div className="overflow-x-auto">
             <table className="w-full min-w-[820px] border-collapse">
               <thead>
-                <tr className="border-b border-[--color-line]">
+                <tr className="border-b border-[var(--color-line)]">
                   <th className="th">Name</th>
                   <th className="th">Role</th>
                   <th className="th">Contact</th>
@@ -161,7 +161,7 @@ export default async function TeamPerformancePage({
                   <th className="th text-right">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[--color-line]">
+              <tbody className="divide-y divide-[var(--color-line)]">
                 {members.map((m) => (
                   <RosterRow key={m.id} member={m} />
                 ))}
@@ -179,38 +179,38 @@ export default async function TeamPerformancePage({
 function LeaderRow({ row, rank }: { row: TeamPerformanceRow; rank: number }) {
   return (
     <tr className="row-hover">
-      <td className="td tabular-nums text-[--color-faint]">{rank}</td>
+      <td className="td tabular-nums text-[var(--color-faint)]">{rank}</td>
       <td className="td">
         <span className="block font-medium">{row.name}</span>
-        <span className="mt-0.5 block text-xs text-[--color-faint]">
+        <span className="mt-0.5 block text-xs text-[var(--color-faint)]">
           {ROLE_LABELS[row.role] ?? row.role}
         </span>
       </td>
       <td className="td text-right tabular-nums">{formatNumber(row.assigned_leads)}</td>
-      <td className="td text-right tabular-nums text-[--color-hot]">
-        {row.hot_leads > 0 ? row.hot_leads : <span className="text-[--color-faint]">—</span>}
+      <td className="td text-right tabular-nums text-[var(--color-hot)]">
+        {row.hot_leads > 0 ? row.hot_leads : <span className="text-[var(--color-faint)]">—</span>}
       </td>
       <td className="td text-right tabular-nums">{formatNumber(row.site_visits)}</td>
       <td className="td text-right tabular-nums">{formatNumber(row.bookings)}</td>
       <td className="td text-right tabular-nums">
-        {row.revenue_inr > 0 ? formatCr(row.revenue_inr) : <span className="text-[--color-faint]">—</span>}
+        {row.revenue_inr > 0 ? formatCr(row.revenue_inr) : <span className="text-[var(--color-faint)]">—</span>}
       </td>
-      <td className="td text-right tabular-nums text-[--color-muted]">
+      <td className="td text-right tabular-nums text-[var(--color-muted)]">
         {formatPercent(row.conversion_rate, 0)}
       </td>
       <td className="td">
         {row.quota_inr && row.quota_inr > 0 ? (
           <>
             <div className="mb-1.5 flex items-baseline justify-between text-xs">
-              <span className="tabular-nums text-[--color-gold-300]">
+              <span className="tabular-nums text-[var(--color-gold-300)]">
                 {formatPercent(row.quota_attainment, 0)}
               </span>
-              <span className="tabular-nums text-[--color-faint]">{formatCr(row.quota_inr)}</span>
+              <span className="tabular-nums text-[var(--color-faint)]">{formatCr(row.quota_inr)}</span>
             </div>
             <Meter value={row.revenue_inr} max={row.quota_inr} />
           </>
         ) : (
-          <span className="text-xs text-[--color-faint]">Not on a quota</span>
+          <span className="text-xs text-[var(--color-faint)]">Not on a quota</span>
         )}
       </td>
     </tr>
@@ -222,13 +222,13 @@ function RosterRow({ member }: { member: TeamMemberRow }) {
     <tr className={`row-hover ${member.is_active ? "" : "opacity-55"}`}>
       <td className="td">
         <span className="block font-medium">{member.name}</span>
-        <span className="mt-0.5 block text-xs capitalize text-[--color-faint]">{member.department}</span>
+        <span className="mt-0.5 block text-xs capitalize text-[var(--color-faint)]">{member.department}</span>
       </td>
-      <td className="td text-[13px] text-[--color-muted]">{ROLE_LABELS[member.role] ?? member.role}</td>
+      <td className="td text-[13px] text-[var(--color-muted)]">{ROLE_LABELS[member.role] ?? member.role}</td>
       <td className="td">
         <span className="block text-[13px]">{member.email ?? "—"}</span>
         {member.phone && (
-          <span className="mt-0.5 block font-mono text-xs text-[--color-faint]">{member.phone}</span>
+          <span className="mt-0.5 block font-mono text-xs text-[var(--color-faint)]">{member.phone}</span>
         )}
       </td>
       <td className="td">
@@ -239,17 +239,17 @@ function RosterRow({ member }: { member: TeamMemberRow }) {
             ))}
           </span>
         ) : (
-          <span className="text-xs text-[--color-faint]">—</span>
+          <span className="text-xs text-[var(--color-faint)]">—</span>
         )}
       </td>
       <td className="td text-right tabular-nums">
         {member.quota_inr && member.quota_inr > 0 ? (
           formatCr(member.quota_inr)
         ) : (
-          <span className="text-[--color-faint]">—</span>
+          <span className="text-[var(--color-faint)]">—</span>
         )}
       </td>
-      <td className="td text-xs tabular-nums text-[--color-muted]">{formatDay(member.joined_at)}</td>
+      <td className="td text-xs tabular-nums text-[var(--color-muted)]">{formatDay(member.joined_at)}</td>
       <td className="td text-right">
         <form action="/api/osf/sales" method="POST" className="inline-flex items-center gap-2">
           <input type="hidden" name="action" value="toggle-member" />
@@ -346,13 +346,13 @@ function AddMemberForm() {
           form always states its intent either way.
         */}
         <input type="hidden" name="acceptsLeads" value="off" />
-        <label className="flex items-center gap-2.5 text-sm text-[--color-ink]">
+        <label className="flex items-center gap-2.5 text-sm text-[var(--color-ink)]">
           <input
             type="checkbox"
             name="acceptsLeads"
             value="on"
             defaultChecked
-            className="h-4 w-4 rounded border-[--color-line-strong] bg-[--color-void] accent-[--color-gold-500]"
+            className="h-4 w-4 rounded border-[var(--color-line-strong)] bg-[var(--color-void)] accent-[var(--color-gold-500)]"
           />
           Accepts routed leads
         </label>

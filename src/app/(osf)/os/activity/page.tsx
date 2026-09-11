@@ -40,12 +40,12 @@ export default async function ActivityPage() {
               const badge = activityBadge(a.activity_type);
               const lead = a.villa_leads;
               return (
-                <li key={a.id} className="flex gap-3 border-b border-[--color-line] pb-4 last:border-0 last:pb-0">
+                <li key={a.id} className="flex gap-3 border-b border-[var(--color-line)] pb-4 last:border-0 last:pb-0">
                   <span className={`pill mt-0.5 h-fit shrink-0 ${badge.className}`}>{badge.label}</span>
 
                   <div className="min-w-0 flex-1">
                     <p className="text-sm">{a.description}</p>
-                    <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[--color-muted]">
+                    <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[var(--color-muted)]">
                       {lead ? (
                         <Link href={`/os/crm/leads/${lead.id}`} className="font-medium hover:underline">
                           {lead.name ?? `+${lead.phone}`}

@@ -70,7 +70,7 @@ export default async function CustomersPage() {
             }
           >
             Nobody has booked yet. A lead becomes a customer when a row is written to{" "}
-            <code className="rounded bg-[--color-canvas] px-1.5 py-0.5 text-xs">villa_bookings</code>{" "}
+            <code className="rounded bg-[var(--color-canvas)] px-1.5 py-0.5 text-xs">villa_bookings</code>{" "}
             with a status other than cancelled.
           </Empty>
         </Card>
@@ -94,7 +94,7 @@ export default async function CustomersPage() {
           <Card>
             <div className="-mx-5 overflow-x-auto">
               <table className="w-full min-w-[1080px]">
-                <thead className="border-b border-[--color-line]">
+                <thead className="border-b border-[var(--color-line)]">
                   <tr>
                     <th className="th">Customer</th>
                     <th className="th">KYC</th>
@@ -106,7 +106,7 @@ export default async function CustomersPage() {
                     <th className="th text-right">Booked</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[--color-line]">
+                <tbody className="divide-y divide-[var(--color-line)]">
                   {rows.map((row) => (
                     <CustomerRowView key={row.phone} row={row} />
                   ))}
@@ -127,17 +127,17 @@ function CustomerRowView({ row }: { row: CustomerRow }) {
     <tr className="row-hover">
       <td className="td">
         {row.leadId ? (
-          <Link href={`/os/crm/leads/${row.leadId}`} className="font-medium hover:text-[--color-gold-300]">
+          <Link href={`/os/crm/leads/${row.leadId}`} className="font-medium hover:text-[var(--color-gold-300)]">
             {row.name}
           </Link>
         ) : (
           <span className="font-medium">{row.name}</span>
         )}
-        <span className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-[--color-muted]">
+        <span className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-[var(--color-muted)]">
           <span>+{row.phone}</span>
           {row.email && <span className="truncate">{row.email}</span>}
         </span>
-        <span className="mt-0.5 block text-[11px] text-[--color-faint]">
+        <span className="mt-0.5 block text-[11px] text-[var(--color-faint)]">
           {row.bookingNumbers.join(", ")}
           {row.reps.length > 0 && ` · ${row.reps.join(", ")}`}
         </span>
@@ -155,11 +155,11 @@ function CustomerRowView({ row }: { row: CustomerRow }) {
 
       <td className="td text-xs">
         {row.units.length > 0 ? (
-          <span className="font-medium text-[--color-ink]">{row.units.join(", ")}</span>
+          <span className="font-medium text-[var(--color-ink)]">{row.units.join(", ")}</span>
         ) : (
-          <span className="text-[--color-faint]">Not allotted</span>
+          <span className="text-[var(--color-faint)]">Not allotted</span>
         )}
-        <span className="mt-0.5 block text-[11px] text-[--color-muted]">
+        <span className="mt-0.5 block text-[11px] text-[var(--color-muted)]">
           {[row.projects.join(", "), row.villaTypes.join(", ")].filter(Boolean).join(" · ") || "—"}
         </span>
       </td>
@@ -178,7 +178,7 @@ function CustomerRowView({ row }: { row: CustomerRow }) {
       <td className="td whitespace-nowrap text-right tabular-nums">{formatCr(row.totalValueInr)}</td>
 
       <td className="td">
-        <span className="mb-1.5 block text-xs tabular-nums text-[--color-muted]">
+        <span className="mb-1.5 block text-xs tabular-nums text-[var(--color-muted)]">
           {formatInr(row.paidInr)}
         </span>
         <Meter value={row.paidInr} max={row.totalValueInr} />
@@ -186,16 +186,16 @@ function CustomerRowView({ row }: { row: CustomerRow }) {
 
       <td
         className={`td whitespace-nowrap text-right tabular-nums ${
-          row.outstandingInr > 0 ? "text-[--color-warm]" : "text-[--color-success]"
+          row.outstandingInr > 0 ? "text-[var(--color-warm)]" : "text-[var(--color-success)]"
         }`}
       >
         {row.outstandingInr > 0 ? formatCr(row.outstandingInr) : "Settled"}
       </td>
 
-      <td className="td whitespace-nowrap text-right text-xs text-[--color-muted]">
+      <td className="td whitespace-nowrap text-right text-xs text-[var(--color-muted)]">
         {formatDate(row.latestBookingDate)}
         {row.bookingCount > 1 && (
-          <span className="block text-[11px] text-[--color-faint]">{row.bookingCount} bookings</span>
+          <span className="block text-[11px] text-[var(--color-faint)]">{row.bookingCount} bookings</span>
         )}
       </td>
     </tr>

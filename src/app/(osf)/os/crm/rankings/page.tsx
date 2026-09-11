@@ -84,30 +84,30 @@ export default async function RankingsPage({ searchParams }: { searchParams: Pro
         <RankStat label="Warm" value={totals.warm} total={totals.all} temp="warm" active={temp} />
         <RankStat label="Cold" value={totals.cold} total={totals.all} temp="cold" active={temp} />
         <Card>
-          <p className="text-xs uppercase tracking-wide text-[--color-faint]">Sentiment</p>
+          <p className="text-xs uppercase tracking-wide text-[var(--color-faint)]">Sentiment</p>
           <div className="mt-2.5 flex flex-wrap gap-1.5">
             {(["positive", "neutral", "negative", "unknown"] as const).map((k) => (
               <Link key={k} href={filterHref(temp, sent === k ? undefined : k)}>
                 <span
-                  className={`pill ${SENTIMENT_TONES[k]} ${sent === k ? "ring-1 ring-[--color-gold-line]" : ""}`}
+                  className={`pill ${SENTIMENT_TONES[k]} ${sent === k ? "ring-1 ring-[var(--color-gold-line)]" : ""}`}
                 >
                   {formatNumber(sentiment[k])} {k}
                 </span>
               </Link>
             ))}
           </div>
-          <p className="mt-2 text-[11px] text-[--color-faint]">
+          <p className="mt-2 text-[11px] text-[var(--color-faint)]">
             Read from the customer&apos;s own words on every reply.
           </p>
         </Card>
       </div>
 
       {(temp || sent) && (
-        <div className="mb-4 flex items-center gap-2 text-xs text-[--color-muted]">
+        <div className="mb-4 flex items-center gap-2 text-xs text-[var(--color-muted)]">
           <span>
             Showing {formatNumber(shown.length)} of {formatNumber(totals.all)}
           </span>
-          <Link href={filterHref()} className="text-[--color-gold-300] hover:underline">
+          <Link href={filterHref()} className="text-[var(--color-gold-300)] hover:underline">
             Clear filters
           </Link>
         </div>
@@ -123,7 +123,7 @@ export default async function RankingsPage({ searchParams }: { searchParams: Pro
           <div className="overflow-x-auto">
             <table className="w-full min-w-[860px] text-sm">
               <thead>
-                <tr className="border-b border-[--color-line] text-left text-xs uppercase tracking-wide text-[--color-faint]">
+                <tr className="border-b border-[var(--color-line)] text-left text-xs uppercase tracking-wide text-[var(--color-faint)]">
                   <th className="w-14 pb-2.5 pl-1">#</th>
                   <th className="pb-2.5">Client</th>
                   <th className="pb-2.5">Score</th>
@@ -164,13 +164,13 @@ function RankStat({
   const share = total > 0 ? Math.round((value / total) * 100) : 0;
   return (
     <Link href={filterHref(active === temp ? undefined : temp)}>
-      <Card className={active === temp ? "ring-1 ring-[--color-gold-line]" : undefined}>
+      <Card className={active === temp ? "ring-1 ring-[var(--color-gold-line)]" : undefined}>
         <div className="flex items-center justify-between">
-          <p className="text-xs uppercase tracking-wide text-[--color-faint]">{label}</p>
+          <p className="text-xs uppercase tracking-wide text-[var(--color-faint)]">{label}</p>
           <TemperaturePill value={temp} />
         </div>
         <p className="mt-2 text-2xl font-semibold tabular-nums">{formatNumber(value)}</p>
-        <p className="mt-1 text-[11px] text-[--color-faint]">{share}% of all active clients</p>
+        <p className="mt-1 text-[11px] text-[var(--color-faint)]">{share}% of all active clients</p>
       </Card>
     </Link>
   );
@@ -179,15 +179,15 @@ function RankStat({
 function Row({ client: c }: { client: RankedClient }) {
   const stage = c.pipeline_stage as PipelineStage;
   return (
-    <tr className="border-b border-[--color-line]/60 last:border-0 hover:bg-[--color-raised]/50">
+    <tr className="border-b border-[var(--color-line)]/60 last:border-0 hover:bg-[var(--color-raised)]/50">
       <td className="py-3 pl-1 align-middle">
-        <span className="tabular-nums text-[--color-faint]">{c.rank}</span>
+        <span className="tabular-nums text-[var(--color-faint)]">{c.rank}</span>
       </td>
       <td className="py-3 align-middle">
-        <Link href={`/os/crm/leads/${c.id}`} className="font-medium hover:text-[--color-gold-300]">
+        <Link href={`/os/crm/leads/${c.id}`} className="font-medium hover:text-[var(--color-gold-300)]">
           {c.name ?? "Unnamed"}
         </Link>
-        <p className="text-xs text-[--color-faint]">
+        <p className="text-xs text-[var(--color-faint)]">
           {c.phone}
           {c.city ? ` · ${c.city}` : ""}
         </p>
@@ -210,10 +210,10 @@ function Row({ client: c }: { client: RankedClient }) {
         <Badge tone={STAGE_TONES[stage] ?? "neutral"}>{STAGE_LABELS[stage] ?? humanise(stage)}</Badge>
       </td>
       <td className="py-3 align-middle tabular-nums text-xs">{formatCr(c.budget_max_inr)}</td>
-      <td className="py-3 align-middle text-xs text-[--color-muted]">
-        {c.assignee?.name ?? <span className="text-[--color-faint]">Unassigned</span>}
+      <td className="py-3 align-middle text-xs text-[var(--color-muted)]">
+        {c.assignee?.name ?? <span className="text-[var(--color-faint)]">Unassigned</span>}
       </td>
-      <td className="py-3 pr-1 text-right align-middle text-xs text-[--color-faint]">
+      <td className="py-3 pr-1 text-right align-middle text-xs text-[var(--color-faint)]">
         {timeAgo(c.last_contact_at)}
       </td>
     </tr>

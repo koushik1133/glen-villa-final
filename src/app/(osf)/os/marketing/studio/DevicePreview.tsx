@@ -93,7 +93,7 @@ function Avatar({ brand, size = 32 }: { brand: Brand; size?: number }) {
   return (
     <span
       style={{ width: size, height: size }}
-      className="grid shrink-0 place-items-center overflow-hidden rounded-full border border-[--color-gold-line] bg-[--color-gold-soft] text-[11px] font-semibold text-[--color-gold-300]"
+      className="grid shrink-0 place-items-center overflow-hidden rounded-full border border-[var(--color-gold-line)] bg-[var(--color-gold-soft)] text-[11px] font-semibold text-[var(--color-gold-300)]"
     >
       {local ? (
         // eslint-disable-next-line @next/next/no-img-element -- next/image would
@@ -131,18 +131,18 @@ function ConceptFrame({
       style={{ aspectRatio: aspect }}
       className="relative w-full overflow-hidden bg-[linear-gradient(150deg,#1b1a17_0%,#0f0f12_55%,#141319_100%)]"
     >
-      <div className="absolute inset-3 rounded-lg border border-dashed border-[--color-gold-line]/60" />
+      <div className="absolute inset-3 rounded-lg border border-dashed border-[var(--color-gold-line)]/60" />
       <div
         className={`absolute inset-0 flex flex-col items-center gap-2 p-6 text-center ${
           align === "top" ? "justify-start pt-14" : "justify-center"
         }`}
       >
-        <ImageIcon size={18} strokeWidth={1.5} aria-hidden className="text-[--color-gold-500]/70" />
-        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[--color-gold-500]/80">
+        <ImageIcon size={18} strokeWidth={1.5} aria-hidden className="text-[var(--color-gold-500)]/70" />
+        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--color-gold-500)]/80">
           {label}
         </p>
         {prompt && (
-          <p className="line-clamp-4 max-w-[92%] text-[11px] leading-relaxed text-[--color-muted]">
+          <p className="line-clamp-4 max-w-[92%] text-[11px] leading-relaxed text-[var(--color-muted)]">
             {prompt}
           </p>
         )}
@@ -162,17 +162,17 @@ function Hashtags({ tags, className = "" }: { tags: string[]; className?: string
 
 /** Repeats under every frame so a mockup is never mistaken for a live post. */
 function FrameNote({ children }: { children: ReactNode }) {
-  return <p className="mt-3 text-center text-[11px] text-[--color-faint]">{children}</p>;
+  return <p className="mt-3 text-center text-[11px] text-[var(--color-faint)]">{children}</p>;
 }
 
 function EmptyFrame({ format }: { format: ContentFormat }) {
   return (
-    <div className="flex min-h-[380px] w-full items-center justify-center rounded-2xl border border-dashed border-[--color-line] px-8 text-center">
+    <div className="flex min-h-[380px] w-full items-center justify-center rounded-2xl border border-dashed border-[var(--color-line)] px-8 text-center">
       <div>
-        <p className="text-sm text-[--color-muted]">
+        <p className="text-sm text-[var(--color-muted)]">
           Nothing to preview as a {formats.label(format).toLowerCase()} yet.
         </p>
-        <p className="mt-1.5 text-xs text-[--color-faint]">
+        <p className="mt-1.5 text-xs text-[var(--color-faint)]">
           Fill in the brief and generate, or pick an existing draft from the library below.
         </p>
       </div>
@@ -191,7 +191,7 @@ function ReelPreview({ draft, brand }: { draft: StudioDraft; brand: Brand }) {
     <div className="flex flex-col items-center">
       <div className="relative w-[296px] rounded-[2.5rem] border-[9px] border-[#101014] bg-black shadow-[0_32px_64px_-24px_rgba(0,0,0,0.95),0_0_0_1px_rgba(255,255,255,0.06)]">
         <div className="absolute left-1/2 top-1.5 z-20 h-[18px] w-[86px] -translate-x-1/2 rounded-full bg-[#101014]" />
-        <div className="h-[526px] overflow-y-auto overscroll-contain rounded-[1.9rem] bg-[--color-void]">
+        <div className="h-[526px] overflow-y-auto overscroll-contain rounded-[1.9rem] bg-[var(--color-void)]">
           {/* Cover — what a viewer sees before they tap play. */}
           <div className="relative">
             <ConceptFrame
@@ -233,20 +233,20 @@ function ReelPreview({ draft, brand }: { draft: StudioDraft; brand: Brand }) {
           <div className="space-y-2.5 p-3">
             <p className="label px-0.5">Storyboard</p>
             {scenes.length === 0 ? (
-              <p className="rounded-lg border border-dashed border-[--color-line] px-3 py-4 text-center text-[11px] text-[--color-faint]">
+              <p className="rounded-lg border border-dashed border-[var(--color-line)] px-3 py-4 text-center text-[11px] text-[var(--color-faint)]">
                 No scene breakdown in this draft. Regenerate as a Reel / Short to get one.
               </p>
             ) : (
               scenes.map((scene) => (
                 <div
                   key={scene.sceneNumber}
-                  className="rounded-lg border border-[--color-line] bg-[--color-surface] p-2.5"
+                  className="rounded-lg border border-[var(--color-line)] bg-[var(--color-surface)] p-2.5"
                 >
                   <div className="flex items-baseline justify-between gap-2">
-                    <span className="text-[11px] font-semibold text-[--color-gold-300]">
+                    <span className="text-[11px] font-semibold text-[var(--color-gold-300)]">
                       Scene {scene.sceneNumber}
                     </span>
-                    <span className="font-mono text-[10px] tabular-nums text-[--color-faint]">
+                    <span className="font-mono text-[10px] tabular-nums text-[var(--color-faint)]">
                       {scene.timeRange || "—"}
                     </span>
                   </div>
@@ -271,8 +271,8 @@ function ReelPreview({ draft, brand }: { draft: StudioDraft; brand: Brand }) {
 function SceneLine({ label, value }: { label: string; value: string }) {
   if (!value) return null;
   return (
-    <p className="mt-1.5 text-[11px] leading-relaxed text-[--color-muted]">
-      <span className="text-[--color-faint]">{label}: </span>
+    <p className="mt-1.5 text-[11px] leading-relaxed text-[var(--color-muted)]">
+      <span className="text-[var(--color-faint)]">{label}: </span>
       {value}
     </p>
   );
@@ -287,7 +287,7 @@ function PostPreview({ draft, brand }: { draft: StudioDraft; brand: Brand }) {
 
   return (
     <div className="flex flex-col items-center">
-      <div className="mb-3 inline-flex rounded-lg border border-[--color-line] bg-[--color-surface] p-0.5">
+      <div className="mb-3 inline-flex rounded-lg border border-[var(--color-line)] bg-[var(--color-surface)] p-0.5">
         {(["1 / 1", "4 / 5"] as const).map((r) => (
           <button
             key={r}
@@ -295,8 +295,8 @@ function PostPreview({ draft, brand }: { draft: StudioDraft; brand: Brand }) {
             onClick={() => setRatio(r)}
             className={`rounded-md px-3 py-1 text-[11px] font-medium transition ${
               ratio === r
-                ? "bg-[--color-gold-soft] text-[--color-gold-300]"
-                : "text-[--color-muted] hover:text-[--color-ink]"
+                ? "bg-[var(--color-gold-soft)] text-[var(--color-gold-300)]"
+                : "text-[var(--color-muted)] hover:text-[var(--color-ink)]"
             }`}
           >
             {r.replace(" / ", ":")}
@@ -304,19 +304,19 @@ function PostPreview({ draft, brand }: { draft: StudioDraft; brand: Brand }) {
         ))}
       </div>
 
-      <div className="w-[352px] max-w-full overflow-hidden rounded-xl border border-[--color-line] bg-[#0d0d10] shadow-[0_24px_48px_-24px_rgba(0,0,0,0.9)]">
+      <div className="w-[352px] max-w-full overflow-hidden rounded-xl border border-[var(--color-line)] bg-[#0d0d10] shadow-[0_24px_48px_-24px_rgba(0,0,0,0.9)]">
         <div className="flex items-center gap-2.5 px-3 py-2.5">
           <Avatar brand={brand} size={30} />
           <div className="min-w-0 flex-1">
-            <p className="truncate text-[12px] font-semibold text-[--color-ink]">{brand.name}</p>
-            <p className="truncate text-[10px] text-[--color-faint]">Organic post</p>
+            <p className="truncate text-[12px] font-semibold text-[var(--color-ink)]">{brand.name}</p>
+            <p className="truncate text-[10px] text-[var(--color-faint)]">Organic post</p>
           </div>
-          <Ellipsis size={15} strokeWidth={2} aria-hidden className="text-[--color-muted]" />
+          <Ellipsis size={15} strokeWidth={2} aria-hidden className="text-[var(--color-muted)]" />
         </div>
 
         <ConceptFrame prompt={draft.visual_prompt} aspect={ratio} />
 
-        <div className="flex items-center gap-3.5 px-3 pt-2.5 text-[--color-ink]">
+        <div className="flex items-center gap-3.5 px-3 pt-2.5 text-[var(--color-ink)]">
           <Heart size={19} strokeWidth={1.6} aria-hidden />
           <MessageCircle size={19} strokeWidth={1.6} aria-hidden />
           <Send size={19} strokeWidth={1.6} aria-hidden />
@@ -324,13 +324,13 @@ function PostPreview({ draft, brand }: { draft: StudioDraft; brand: Brand }) {
         </div>
 
         <div className="space-y-1.5 px-3 pb-3.5 pt-2.5">
-          <p className="text-[12px] font-semibold text-[--color-ink]">{draft.headline}</p>
-          <p className="whitespace-pre-wrap text-[12px] leading-relaxed text-[--color-muted]">
+          <p className="text-[12px] font-semibold text-[var(--color-ink)]">{draft.headline}</p>
+          <p className="whitespace-pre-wrap text-[12px] leading-relaxed text-[var(--color-muted)]">
             {draft.primary_text}
           </p>
           <Hashtags tags={draft.hashtags} />
           {draft.call_to_action && (
-            <p className="pt-0.5 text-[11px] text-[--color-faint]">{draft.call_to_action}</p>
+            <p className="pt-0.5 text-[11px] text-[var(--color-faint)]">{draft.call_to_action}</p>
           )}
         </div>
       </div>
@@ -359,7 +359,7 @@ function WhatsappPreview({ draft, brand }: { draft: StudioDraft; brand: Brand })
 
   return (
     <div className="flex flex-col items-center">
-      <div className="w-[352px] max-w-full overflow-hidden rounded-2xl border border-[--color-line] shadow-[0_24px_48px_-24px_rgba(0,0,0,0.9)]">
+      <div className="w-[352px] max-w-full overflow-hidden rounded-2xl border border-[var(--color-line)] shadow-[0_24px_48px_-24px_rgba(0,0,0,0.9)]">
         <div className="flex items-center gap-2.5 bg-[#1f2c33] px-3 py-2.5">
           <ChevronLeft size={16} strokeWidth={2} aria-hidden className="text-white/60" />
           <Avatar brand={brand} size={30} />
@@ -436,22 +436,22 @@ function MetaAdPreview({ draft, brand }: { draft: StudioDraft; brand: Brand }) {
 
   return (
     <div className="flex flex-col items-center">
-      <div className="w-[352px] max-w-full overflow-hidden rounded-xl border border-[--color-line] bg-[#0d0d10] shadow-[0_24px_48px_-24px_rgba(0,0,0,0.9)]">
+      <div className="w-[352px] max-w-full overflow-hidden rounded-xl border border-[var(--color-line)] bg-[#0d0d10] shadow-[0_24px_48px_-24px_rgba(0,0,0,0.9)]">
         <div className="flex items-center gap-2.5 px-3 py-2.5">
           <Avatar brand={brand} size={30} />
           <div className="min-w-0 flex-1">
-            <p className="truncate text-[12px] font-semibold text-[--color-ink]">{brand.name}</p>
-            <p className="flex items-center gap-1 text-[10px] text-[--color-faint]">
+            <p className="truncate text-[12px] font-semibold text-[var(--color-ink)]">{brand.name}</p>
+            <p className="flex items-center gap-1 text-[10px] text-[var(--color-faint)]">
               Sponsored
               <span aria-hidden>·</span>
               <Globe size={9} strokeWidth={2} aria-hidden />
             </p>
           </div>
-          <Ellipsis size={15} strokeWidth={2} aria-hidden className="text-[--color-muted]" />
+          <Ellipsis size={15} strokeWidth={2} aria-hidden className="text-[var(--color-muted)]" />
         </div>
 
         <div className="px-3 pb-2.5">
-          <p className="whitespace-pre-wrap text-[12px] leading-relaxed text-[--color-ink]">
+          <p className="whitespace-pre-wrap text-[12px] leading-relaxed text-[var(--color-ink)]">
             {draft.primary_text}
           </p>
           <Hashtags tags={draft.hashtags} className="mt-1.5" />
@@ -461,15 +461,15 @@ function MetaAdPreview({ draft, brand }: { draft: StudioDraft; brand: Brand }) {
 
         <div className="flex items-center gap-3 bg-[#16161a] px-3 py-2.5">
           <div className="min-w-0 flex-1">
-            <p className="truncate text-[10px] uppercase tracking-wide text-[--color-faint]">
+            <p className="truncate text-[10px] uppercase tracking-wide text-[var(--color-faint)]">
               {host ?? "No website set in Settings"}
             </p>
-            <p className="truncate text-[12px] font-semibold text-[--color-ink]">{draft.headline}</p>
+            <p className="truncate text-[12px] font-semibold text-[var(--color-ink)]">{draft.headline}</p>
             {draft.secondary_text && (
-              <p className="truncate text-[11px] text-[--color-muted]">{draft.secondary_text}</p>
+              <p className="truncate text-[11px] text-[var(--color-muted)]">{draft.secondary_text}</p>
             )}
           </div>
-          <span className="shrink-0 rounded-md border border-[--color-line-strong] bg-[--color-raised] px-3 py-1.5 text-[11px] font-semibold text-[--color-ink]">
+          <span className="shrink-0 rounded-md border border-[var(--color-line-strong)] bg-[var(--color-raised)] px-3 py-1.5 text-[11px] font-semibold text-[var(--color-ink)]">
             {draft.cta_button_text ?? "Learn More"}
           </span>
         </div>
@@ -494,7 +494,7 @@ const GOOGLE_DESCRIPTION_MAX = 90;
 function CharCount({ value, max, label }: { value: number; max: number; label: string }) {
   const over = value > max;
   return (
-    <span className={`tabular-nums ${over ? "text-[--color-danger]" : "text-[--color-faint]"}`}>
+    <span className={`tabular-nums ${over ? "text-[var(--color-danger)]" : "text-[var(--color-faint)]"}`}>
       {label} {value}/{max}
       {over ? " — too long" : ""}
     </span>
@@ -511,7 +511,7 @@ function GoogleAdPreview({ draft, brand }: { draft: StudioDraft; brand: Brand })
 
   return (
     <div className="flex flex-col items-center">
-      <div className="w-[420px] max-w-full overflow-hidden rounded-xl border border-[--color-line] bg-white shadow-[0_24px_48px_-24px_rgba(0,0,0,0.9)]">
+      <div className="w-[420px] max-w-full overflow-hidden rounded-xl border border-[var(--color-line)] bg-white shadow-[0_24px_48px_-24px_rgba(0,0,0,0.9)]">
         <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-3">
           <Search size={14} strokeWidth={2} aria-hidden className="text-slate-400" />
           <span className="flex-1 text-[12px] text-slate-400">

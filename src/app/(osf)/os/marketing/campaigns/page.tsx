@@ -91,7 +91,7 @@ export default async function CampaignsPage({ searchParams }: { searchParams: Pr
       />
 
       {error && (
-        <div className="mb-5 flex items-start gap-2 rounded-xl border border-[rgba(244,105,95,0.3)] bg-[rgba(244,105,95,0.08)] px-4 py-3 text-sm text-[--color-danger]">
+        <div className="mb-5 flex items-start gap-2 rounded-xl border border-[rgba(244,105,95,0.3)] bg-[rgba(244,105,95,0.08)] px-4 py-3 text-sm text-[var(--color-danger)]">
           <AlertCircle size={15} strokeWidth={2} aria-hidden className="mt-0.5 shrink-0" />
           {error}
         </div>
@@ -132,7 +132,7 @@ export default async function CampaignsPage({ searchParams }: { searchParams: Pr
         ) : (
           <div className="-mx-5 overflow-x-auto">
             <table className="w-full min-w-[1180px]">
-              <thead className="border-b border-[--color-line]">
+              <thead className="border-b border-[var(--color-line)]">
                 <tr>
                   <th className="th">Campaign</th>
                   <th className="th">Status</th>
@@ -148,12 +148,12 @@ export default async function CampaignsPage({ searchParams }: { searchParams: Pr
                   <th className="th text-right">ROAS</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[--color-line]">
+              <tbody className="divide-y divide-[var(--color-line)]">
                 {rows.map((c) => (
                   <tr key={c.id} className="row-hover">
                     <td className="td">
                       <span className="font-medium">{c.name}</span>
-                      <span className="block text-xs text-[--color-muted]">{humanise(c.platform)}</span>
+                      <span className="block text-xs text-[var(--color-muted)]">{humanise(c.platform)}</span>
                       <span className="mt-1.5 block w-24">
                         <Meter value={c.spent_inr} max={maxSpend} />
                       </span>
@@ -168,7 +168,7 @@ export default async function CampaignsPage({ searchParams }: { searchParams: Pr
                     <td className="td text-right tabular-nums">{formatNumber(c.leads)}</td>
                     <td className="td text-right tabular-nums">
                       {formatNumber(c.qualified_leads)}
-                      <span className="ml-1.5 text-xs text-[--color-faint]">
+                      <span className="ml-1.5 text-xs text-[var(--color-faint)]">
                         {c.leads > 0 ? formatPercent((c.qualified_leads / c.leads) * 100, 0) : "—"}
                       </span>
                     </td>
@@ -179,7 +179,7 @@ export default async function CampaignsPage({ searchParams }: { searchParams: Pr
                     <td className="td whitespace-nowrap text-right tabular-nums">{rupees(c.cpl_inr)}</td>
                     <td
                       className={`td text-right tabular-nums ${
-                        c.roas !== null && c.roas >= 1 ? "text-[--color-success]" : ""
+                        c.roas !== null && c.roas >= 1 ? "text-[var(--color-success)]" : ""
                       }`}
                     >
                       {multiple(c.roas)}
@@ -284,7 +284,7 @@ export default async function CampaignsPage({ searchParams }: { searchParams: Pr
                 Update figures
               </button>
 
-              <p className="text-xs leading-relaxed text-[--color-faint]">
+              <p className="text-xs leading-relaxed text-[var(--color-faint)]">
                 These are cumulative totals, not increments — whatever you enter replaces the stored value.
                 There is no history, so a previous figure cannot be recovered.
               </p>
@@ -294,7 +294,7 @@ export default async function CampaignsPage({ searchParams }: { searchParams: Pr
       </div>
 
       <Card gold title="Why this is typed in by hand" className="mt-5">
-        <p className="text-sm leading-relaxed text-[--color-muted]">
+        <p className="text-sm leading-relaxed text-[var(--color-muted)]">
           Pulling spend automatically needs a Meta Marketing API app with <code className="rounded bg-black/40 px-1.5 py-0.5 text-xs">ads_read</code>{" "}
           on a reviewed business, or a Google Ads developer token plus an OAuth flow. Neither exists in this
           codebase and no credential for either is in the environment, so no button here could do it. Manual

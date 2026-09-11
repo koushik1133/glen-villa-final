@@ -7,10 +7,10 @@
  * need to survive into the UI without being flattened together.
  */
 export const SENTIMENT_TONES: Record<string, string> = {
-  positive: "bg-[rgba(94,201,141,0.14)] text-[--color-success]",
-  neutral: "bg-[--color-raised] text-[--color-muted]",
-  negative: "bg-[rgba(244,105,95,0.14)] text-[--color-danger]",
-  unknown: "bg-[--color-raised] text-[--color-faint]",
+  positive: "bg-[rgba(94,201,141,0.14)] text-[var(--color-success)]",
+  neutral: "bg-[var(--color-raised)] text-[var(--color-muted)]",
+  negative: "bg-[rgba(244,105,95,0.14)] text-[var(--color-danger)]",
+  unknown: "bg-[var(--color-raised)] text-[var(--color-faint)]",
 };
 
 export function SentimentPill({ value }: { value: string | null }) {

@@ -137,18 +137,18 @@ export function StudioComposer({
                     aria-pressed={on}
                     className={`rounded-xl border px-3 py-2 text-left transition ${
                       on
-                        ? "border-[--color-gold-line] bg-[--color-gold-soft]"
-                        : "border-[--color-line] bg-[--color-void] hover:border-[--color-line-strong]"
+                        ? "border-[var(--color-gold-line)] bg-[var(--color-gold-soft)]"
+                        : "border-[var(--color-line)] bg-[var(--color-void)] hover:border-[var(--color-line-strong)]"
                     }`}
                   >
                     <span
                       className={`block text-[12px] font-semibold ${
-                        on ? "text-[--color-gold-100]" : "text-[--color-ink]"
+                        on ? "text-[var(--color-gold-100)]" : "text-[var(--color-ink)]"
                       }`}
                     >
                       {f.label}
                     </span>
-                    <span className="mt-0.5 block text-[10px] leading-tight text-[--color-faint]">
+                    <span className="mt-0.5 block text-[10px] leading-tight text-[var(--color-faint)]">
                       {f.hint}
                     </span>
                   </button>
@@ -204,13 +204,13 @@ export function StudioComposer({
           </button>
 
           {error && (
-            <p className="flex items-start gap-1.5 text-xs text-[--color-danger]">
+            <p className="flex items-start gap-1.5 text-xs text-[var(--color-danger)]">
               <AlertCircle size={13} strokeWidth={2} aria-hidden className="mt-0.5 shrink-0" />
               {error}
             </p>
           )}
 
-          <p className="flex items-start gap-1.5 border-t border-[--color-line] pt-3 text-[11px] leading-relaxed text-[--color-faint]">
+          <p className="flex items-start gap-1.5 border-t border-[var(--color-line)] pt-3 text-[11px] leading-relaxed text-[var(--color-faint)]">
             <Sparkles size={12} strokeWidth={1.75} aria-hidden className="mt-0.5 shrink-0" />
             {geminiConfigured
               ? "GEMINI_API_KEY is set — copy is written by Gemini. If a call fails, the fixed template is used instead and the draft is badged as such."
@@ -232,10 +232,10 @@ export function StudioComposer({
         className="xl:col-span-7"
       >
         {mismatch && (
-          <p className="mb-4 rounded-xl border border-[--color-line] bg-[--color-void]/50 px-3.5 py-2.5 text-xs text-[--color-muted]">
-            Showing a <span className="text-[--color-ink]">{formats.label(preview.format)}</span> draft.
+          <p className="mb-4 rounded-xl border border-[var(--color-line)] bg-[var(--color-void)]/50 px-3.5 py-2.5 text-xs text-[var(--color-muted)]">
+            Showing a <span className="text-[var(--color-ink)]">{formats.label(preview.format)}</span> draft.
             Generate to see this brief as a{" "}
-            <span className="text-[--color-ink]">{formats.label(format).toLowerCase()}</span>.
+            <span className="text-[var(--color-ink)]">{formats.label(format).toLowerCase()}</span>.
           </p>
         )}
         <div className={busy ? "pointer-events-none opacity-50 transition-opacity" : "transition-opacity"}>
@@ -258,7 +258,7 @@ function Labelled({
   return (
     <label className="block">
       <span className="label">{label}</span>
-      {hint && <span className="mb-1.5 mt-0.5 block text-[11px] text-[--color-faint]">{hint}</span>}
+      {hint && <span className="mb-1.5 mt-0.5 block text-[11px] text-[var(--color-faint)]">{hint}</span>}
       <span className={`block ${hint ? "" : "mt-1.5"}`}>{children}</span>
     </label>
   );

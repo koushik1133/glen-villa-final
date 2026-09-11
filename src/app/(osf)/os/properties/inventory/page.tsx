@@ -81,7 +81,7 @@ export default async function InventoryPage({
       />
 
       {error && (
-        <div className="mb-6 flex items-start gap-2.5 rounded-2xl border border-[rgba(244,105,95,0.3)] bg-[rgba(244,105,95,0.08)] p-4 text-sm text-[--color-danger]">
+        <div className="mb-6 flex items-start gap-2.5 rounded-2xl border border-[rgba(244,105,95,0.3)] bg-[rgba(244,105,95,0.08)] p-4 text-sm text-[var(--color-danger)]">
           <AlertTriangle size={16} strokeWidth={2} className="mt-0.5 shrink-0" aria-hidden />
           <span>{error}</span>
         </div>
@@ -120,9 +120,9 @@ export default async function InventoryPage({
               </Link>
             }
           >
-            <span className="block font-medium text-[--color-ink]">No units are loaded.</span>
+            <span className="block font-medium text-[var(--color-ink)]">No units are loaded.</span>
             <span className="mx-auto mt-2 block max-w-xl">
-              <code className="rounded bg-[--color-canvas] px-1.5 py-0.5 text-xs">villa_units</code> is
+              <code className="rounded bg-[var(--color-canvas)] px-1.5 py-0.5 text-xs">villa_units</code> is
               empty, so there is no availability to show — and the AI agent will decline to answer
               &ldquo;what&rsquo;s left?&rdquo; and hand the question to sales instead. That refusal is
               correct. Load the approved inventory sheet with the form above and the board, the counts
@@ -161,15 +161,15 @@ function findUnit(
 
 function Legend({ className = "" }: { className?: string }) {
   return (
-    <div className={`flex flex-wrap items-center gap-x-5 gap-y-2 rounded-xl border border-[--color-line] bg-[--color-canvas] px-4 py-3 ${className}`}>
+    <div className={`flex flex-wrap items-center gap-x-5 gap-y-2 rounded-xl border border-[var(--color-line)] bg-[var(--color-canvas)] px-4 py-3 ${className}`}>
       <span className="label">Status</span>
       {UNIT_STATUSES.map((status) => (
-        <span key={status} className="flex items-center gap-1.5 text-xs text-[--color-muted]">
+        <span key={status} className="flex items-center gap-1.5 text-xs text-[var(--color-muted)]">
           <span className={`h-2.5 w-2.5 rounded-sm ${UNIT_STATUS_DOT[status]}`} aria-hidden />
           {UNIT_STATUS_LABELS[status]}
         </span>
       ))}
-      <span className="ml-auto text-[11px] text-[--color-faint]">
+      <span className="ml-auto text-[11px] text-[var(--color-faint)]">
         Select a tile to change its status
       </span>
     </div>
@@ -180,13 +180,13 @@ function CountStrip({ counts, total }: { counts: StatusCounts; total: number }) 
   return (
     <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1">
       {UNIT_STATUSES.filter((status) => counts[status] > 0).map((status) => (
-        <span key={status} className="flex items-center gap-1.5 text-[11px] text-[--color-muted]">
+        <span key={status} className="flex items-center gap-1.5 text-[11px] text-[var(--color-muted)]">
           <span className={`h-2 w-2 rounded-sm ${UNIT_STATUS_DOT[status]}`} aria-hidden />
           {UNIT_STATUS_LABELS[status]}
-          <span className="tabular-nums text-[--color-ink]">{counts[status]}</span>
+          <span className="tabular-nums text-[var(--color-ink)]">{counts[status]}</span>
         </span>
       ))}
-      {total === 0 && <span className="text-[11px] text-[--color-faint]">No units loaded</span>}
+      {total === 0 && <span className="text-[11px] text-[var(--color-faint)]">No units loaded</span>}
     </div>
   );
 }
@@ -206,7 +206,7 @@ function ProjectSection({ project, selectedId }: { project: ProjectBoard; select
       actions={
         <Link
           href={`/os/properties/projects/${project.slug}`}
-          className="text-xs text-[--color-gold-300] underline underline-offset-2"
+          className="text-xs text-[var(--color-gold-300)] underline underline-offset-2"
         >
           Dossier
         </Link>
@@ -217,8 +217,8 @@ function ProjectSection({ project, selectedId }: { project: ProjectBoard; select
           <CountStrip counts={project.counts} total={project.total} />
           <div className="min-w-[180px] flex-1">
             <div className="mb-1 flex items-baseline justify-between text-[11px]">
-              <span className="text-[--color-faint]">Absorption</span>
-              <span className="tabular-nums text-[--color-gold-300]">{formatPercent(pct, 0)}</span>
+              <span className="text-[var(--color-faint)]">Absorption</span>
+              <span className="tabular-nums text-[var(--color-gold-300)]">{formatPercent(pct, 0)}</span>
             </div>
             <Meter value={absorbed} max={project.total} />
           </div>
@@ -245,31 +245,31 @@ function ProjectSection({ project, selectedId }: { project: ProjectBoard; select
 function TypeSection({ type, selectedId }: { type: TypeBoard; selectedId?: string }) {
   return (
     <section>
-      <header className="mb-2.5 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1.5 border-b border-[--color-line] pb-2">
+      <header className="mb-2.5 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1.5 border-b border-[var(--color-line)] pb-2">
         <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-          <h3 className="text-sm font-semibold text-[--color-ink]">{type.name}</h3>
-          <span className="text-[11px] tabular-nums text-[--color-muted]">
+          <h3 className="text-sm font-semibold text-[var(--color-ink)]">{type.name}</h3>
+          <span className="text-[11px] tabular-nums text-[var(--color-muted)]">
             {type.plotAreaSqyd ? `${formatNumber(type.plotAreaSqyd)} yd²` : null}
             {type.plotAreaSqyd && type.builtUpSft ? " · " : null}
             {type.builtUpSft ? `${formatNumber(type.builtUpSft)} sft` : null}
           </span>
           {type.priceInr !== null ? (
-            <span className="text-[11px] tabular-nums text-[--color-gold-300]">
+            <span className="text-[11px] tabular-nums text-[var(--color-gold-300)]">
               {formatInr(type.priceInr)}
             </span>
           ) : (
-            <span className="text-[11px] text-[--color-warm]">Price confirmed by sales</span>
+            <span className="text-[11px] text-[var(--color-warm)]">Price confirmed by sales</span>
           )}
         </div>
         <CountStrip counts={type.counts} total={type.total} />
       </header>
 
       {type.verificationNote && (
-        <p className="mb-2.5 text-[11px] leading-relaxed text-[--color-warm]">{type.verificationNote}</p>
+        <p className="mb-2.5 text-[11px] leading-relaxed text-[var(--color-warm)]">{type.verificationNote}</p>
       )}
 
       {type.units.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-[--color-line] px-3 py-5 text-center text-xs text-[--color-faint]">
+        <p className="rounded-xl border border-dashed border-[var(--color-line)] px-3 py-5 text-center text-xs text-[var(--color-faint)]">
           No units loaded for this configuration — availability cannot be quoted for it.
         </p>
       ) : (
@@ -307,7 +307,7 @@ function UnitTile({ unit, selected }: { unit: UnitRow; selected: boolean }) {
         aria-label={title}
         className={`relative flex aspect-square flex-col items-center justify-center rounded-lg border text-center transition hover:brightness-125 ${
           UNIT_STATUS_TILE[status]
-        } ${selected ? "ring-2 ring-[--color-gold-500] ring-offset-2 ring-offset-[--color-canvas]" : ""}`}
+        } ${selected ? "ring-2 ring-[var(--color-gold-500)] ring-offset-2 ring-offset-[var(--color-canvas)]" : ""}`}
       >
         <span className="max-w-full truncate px-1 text-[11px] font-semibold tabular-nums">
           {unit.unit_number}
@@ -354,45 +354,45 @@ function UnitInspector({
           </Field>
           <Field label="Facing">
             {unit.facing ? (
-              <span className="inline-flex items-center gap-1 text-sm text-[--color-ink]">
-                <Compass size={12} strokeWidth={2} className="text-[--color-muted]" aria-hidden />
+              <span className="inline-flex items-center gap-1 text-sm text-[var(--color-ink)]">
+                <Compass size={12} strokeWidth={2} className="text-[var(--color-muted)]" aria-hidden />
                 {unit.facing}
               </span>
             ) : (
-              <span className="text-sm text-[--color-faint]">Not recorded</span>
+              <span className="text-sm text-[var(--color-faint)]">Not recorded</span>
             )}
           </Field>
           <Field label="Price">
             <span
-              className={`text-sm tabular-nums ${unit.price_inr ? "text-[--color-gold-300]" : "text-[--color-faint]"}`}
+              className={`text-sm tabular-nums ${unit.price_inr ? "text-[var(--color-gold-300)]" : "text-[var(--color-faint)]"}`}
             >
               {unit.price_inr ? formatInr(unit.price_inr) : "Not set"}
             </span>
           </Field>
           <Field label="Plot area">
-            <span className="text-sm tabular-nums text-[--color-ink]">
+            <span className="text-sm tabular-nums text-[var(--color-ink)]">
               {unit.plot_area_sqyd ? `${formatNumber(unit.plot_area_sqyd)} yd²` : "—"}
             </span>
           </Field>
           <Field label="Chargeable extra">
-            <span className="text-sm tabular-nums text-[--color-ink]">
+            <span className="text-sm tabular-nums text-[var(--color-ink)]">
               {unit.chargeable_extra_sqyd ? `${formatNumber(unit.chargeable_extra_sqyd)} yd²` : "—"}
             </span>
           </Field>
           <Field label="Saleable">
-            <span className="text-sm tabular-nums text-[--color-ink]">
+            <span className="text-sm tabular-nums text-[var(--color-ink)]">
               {unit.saleable_sft ? `${formatNumber(unit.saleable_sft)} sft` : "—"}
             </span>
           </Field>
           <Field label="Corner plot">
-            <span className="text-sm text-[--color-ink]">{unit.is_corner ? "Yes" : "No"}</span>
+            <span className="text-sm text-[var(--color-ink)]">{unit.is_corner ? "Yes" : "No"}</span>
           </Field>
           <Field label="Last changed">
-            <span className="text-sm text-[--color-muted]">{timeAgo(unit.updated_at)}</span>
+            <span className="text-sm text-[var(--color-muted)]">{timeAgo(unit.updated_at)}</span>
           </Field>
         </dl>
 
-        <form action="/api/osf/properties" method="POST" className="space-y-2.5 rounded-xl border border-[--color-line] bg-[--color-void]/50 p-3.5">
+        <form action="/api/osf/properties" method="POST" className="space-y-2.5 rounded-xl border border-[var(--color-line)] bg-[var(--color-void)]/50 p-3.5">
           <input type="hidden" name="action" value="unit-status" />
           <input type="hidden" name="unitId" value={unit.id} />
           <input type="hidden" name="next" value={`${BASE}?unit=${unit.id}`} />
@@ -409,7 +409,7 @@ function UnitInspector({
           <button type="submit" className="btn-gold w-full justify-center">
             Save status
           </button>
-          <p className="text-[11px] leading-relaxed text-[--color-muted]">
+          <p className="text-[11px] leading-relaxed text-[var(--color-muted)]">
             This changes what the agent tells the next customer who asks, so the change is written to
             the activity log with who made it.
           </p>
@@ -442,7 +442,7 @@ function AddUnitForm({ board }: { board: AvailabilityBoard }) {
       <Card>
         <Empty>
           There is no project to add a unit to. Load{" "}
-          <code className="rounded bg-[--color-canvas] px-1.5 py-0.5 text-xs">villa_projects</code>{" "}
+          <code className="rounded bg-[var(--color-canvas)] px-1.5 py-0.5 text-xs">villa_projects</code>{" "}
           first.
         </Empty>
       </Card>
@@ -451,12 +451,12 @@ function AddUnitForm({ board }: { board: AvailabilityBoard }) {
 
   return (
     <details className="card">
-      <summary className="cursor-pointer list-none text-sm font-semibold text-[--color-ink]">
+      <summary className="cursor-pointer list-none text-sm font-semibold text-[var(--color-ink)]">
         <span className="inline-flex items-center gap-2">
-          <Plus size={14} strokeWidth={2} className="text-[--color-gold-300]" aria-hidden />
+          <Plus size={14} strokeWidth={2} className="text-[var(--color-gold-300)]" aria-hidden />
           Add a unit
         </span>
-        <span className="ml-2 text-xs font-normal text-[--color-muted]">
+        <span className="ml-2 text-xs font-normal text-[var(--color-muted)]">
           One plot at a time, from the approved inventory sheet.
         </span>
       </summary>
@@ -552,8 +552,8 @@ function AddUnitForm({ board }: { board: AvailabilityBoard }) {
         </div>
 
         <div className="flex items-end lg:col-span-3">
-          <label className="flex items-center gap-2 pb-2.5 text-sm text-[--color-ink]">
-            <input type="checkbox" name="isCorner" className="h-4 w-4 accent-[--color-gold-500]" />
+          <label className="flex items-center gap-2 pb-2.5 text-sm text-[var(--color-ink)]">
+            <input type="checkbox" name="isCorner" className="h-4 w-4 accent-[var(--color-gold-500)]" />
             Corner plot
           </label>
         </div>
@@ -565,7 +565,7 @@ function AddUnitForm({ board }: { board: AvailabilityBoard }) {
           </button>
         </div>
 
-        <p className="text-xs leading-relaxed text-[--color-muted] lg:col-span-12">
+        <p className="text-xs leading-relaxed text-[var(--color-muted)] lg:col-span-12">
           A unit added here becomes something the AI will quote by number. Leave the price blank if it
           has not been approved — a blank makes the agent defer, a wrong number makes it mislead.
         </p>

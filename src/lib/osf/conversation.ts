@@ -3,6 +3,7 @@ import { logActivity } from "./activities";
 import { runAgent, type RunResult } from "./agent";
 import { conversationLockKey, withLock } from "./locks";
 import type { AgentReply, Conversation, Lead } from "./types";
+import { storeInboundMedia, type InboundMedia } from "./whatsapp/inbound-media";
 
 /**
  * The single inbound path.
@@ -157,7 +158,7 @@ export async function getOrCreateConversation(
 
 export type InboundOutcome =
   | { status: "handled"; result: RunResult; lead: Lead }
-  | { status: "skipped"; reason: "duplicate" | "opted_out" | "ai_paused" | "busy"; lead: Lead };
+  | { status: "skipped"; reason: "duplicate" | "opted_out" | "ai_paused" | "busy" | "not_addressed"; lead: Lead };
 
 /**
  * Processes one inbound customer message end to end.
@@ -175,6 +176,18 @@ export async function handleInbound(params: {
   channel?: string;
   waMessageId?: string | null;
   attribution?: InboundAttribution;
+  /**
+   * What the customer actually sent, when it was not plain text. Stored
+   * alongside the message so the thread keeps the voice note or the document
+   * itself, not only the transcript or the caption.
+   */
+  media?: InboundMedia | null;
+  /**
+   * False when the caller has decided the agent must stay silent on this one
+   * (e.g. a personal-number trigger word was not used). The message is still
+   * recorded — staying silent is not the same as the message never happening.
+   */
+  reply?: boolean;
   deliver: (reply: AgentReply) => Promise<void>;
 }): Promise<InboundOutcome> {
   const supabase = db();
@@ -189,6 +202,15 @@ export async function handleInbound(params: {
   });
   const conversation = await getOrCreateConversation(lead.id, channel);
 
+  // Upload before the insert so the row carries the path from the start — a
+  // message that pointed at a file only after a second write would be a window
+  // in which the thread showed a voice note with nothing behind it. A failed
+  // upload yields null and the message is still recorded.
+  const mediaPath = params.media ? await storeInboundMedia(lead.id, params.media) : null;
+  const mediaColumns = params.media
+    ? { media_kind: params.media.kind, media_url: mediaPath }
+    : {};
+
   // Meta redelivers on any non-200, so the same message can arrive twice.
   // The unique index on wa_message_id makes this idempotent.
   if (params.waMessageId) {
@@ -198,6 +220,7 @@ export async function handleInbound(params: {
       role: "customer",
       body: params.text,
       wa_message_id: params.waMessageId,
+      ...mediaColumns,
     });
     if (error) {
       // 23505 = unique violation = we already answered this one.
@@ -212,7 +235,14 @@ export async function handleInbound(params: {
       lead_id: lead.id,
       role: "customer",
       body: params.text,
+      ...mediaColumns,
     });
+  }
+
+  // Recorded above, deliberately not answered. Same shape as every other
+  // "stored but no reply" outcome so callers need no special case.
+  if (params.reply === false) {
+    return { status: "skipped", reason: "not_addressed", lead };
   }
 
   // Section 25: an opt-out is absolute. Record the message, send nothing.

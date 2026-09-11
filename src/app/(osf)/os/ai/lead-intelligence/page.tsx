@@ -40,10 +40,10 @@ function FactorBreakdown({ lead }: { lead: ScoredLead }) {
         return (
           <div key={factor.key}>
             <div className="mb-1 flex items-baseline justify-between gap-3 text-[11px]">
-              <span className="text-[--color-muted]">{factor.label}</span>
-              <span className="tabular-nums text-[--color-ink]">
+              <span className="text-[var(--color-muted)]">{factor.label}</span>
+              <span className="tabular-nums text-[var(--color-ink)]">
                 {points > 0 ? Math.round(points) : "—"}
-                <span className="text-[--color-faint]"> / {factor.max}</span>
+                <span className="text-[var(--color-faint)]"> / {factor.max}</span>
               </span>
             </div>
             <Meter value={points} max={factor.max} tone={points > 0 ? "gold" : "info"} />
@@ -61,22 +61,22 @@ function LeadCard({ lead }: { lead: ScoredLead }) {
         <div className="min-w-0">
           <Link
             href={`/os/crm/leads/${lead.id}`}
-            className="inline-flex items-center gap-1 text-sm font-semibold text-[--color-ink] hover:text-[--color-gold-100]"
+            className="inline-flex items-center gap-1 text-sm font-semibold text-[var(--color-ink)] hover:text-[var(--color-gold-100)]"
           >
             {lead.name}
-            <ArrowUpRight className="h-3.5 w-3.5 text-[--color-faint]" aria-hidden />
+            <ArrowUpRight className="h-3.5 w-3.5 text-[var(--color-faint)]" aria-hidden />
           </Link>
-          <p className="mt-1 text-[11px] capitalize text-[--color-muted]">
+          <p className="mt-1 text-[11px] capitalize text-[var(--color-muted)]">
             {stageLabel(lead.pipelineStage)} · {lead.source}
             {lead.campaign ? ` · ${lead.campaign}` : ""}
           </p>
-          <p className="mt-0.5 text-[11px] text-[--color-faint]">
+          <p className="mt-0.5 text-[11px] text-[var(--color-faint)]">
             {lead.owner ? `Owned by ${lead.owner}` : "No owner assigned"} · last contact{" "}
             {timeAgo(lead.lastContactAt)}
           </p>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1.5">
-          <span className="text-2xl font-semibold tabular-nums text-[--color-gold-300]">
+          <span className="text-2xl font-semibold tabular-nums text-[var(--color-gold-300)]">
             {lead.score}
           </span>
           <TemperaturePill value={lead.temperature} />
@@ -87,7 +87,7 @@ function LeadCard({ lead }: { lead: ScoredLead }) {
         <FactorBreakdown lead={lead} />
       </div>
 
-      <p className="mt-3 border-t border-[--color-line] pt-2.5 text-[11px] leading-relaxed text-[--color-faint]">
+      <p className="mt-3 border-t border-[var(--color-line)] pt-2.5 text-[11px] leading-relaxed text-[var(--color-faint)]">
         {lead.reconciled
           ? `The lead row now implies ${lead.profileSubtotal} profile points, more than the ${lead.score} stored — the row was edited after its last scored turn, or the 100-point cap bit. Bands are scaled to fit rather than shown wider than the score they explain.`
           : `Profile explains ${lead.profileSubtotal} of ${lead.score}. The remaining ${lead.score - lead.profileSubtotal} came from what happened in the conversation.`}
@@ -99,27 +99,27 @@ function LeadCard({ lead }: { lead: ScoredLead }) {
 function FlagList({ leads, empty }: { leads: ScoredLead[]; empty: string }) {
   if (leads.length === 0) return <Empty>{empty}</Empty>;
   return (
-    <ul className="divide-y divide-[--color-line]">
+    <ul className="divide-y divide-[var(--color-line)]">
       {leads.map((lead) => (
         <li key={lead.id} className="flex items-center justify-between gap-3 py-2.5 first:pt-0">
           <div className="min-w-0">
             <Link
               href={`/os/crm/leads/${lead.id}`}
-              className="block truncate text-sm text-[--color-ink] hover:text-[--color-gold-100]"
+              className="block truncate text-sm text-[var(--color-ink)] hover:text-[var(--color-gold-100)]"
             >
               {lead.name}
             </Link>
-            <p className="text-[11px] capitalize text-[--color-faint]">
+            <p className="text-[11px] capitalize text-[var(--color-faint)]">
               {stageLabel(lead.pipelineStage)} · {lead.source}
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-2.5">
             {lead.daysSinceContact !== null && (
-              <span className="text-[11px] tabular-nums text-[--color-muted]">
+              <span className="text-[11px] tabular-nums text-[var(--color-muted)]">
                 {lead.daysSinceContact}d quiet
               </span>
             )}
-            <span className="text-sm font-semibold tabular-nums text-[--color-gold-300]">
+            <span className="text-sm font-semibold tabular-nums text-[var(--color-gold-300)]">
               {lead.score}
             </span>
           </div>
@@ -154,10 +154,10 @@ export default async function LeadIntelligencePage() {
           sub="Every score broken into the factors that produced it."
         />
         <Empty>
-          <span className="font-medium text-[--color-ink]">No leads scored yet.</span>
+          <span className="font-medium text-[var(--color-ink)]">No leads scored yet.</span>
           <span className="mx-auto mt-2 block max-w-lg">
             Scores are written by the WhatsApp agent as a conversation progresses. Once a lead
-            exists in <code className="rounded bg-[--color-canvas] px-1.5 py-0.5 text-xs">villa_leads</code>
+            exists in <code className="rounded bg-[var(--color-canvas)] px-1.5 py-0.5 text-xs">villa_leads</code>
             , its breakdown appears here.
           </span>
         </Empty>
@@ -225,7 +225,7 @@ export default async function LeadIntelligencePage() {
         <Card
           title={`High score, no owner`}
           hint={`Live leads scoring ${HIGH_SCORE} or more with nobody assigned. Booked, lost and opted-out leads are excluded.`}
-          actions={<UserPlus className="h-4 w-4 text-[--color-gold-500]" aria-hidden />}
+          actions={<UserPlus className="h-4 w-4 text-[var(--color-gold-500)]" aria-hidden />}
         >
           <FlagList
             leads={intel.highScoreUnassigned}
@@ -241,7 +241,7 @@ export default async function LeadIntelligencePage() {
         <Card
           title="High score, no recent contact"
           hint={`Scoring ${HIGH_SCORE} or more and silent for ${NEGLECT_DAYS} days or longer. Longest silence first.`}
-          actions={<Clock className="h-4 w-4 text-[--color-warm]" aria-hidden />}
+          actions={<Clock className="h-4 w-4 text-[var(--color-warm)]" aria-hidden />}
         >
           <FlagList
             leads={intel.highScoreNeglected}
@@ -259,12 +259,12 @@ export default async function LeadIntelligencePage() {
           {FACTORS.map((factor) => (
             <div key={factor.key}>
               <dt className="flex items-baseline justify-between gap-3">
-                <span className="text-xs font-semibold text-[--color-ink]">{factor.label}</span>
-                <span className="text-[11px] tabular-nums text-[--color-gold-300]">
+                <span className="text-xs font-semibold text-[var(--color-ink)]">{factor.label}</span>
+                <span className="text-[11px] tabular-nums text-[var(--color-gold-300)]">
                   up to {factor.max}
                 </span>
               </dt>
-              <dd className="mt-1 text-[11px] leading-relaxed text-[--color-muted]">
+              <dd className="mt-1 text-[11px] leading-relaxed text-[var(--color-muted)]">
                 {factor.basis}
               </dd>
             </div>
@@ -274,7 +274,7 @@ export default async function LeadIntelligencePage() {
 
       <section>
         <div className="mb-3 flex flex-wrap items-baseline justify-between gap-3">
-          <h2 className="text-sm font-semibold text-[--color-ink]">
+          <h2 className="text-sm font-semibold text-[var(--color-ink)]">
             Top {Math.min(EXPLAINED, explained.length)} scores, explained
           </h2>
           <Badge>{formatNumber(intel.scanned)} scanned</Badge>

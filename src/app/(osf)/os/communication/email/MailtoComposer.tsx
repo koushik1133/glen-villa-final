@@ -103,19 +103,19 @@ export default function MailtoComposer({
             placeholder={"Hi {{name}},\n\nFollowing up on the 4 BHK you asked about…"}
             className="field mt-1.5 resize-y font-sans leading-relaxed"
           />
-          <p className="mt-1.5 text-[11px] text-[--color-faint]">
-            <code className="rounded bg-[--color-canvas] px-1 py-0.5">{"{{name}}"}</code> and{" "}
-            <code className="rounded bg-[--color-canvas] px-1 py-0.5">{"{{email}}"}</code> are filled
+          <p className="mt-1.5 text-[11px] text-[var(--color-faint)]">
+            <code className="rounded bg-[var(--color-canvas)] px-1 py-0.5">{"{{name}}"}</code> and{" "}
+            <code className="rounded bg-[var(--color-canvas)] px-1 py-0.5">{"{{email}}"}</code> are filled
             from this lead&rsquo;s own record before the draft opens.
           </p>
         </div>
       </div>
 
-      <aside className="flex flex-col gap-3 rounded-xl border border-[--color-line] bg-[--color-void]/50 p-4">
+      <aside className="flex flex-col gap-3 rounded-xl border border-[var(--color-line)] bg-[var(--color-void)]/50 p-4">
         <p className="label">Preview</p>
 
         {blocked ? (
-          <p className="flex items-start gap-2 text-xs leading-relaxed text-[--color-danger]">
+          <p className="flex items-start gap-2 text-xs leading-relaxed text-[var(--color-danger)]">
             <Ban size={13} strokeWidth={2} className="mt-0.5 shrink-0" aria-hidden />
             {lead
               ? "This lead opted out. Nothing may be sent to them on any channel, so no draft is offered."
@@ -124,19 +124,19 @@ export default function MailtoComposer({
         ) : (
           <>
             <div className="space-y-2 text-xs">
-              <p className="text-[--color-muted]">
-                <span className="text-[--color-faint]">To </span>
-                <span className="text-[--color-ink]">{lead.email}</span>
+              <p className="text-[var(--color-muted)]">
+                <span className="text-[var(--color-faint)]">To </span>
+                <span className="text-[var(--color-ink)]">{lead.email}</span>
               </p>
-              <p className="text-[--color-muted]">
-                <span className="text-[--color-faint]">Subject </span>
-                <span className="text-[--color-ink]">
-                  {filledSubject || <span className="text-[--color-faint]">(empty)</span>}
+              <p className="text-[var(--color-muted)]">
+                <span className="text-[var(--color-faint)]">Subject </span>
+                <span className="text-[var(--color-ink)]">
+                  {filledSubject || <span className="text-[var(--color-faint)]">(empty)</span>}
                 </span>
               </p>
             </div>
-            <p className="max-h-52 overflow-y-auto whitespace-pre-wrap rounded-lg border border-[--color-line] bg-[--color-canvas] p-3 text-xs leading-relaxed text-[--color-ink]">
-              {filledBody || <span className="text-[--color-faint]">Nothing typed yet.</span>}
+            <p className="max-h-52 overflow-y-auto whitespace-pre-wrap rounded-lg border border-[var(--color-line)] bg-[var(--color-canvas)] p-3 text-xs leading-relaxed text-[var(--color-ink)]">
+              {filledBody || <span className="text-[var(--color-faint)]">Nothing typed yet.</span>}
             </p>
           </>
         )}
@@ -150,7 +150,7 @@ export default function MailtoComposer({
           Open in mail app
           <ExternalLink size={12} strokeWidth={2} aria-hidden />
         </a>
-        <p className="text-[11px] leading-relaxed text-[--color-muted]">
+        <p className="text-[11px] leading-relaxed text-[var(--color-muted)]">
           This hands the draft to your own mail client. VillaOS does not send it, does not log it, and
           cannot tell you whether it was opened.
         </p>

@@ -170,7 +170,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
               <DonutChart data={sourceSplit} height={230} />
               <Link
                 href={`/os/analytics/attribution?range=${range}`}
-                className="mt-3 inline-flex items-center gap-1 text-xs text-[--color-muted] transition hover:text-[--color-gold-300]"
+                className="mt-3 inline-flex items-center gap-1 text-xs text-[var(--color-muted)] transition hover:text-[var(--color-gold-300)]"
               >
                 Full attribution, including multi-touch
                 <ArrowUpRight size={12} strokeWidth={2} aria-hidden />
@@ -198,7 +198,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
           hint="Hot leads with no owner. Not filtered by date — an old one is the most urgent, not the least."
           actions={
             attention.length > 0 ? (
-              <span className="pill bg-[rgba(255,122,92,0.14)] text-[--color-hot]">
+              <span className="pill bg-[rgba(255,122,92,0.14)] text-[var(--color-hot)]">
                 <Flame size={11} strokeWidth={2} aria-hidden />
                 {attention.length}
               </span>
@@ -209,17 +209,17 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
           {attention.length === 0 ? (
             <Empty>Every hot lead has an owner.</Empty>
           ) : (
-            <ul className="-my-1 divide-y divide-[--color-line]">
+            <ul className="-my-1 divide-y divide-[var(--color-line)]">
               {attention.map((lead) => (
                 <li key={lead.id} className="group relative flex items-center gap-4 py-3">
                   <div className="min-w-0 flex-1">
                     <Link
                       href={`/os/crm/leads/${lead.id}`}
-                      className="truncate text-sm font-medium text-[--color-ink] after:absolute after:inset-0 group-hover:text-[--color-gold-100]"
+                      className="truncate text-sm font-medium text-[var(--color-ink)] after:absolute after:inset-0 group-hover:text-[var(--color-gold-100)]"
                     >
                       {lead.name ?? lead.phone}
                     </Link>
-                    <p className="mt-0.5 truncate text-xs text-[--color-muted]">
+                    <p className="mt-0.5 truncate text-xs text-[var(--color-muted)]">
                       {lead.budget_max_inr ? `up to ${formatCr(lead.budget_max_inr)} · ` : ""}
                       {humanise(lead.purchase_timeline)} · {timeAgo(lead.last_contact_at)}
                     </p>
@@ -227,7 +227,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
                   <Badge tone={STAGE_TONES[lead.pipeline_stage as PipelineStage] ?? "neutral"}>
                     {humanise(lead.pipeline_stage)}
                   </Badge>
-                  <span className="w-8 shrink-0 text-right text-sm font-semibold tabular-nums text-[--color-gold-300]">
+                  <span className="w-8 shrink-0 text-right text-sm font-semibold tabular-nums text-[var(--color-gold-300)]">
                     {lead.lead_score}
                   </span>
                 </li>
@@ -244,7 +244,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
         actions={
           <Link
             href="/os/crm/rankings"
-            className="inline-flex items-center gap-1 text-xs text-[--color-muted] transition hover:text-[--color-gold-300]"
+            className="inline-flex items-center gap-1 text-xs text-[var(--color-muted)] transition hover:text-[var(--color-gold-300)]"
           >
             All {formatNumber(ranking.totals.all)}
             <ArrowUpRight size={13} strokeWidth={1.75} aria-hidden />
@@ -253,15 +253,15 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
       >
         <div className="mb-4 flex flex-wrap gap-1.5">
           <TemperaturePill value="hot" />
-          <span className="text-xs tabular-nums text-[--color-muted]">
+          <span className="text-xs tabular-nums text-[var(--color-muted)]">
             {formatNumber(ranking.totals.hot)}
           </span>
           <TemperaturePill value="warm" />
-          <span className="text-xs tabular-nums text-[--color-muted]">
+          <span className="text-xs tabular-nums text-[var(--color-muted)]">
             {formatNumber(ranking.totals.warm)}
           </span>
           <TemperaturePill value="cold" />
-          <span className="text-xs tabular-nums text-[--color-muted]">
+          <span className="text-xs tabular-nums text-[var(--color-muted)]">
             {formatNumber(ranking.totals.cold)}
           </span>
         </div>
@@ -271,24 +271,24 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
             here automatically.
           </Empty>
         ) : (
-          <ul className="-my-1 divide-y divide-[--color-line]">
+          <ul className="-my-1 divide-y divide-[var(--color-line)]">
             {ranking.clients.map((c) => (
               <li key={c.id} className="flex flex-wrap items-center gap-x-3 gap-y-1.5 py-2.5">
-                <span className="w-5 shrink-0 text-xs tabular-nums text-[--color-faint]">
+                <span className="w-5 shrink-0 text-xs tabular-nums text-[var(--color-faint)]">
                   {c.rank}
                 </span>
                 <Link
                   href={`/os/crm/leads/${c.id}`}
-                  className="min-w-0 flex-1 truncate text-sm font-medium transition hover:text-[--color-gold-300]"
+                  className="min-w-0 flex-1 truncate text-sm font-medium transition hover:text-[var(--color-gold-300)]"
                 >
                   {c.name ?? c.phone}
                 </Link>
                 <SentimentPill value={c.sentiment} />
                 <TemperaturePill value={c.lead_temperature} />
-                <span className="w-6 shrink-0 text-right text-xs tabular-nums text-[--color-muted]">
+                <span className="w-6 shrink-0 text-right text-xs tabular-nums text-[var(--color-muted)]">
                   {c.lead_score}
                 </span>
-                <span className="w-20 shrink-0 text-right text-xs tabular-nums text-[--color-faint]">
+                <span className="w-20 shrink-0 text-right text-xs tabular-nums text-[var(--color-faint)]">
                   {timeAgo(c.last_contact_at)}
                 </span>
               </li>
@@ -305,22 +305,22 @@ export default async function OverviewPage({ searchParams }: { searchParams: Pro
         {activity.length === 0 ? (
           <Empty>No activity recorded in this period.</Empty>
         ) : (
-          <ul className="-my-1 divide-y divide-[--color-line]">
+          <ul className="-my-1 divide-y divide-[var(--color-line)]">
             {activity.map((row) => (
               <li key={row.id} className="flex flex-wrap items-baseline gap-x-3 gap-y-1 py-3">
-                <span className="label shrink-0 text-[--color-gold-700]">
+                <span className="label shrink-0 text-[var(--color-gold-700)]">
                   {humanise(row.activity_type)}
                 </span>
-                <p className="min-w-0 flex-1 text-sm text-[--color-ink]">{row.description}</p>
+                <p className="min-w-0 flex-1 text-sm text-[var(--color-ink)]">{row.description}</p>
                 {row.villa_leads && (
                   <Link
                     href={`/os/crm/leads/${row.villa_leads.id}`}
-                    className="shrink-0 text-xs text-[--color-muted] underline decoration-[--color-line-strong] underline-offset-2 transition hover:text-[--color-gold-300]"
+                    className="shrink-0 text-xs text-[var(--color-muted)] underline decoration-[var(--color-line-strong)] underline-offset-2 transition hover:text-[var(--color-gold-300)]"
                   >
                     {row.villa_leads.name ?? row.villa_leads.phone}
                   </Link>
                 )}
-                <span className="shrink-0 text-xs tabular-nums text-[--color-faint]">
+                <span className="shrink-0 text-xs tabular-nums text-[var(--color-faint)]">
                   {timeAgo(row.created_at)}
                 </span>
               </li>
@@ -359,21 +359,21 @@ function Checklist() {
             <span
               className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs ${
                 done
-                  ? "bg-[--color-gold-500] text-[--color-void]"
-                  : "border border-[--color-line] text-[--color-muted]"
+                  ? "bg-[var(--color-gold-500)] text-[var(--color-void)]"
+                  : "border border-[var(--color-line)] text-[var(--color-muted)]"
               }`}
             >
               {done ? "✓" : ""}
             </span>
             <div>
               <p className="text-sm font-medium">{label}</p>
-              <p className="text-xs text-[--color-muted]">{hint}</p>
+              <p className="text-xs text-[var(--color-muted)]">{hint}</p>
             </div>
           </li>
         ))}
       </ul>
-      <p className="mt-5 flex items-start gap-2 border-t border-[--color-line] pt-4 text-xs text-[--color-muted]">
-        <AlertTriangle size={13} strokeWidth={1.75} aria-hidden className="mt-0.5 shrink-0 text-[--color-warm]" />
+      <p className="mt-5 flex items-start gap-2 border-t border-[var(--color-line)] pt-4 text-xs text-[var(--color-muted)]">
+        <AlertTriangle size={13} strokeWidth={1.75} aria-hidden className="mt-0.5 shrink-0 text-[var(--color-warm)]" />
         <span>
           Then run <code className="rounded bg-black/40 px-1 py-0.5">supabase/migrations/001_schema.sql</code> in the
           Supabase SQL editor. Until it exists, every page here shows this notice rather than an empty dashboard.

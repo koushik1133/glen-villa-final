@@ -53,7 +53,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen">
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r border-[--color-line] lg:block">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r border-[var(--color-line)] lg:block">
         <Sidebar />
       </aside>
 
@@ -73,7 +73,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
           }`}
         />
         <div
-          className={`absolute inset-y-0 left-0 w-72 max-w-[85vw] border-r border-[--color-line] shadow-[0_0_60px_rgba(0,0,0,0.85)] transition-transform duration-200 ease-out ${
+          className={`absolute inset-y-0 left-0 w-72 max-w-[85vw] border-r border-[var(--color-line)] shadow-[0_0_60px_rgba(0,0,0,0.85)] transition-transform duration-200 ease-out ${
             drawerOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
@@ -81,7 +81,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
             type="button"
             onClick={closeDrawer}
             aria-label="Close navigation"
-            className="absolute right-3 top-4 z-10 grid h-8 w-8 place-items-center rounded-lg text-[--color-faint] transition hover:bg-[--color-raised] hover:text-[--color-ink]"
+            className="absolute right-3 top-4 z-10 grid h-8 w-8 place-items-center rounded-lg text-[var(--color-faint)] transition hover:bg-[var(--color-raised)] hover:text-[var(--color-ink)]"
           >
             <X size={16} strokeWidth={1.75} aria-hidden />
           </button>

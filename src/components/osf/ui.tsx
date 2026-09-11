@@ -17,10 +17,10 @@ export function PageHeader({
   return (
     <header className="mb-7 flex flex-wrap items-start justify-between gap-4">
       <div>
-        <h1 className="font-[family-name:--font-display] text-[28px] leading-tight tracking-tight text-[--color-ink]">
+        <h1 className="font-[family-name:var(--font-display)] text-[28px] leading-tight tracking-tight text-[var(--color-ink)]">
           {title}
         </h1>
-        {sub && <p className="mt-1.5 max-w-2xl text-sm text-[--color-muted]">{sub}</p>}
+        {sub && <p className="mt-1.5 max-w-2xl text-sm text-[var(--color-muted)]">{sub}</p>}
       </div>
       {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
     </header>
@@ -47,8 +47,8 @@ export function Card({
       {(title || actions) && (
         <header className="mb-4 flex items-start justify-between gap-3">
           <div>
-            {title && <h2 className="text-sm font-semibold text-[--color-ink]">{title}</h2>}
-            {hint && <p className="mt-1 text-xs leading-relaxed text-[--color-muted]">{hint}</p>}
+            {title && <h2 className="text-sm font-semibold text-[var(--color-ink)]">{title}</h2>}
+            {hint && <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)]">{hint}</p>}
           </div>
           {actions && <div className="shrink-0">{actions}</div>}
         </header>
@@ -76,26 +76,26 @@ export function Stat({
     <div className={`card ${gold ? "card-gold" : ""}`}>
       <p className="label">{label}</p>
       <div className="mt-2.5 flex items-baseline gap-2">
-        <span className={`stat ${gold ? "text-[--color-gold-300]" : ""}`}>{value}</span>
+        <span className={`stat ${gold ? "text-[var(--color-gold-300)]" : ""}`}>{value}</span>
         {delta !== undefined && delta !== null && (
           <span
             className={`text-xs font-semibold tabular-nums ${
-              delta >= 0 ? "text-[--color-success]" : "text-[--color-danger]"
+              delta >= 0 ? "text-[var(--color-success)]" : "text-[var(--color-danger)]"
             }`}
           >
             {delta >= 0 ? "▲" : "▼"} {Math.abs(delta).toFixed(1)}%
           </span>
         )}
       </div>
-      {sub && <p className="mt-1.5 text-xs text-[--color-muted]">{sub}</p>}
+      {sub && <p className="mt-1.5 text-xs text-[var(--color-muted)]">{sub}</p>}
     </div>
   );
 }
 
 const TEMP_STYLES: Record<string, string> = {
-  hot: "bg-[rgba(255,122,92,0.14)] text-[--color-hot]",
-  warm: "bg-[rgba(239,180,92,0.14)] text-[--color-warm]",
-  cold: "bg-[rgba(125,139,161,0.14)] text-[--color-cold]",
+  hot: "bg-[rgba(255,122,92,0.14)] text-[var(--color-hot)]",
+  warm: "bg-[rgba(239,180,92,0.14)] text-[var(--color-warm)]",
+  cold: "bg-[rgba(125,139,161,0.14)] text-[var(--color-cold)]",
 };
 
 export function TemperaturePill({ value }: { value: string }) {
@@ -108,12 +108,12 @@ export function TemperaturePill({ value }: { value: string }) {
 }
 
 const TONE_STYLES = {
-  neutral: "bg-[--color-raised] text-[--color-muted]",
-  gold: "bg-[--color-gold-soft] text-[--color-gold-300]",
-  success: "bg-[rgba(94,201,141,0.14)] text-[--color-success]",
-  warning: "bg-[rgba(239,180,92,0.14)] text-[--color-warm]",
-  danger: "bg-[rgba(244,105,95,0.14)] text-[--color-danger]",
-  info: "bg-[rgba(109,168,232,0.14)] text-[--color-info]",
+  neutral: "bg-[var(--color-raised)] text-[var(--color-muted)]",
+  gold: "bg-[var(--color-gold-soft)] text-[var(--color-gold-300)]",
+  success: "bg-[rgba(94,201,141,0.14)] text-[var(--color-success)]",
+  warning: "bg-[rgba(239,180,92,0.14)] text-[var(--color-warm)]",
+  danger: "bg-[rgba(244,105,95,0.14)] text-[var(--color-danger)]",
+  info: "bg-[rgba(109,168,232,0.14)] text-[var(--color-info)]",
 } as const;
 
 export type BadgeTone = keyof typeof TONE_STYLES;
@@ -124,8 +124,8 @@ export function Badge({ children, tone = "neutral" }: { children: ReactNode; ton
 
 export function Empty({ children, action }: { children: ReactNode; action?: ReactNode }) {
   return (
-    <div className="rounded-xl border border-dashed border-[--color-line] px-6 py-12 text-center">
-      <p className="text-sm text-[--color-muted]">{children}</p>
+    <div className="rounded-xl border border-dashed border-[var(--color-line)] px-6 py-12 text-center">
+      <p className="text-sm text-[var(--color-muted)]">{children}</p>
       {action && <div className="mt-4 flex justify-center">{action}</div>}
     </div>
   );
@@ -135,17 +135,17 @@ export function Empty({ children, action }: { children: ReactNode; action?: Reac
 export function SetupNotice({ missing, detail }: { missing: string[]; detail?: string }) {
   if (missing.length === 0 && !detail) return null;
   return (
-    <div className="mb-6 rounded-2xl border border-[--color-gold-line] bg-[--color-gold-soft] p-5">
-      <h2 className="text-sm font-semibold text-[--color-gold-300]">Setup needed</h2>
+    <div className="mb-6 rounded-2xl border border-[var(--color-gold-line)] bg-[var(--color-gold-soft)] p-5">
+      <h2 className="text-sm font-semibold text-[var(--color-gold-300)]">Setup needed</h2>
       {missing.length > 0 && (
         <>
-          <p className="mt-1.5 text-sm text-[--color-ink]">
+          <p className="mt-1.5 text-sm text-[var(--color-ink)]">
             Open <code className="rounded bg-black/40 px-1.5 py-0.5 text-xs">.env.local</code> and set:
           </p>
           <ul className="mt-2 space-y-1">
             {missing.map((m) => (
               <li key={m}>
-                <code className="rounded bg-black/40 px-1.5 py-0.5 text-xs text-[--color-gold-100]">
+                <code className="rounded bg-black/40 px-1.5 py-0.5 text-xs text-[var(--color-gold-100)]">
                   {m}
                 </code>
               </li>
@@ -154,7 +154,7 @@ export function SetupNotice({ missing, detail }: { missing: string[]; detail?: s
         </>
       )}
       {detail && (
-        <p className={`text-sm text-[--color-muted] ${missing.length > 0 ? "mt-3" : "mt-1.5"}`}>
+        <p className={`text-sm text-[var(--color-muted)] ${missing.length > 0 ? "mt-3" : "mt-1.5"}`}>
           {detail}
         </p>
       )}
@@ -166,7 +166,7 @@ export function SetupNotice({ missing, detail }: { missing: string[]; detail?: s
 export function Meter({ value, max, tone = "gold" }: { value: number; max: number; tone?: "gold" | "info" }) {
   const pct = max > 0 ? Math.min(100, (value / max) * 100) : 0;
   return (
-    <div className="h-1.5 overflow-hidden rounded-full bg-[--color-line]">
+    <div className="h-1.5 overflow-hidden rounded-full bg-[var(--color-line)]">
       <div
         className="h-full rounded-full transition-all"
         style={{

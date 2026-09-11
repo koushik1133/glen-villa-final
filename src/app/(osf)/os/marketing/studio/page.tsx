@@ -83,7 +83,7 @@ export default async function StudioPage({ searchParams }: { searchParams: Promi
       />
 
       {error && (
-        <div className="mb-5 flex items-start gap-2 rounded-xl border border-[rgba(244,105,95,0.3)] bg-[rgba(244,105,95,0.08)] px-4 py-3 text-sm text-[--color-danger]">
+        <div className="mb-5 flex items-start gap-2 rounded-xl border border-[rgba(244,105,95,0.3)] bg-[rgba(244,105,95,0.08)] px-4 py-3 text-sm text-[var(--color-danger)]">
           <AlertCircle size={15} strokeWidth={2} aria-hidden className="mt-0.5 shrink-0" />
           {error}
         </div>
@@ -105,7 +105,7 @@ export default async function StudioPage({ searchParams }: { searchParams: Promi
         actions={
           <Link
             href="/os/settings/integrations"
-            className="flex items-center gap-1.5 text-xs text-[--color-muted] transition hover:text-[--color-gold-300]"
+            className="flex items-center gap-1.5 text-xs text-[var(--color-muted)] transition hover:text-[var(--color-gold-300)]"
           >
             <Settings size={12} strokeWidth={1.75} aria-hidden />
             Channels
@@ -130,10 +130,10 @@ export default async function StudioPage({ searchParams }: { searchParams: Promi
             <input type="hidden" name="draftId" value={selected.id} />
             <input type="hidden" name="next" value={back} />
 
-            <div className="rounded-xl border border-[--color-line] bg-[--color-void]/50 px-4 py-3">
+            <div className="rounded-xl border border-[var(--color-line)] bg-[var(--color-void)]/50 px-4 py-3">
               <p className="label">Queuing</p>
-              <p className="mt-1 text-sm font-medium text-[--color-ink]">{selected.headline}</p>
-              <p className="mt-0.5 text-xs text-[--color-muted]">
+              <p className="mt-1 text-sm font-medium text-[var(--color-ink)]">{selected.headline}</p>
+              <p className="mt-0.5 text-xs text-[var(--color-muted)]">
                 {formats.label(selected.format)} · {tones.label(selected.tone)} ·{" "}
                 {languages.label(selected.language)}
               </p>
@@ -147,8 +147,8 @@ export default async function StudioPage({ searchParams }: { searchParams: Promi
                     key={c.channel}
                     className={`flex cursor-pointer items-start gap-2.5 rounded-xl border px-3.5 py-3 transition ${
                       queued
-                        ? "border-[--color-line] bg-[--color-void]/40 opacity-60"
-                        : "border-[--color-line] bg-[--color-void] hover:border-[--color-line-strong]"
+                        ? "border-[var(--color-line)] bg-[var(--color-void)]/40 opacity-60"
+                        : "border-[var(--color-line)] bg-[var(--color-void)] hover:border-[var(--color-line-strong)]"
                     }`}
                   >
                     <input
@@ -156,11 +156,11 @@ export default async function StudioPage({ searchParams }: { searchParams: Promi
                       name="channel"
                       value={c.channel}
                       disabled={queued}
-                      className="mt-0.5 h-3.5 w-3.5 shrink-0 accent-[--color-gold-500]"
+                      className="mt-0.5 h-3.5 w-3.5 shrink-0 accent-[var(--color-gold-500)]"
                     />
                     <span className="min-w-0">
-                      <span className="block text-[13px] font-medium text-[--color-ink]">{c.label}</span>
-                      <span className="mt-0.5 block text-[11px] leading-tight text-[--color-faint]">
+                      <span className="block text-[13px] font-medium text-[var(--color-ink)]">{c.label}</span>
+                      <span className="mt-0.5 block text-[11px] leading-tight text-[var(--color-faint)]">
                         {queued ? "Already in the queue" : "No credential — queued for a human"}
                       </span>
                     </span>
@@ -174,7 +174,7 @@ export default async function StudioPage({ searchParams }: { searchParams: Promi
                 <Send size={14} strokeWidth={1.75} aria-hidden />
                 Queue for manual posting
               </button>
-              <p className="text-xs text-[--color-faint]">
+              <p className="text-xs text-[var(--color-faint)]">
                 Reach, impressions and delivery are not recorded — no platform reports them back to this app.
               </p>
             </div>
@@ -202,14 +202,14 @@ export default async function StudioPage({ searchParams }: { searchParams: Promi
           {settled.length === 0 ? (
             <Empty>Nothing has been confirmed or cancelled yet.</Empty>
           ) : (
-            <ul className="divide-y divide-[--color-line]">
+            <ul className="divide-y divide-[var(--color-line)]">
               {settled.map((entry) => (
                 <li key={entry.id} className="flex items-start justify-between gap-3 py-3 first:pt-0">
                   <div className="min-w-0">
-                    <p className="truncate text-sm text-[--color-ink]">
+                    <p className="truncate text-sm text-[var(--color-ink)]">
                       {queueHeadlines.get(entry.draft_id) ?? "Draft removed"}
                     </p>
-                    <p className="mt-0.5 text-xs text-[--color-muted]">
+                    <p className="mt-0.5 text-xs text-[var(--color-muted)]">
                       {entry.channel} ·{" "}
                       {entry.published_at ? formatDate(entry.published_at) : timeAgo(entry.created_at)}
                     </p>
@@ -220,7 +220,7 @@ export default async function StudioPage({ searchParams }: { searchParams: Promi
                         href={entry.external_url}
                         target="_blank"
                         rel="noreferrer noopener"
-                        className="text-[--color-muted] transition hover:text-[--color-gold-300]"
+                        className="text-[var(--color-muted)] transition hover:text-[var(--color-gold-300)]"
                         aria-label="Open the live post"
                       >
                         <ExternalLink size={13} strokeWidth={1.75} aria-hidden />
@@ -271,11 +271,11 @@ function QueueRow({
   back: string;
 }) {
   return (
-    <li className="rounded-xl border border-[--color-line] bg-[--color-void]/40 p-3.5">
+    <li className="rounded-xl border border-[var(--color-line)] bg-[var(--color-void)]/40 p-3.5">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="truncate text-sm font-medium text-[--color-ink]">{headline ?? "Draft removed"}</p>
-          <p className="mt-0.5 text-xs text-[--color-muted]">
+          <p className="truncate text-sm font-medium text-[var(--color-ink)]">{headline ?? "Draft removed"}</p>
+          <p className="mt-0.5 text-xs text-[var(--color-muted)]">
             {entry.channel} · queued {timeAgo(entry.created_at)}
           </p>
         </div>
@@ -305,7 +305,7 @@ function QueueRow({
           <input type="hidden" name="action" value="cancel" />
           <input type="hidden" name="entryId" value={entry.id} />
           <input type="hidden" name="next" value={back} />
-          <button type="submit" className="btn-ghost !px-3 !py-2 text-xs text-[--color-muted]">
+          <button type="submit" className="btn-ghost !px-3 !py-2 text-xs text-[var(--color-muted)]">
             Cancel
           </button>
         </form>
@@ -331,8 +331,8 @@ function DraftCard({
     <article
       className={`flex flex-col rounded-xl border p-4 transition ${
         selected
-          ? "border-[--color-gold-line] bg-[--color-gold-soft]"
-          : "border-[--color-line] bg-[--color-void]/40 hover:border-[--color-line-strong]"
+          ? "border-[var(--color-gold-line)] bg-[var(--color-gold-soft)]"
+          : "border-[var(--color-line)] bg-[var(--color-void)]/40 hover:border-[var(--color-line-strong)]"
       }`}
     >
       <div className="mb-2.5 flex flex-wrap items-center gap-1.5">
@@ -345,25 +345,25 @@ function DraftCard({
       </div>
 
       <Link href={`/os/marketing/studio?draft=${draft.id}`} scroll className="group">
-        <p className="text-sm font-semibold leading-snug text-[--color-ink] transition group-hover:text-[--color-gold-300]">
+        <p className="text-sm font-semibold leading-snug text-[var(--color-ink)] transition group-hover:text-[var(--color-gold-300)]">
           {draft.headline}
         </p>
-        <p className="mt-1.5 line-clamp-3 whitespace-pre-wrap text-xs leading-relaxed text-[--color-muted]">
+        <p className="mt-1.5 line-clamp-3 whitespace-pre-wrap text-xs leading-relaxed text-[var(--color-muted)]">
           {draft.primary_text}
         </p>
       </Link>
 
-      <p className="mt-2.5 text-[11px] text-[--color-faint]">
+      <p className="mt-2.5 text-[11px] text-[var(--color-faint)]">
         {tones.label(draft.tone)} · {languages.label(draft.language)} · {timeAgo(draft.created_at)}
       </p>
 
-      <div className="mt-3 flex items-center gap-2 border-t border-[--color-line] pt-3">
+      <div className="mt-3 flex items-center gap-2 border-t border-[var(--color-line)] pt-3">
         {locked ? (
           <>
             <Badge tone={draft.status === "published" ? "success" : "info"}>
               {statuses.label(draft.status)}
             </Badge>
-            <span className="text-[11px] text-[--color-faint]">Set by the publish queue</span>
+            <span className="text-[11px] text-[var(--color-faint)]">Set by the publish queue</span>
           </>
         ) : (
           <form action="/api/osf/marketing/publish" method="POST" className="flex flex-1 items-center gap-2">
