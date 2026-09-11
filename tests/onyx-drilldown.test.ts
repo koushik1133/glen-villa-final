@@ -33,11 +33,47 @@ const run = (state: OnyxDrilldownState, ...actions: OnyxDrilldownAction[]) =>
   actions.reduce(onyxDrilldownReduce, state);
 
 describe("onyx drill-down — stages", () => {
-  test("starts on the tower at the top floor", () => {
+  test("starts on the tower with nothing opened", () => {
     const s = onyxDrilldownInitial();
     assert.equal(s.stage, "tower");
-    assert.equal(s.floor, ONYX_FLOORS);
     assert.equal(s.unitNumber, null);
+  });
+
+  /**
+   * REGRESSION — the two-owner bug.
+   *
+   * The reducer used to carry `floor` as well as the parent showcase, and two
+   * opposing effects reconciled them. They could settle at different values, so
+   * the tower readout said "Floor 29" while the plate, the rail and the unit
+   * card said 30 — with no interaction at all. The floor now has exactly one
+   * owner (the parent), and the only way to keep it that way is for the state
+   * to have no floor key at all, at any stage.
+   */
+  test("the state carries NO floor, at any stage", () => {
+    const states = [
+      onyxDrilldownInitial(),
+      run(onyxDrilldownInitial(), { type: "openFloor", floor: 21 }),
+      run(onyxDrilldownInitial(), { type: "openFloor", floor: 21 }, { type: "openFlat", unitNumber: "2104" }),
+      run(
+        onyxDrilldownInitial(),
+        { type: "openFloor", floor: 21 },
+        { type: "openFlat", unitNumber: "2104" },
+        { type: "openRoom" },
+      ),
+      run(onyxDrilldownInitial(), { type: "openFloor", floor: 21 }, { type: "back" }),
+      run(onyxDrilldownInitial(), { type: "reset" }),
+    ];
+    for (const st of states) {
+      assert.ok(!("floor" in st), `stage ${st.stage} still carries a floor: ${JSON.stringify(st)}`);
+      assert.deepEqual(Object.keys(st).sort(), ["stage", "unitNumber", "view"]);
+    }
+  });
+
+  test("the reducer has no action that sets a floor", () => {
+    // `setFloor` was the write half of the duplicate. Passing one now is inert.
+    const before = run(onyxDrilldownInitial(), { type: "openFloor", floor: 12 });
+    const after = onyxDrilldownReduce(before, { type: "setFloor", floor: 30 } as unknown as OnyxDrilldownAction);
+    assert.equal(after, before);
   });
 
   test("tower → floor → flat → room, each step forward", () => {
@@ -47,7 +83,9 @@ describe("onyx drill-down — stages", () => {
       { type: "openFlat", unitNumber: "2104" },
       { type: "openRoom" },
     );
-    assert.deepEqual([s.stage, s.floor, s.unitNumber], ["room", 21, "2104"]);
+    assert.deepEqual([s.stage, s.unitNumber], ["room", "2104"]);
+    // The floor that goes with it is the caller's, and the helpers take it.
+    assert.equal(onyxFloorOfUnit(s.unitNumber!), 21);
   });
 
   test("every stage steps back to the previous one, and back from the tower is a no-op", () => {
@@ -62,15 +100,17 @@ describe("onyx drill-down — stages", () => {
       assert.equal(s.stage, expected);
     }
     // The floor survives all the way out — the rail and the sections below
-    // stay on floor 12.
-    assert.equal(s.floor, 12);
+    // stay on floor 12 because the reducer never had a say in it.
+    assert.ok(!("floor" in s));
     assert.equal(s.unitNumber, null);
   });
 
-  test("opening a flat adopts the floor its number encodes", () => {
+  test("opening a flat adopts the floor its number encodes — via the caller", () => {
     const s = run(onyxDrilldownInitial(), { type: "openFlat", unitNumber: "0705" });
-    assert.equal(s.floor, 7);
     assert.equal(s.stage, "flat");
+    assert.equal(s.unitNumber, "0705");
+    // The floor is not stored; it is derived and published to the parent.
+    assert.equal(onyxFloorOfUnit(s.unitNumber!), 7);
   });
 
   test("a stage that needs a flat cannot be reached without one", () => {
@@ -87,16 +127,19 @@ describe("onyx drill-down — stages", () => {
       { type: "openFlat", unitNumber: "0902" },
       { type: "openRoom" },
     );
-    const moved = onyxDrilldownReduce(inFlat, { type: "setFloor", floor: 10 });
+    // The parent moved the floor; the explorer's one effect reports that by
+    // reopening the floor stage with no floor of its own.
+    const moved = onyxDrilldownReduce(inFlat, { type: "openFloor" });
     assert.equal(moved.stage, "floor");
-    assert.equal(moved.floor, 10);
     assert.equal(moved.unitNumber, null);
   });
 
-  test("a rail click while the tower is closed follows the floor without opening it", () => {
-    const s = onyxDrilldownReduce(onyxDrilldownInitial(), { type: "setFloor", floor: 3 });
+  test("a rail click while the tower is closed leaves the tower closed", () => {
+    // Nothing is dispatched at stage "tower": the floor is the parent's alone,
+    // so a rail click needs no reducer action to be followed.
+    const s = onyxDrilldownInitial();
+    assert.equal(onyxDrilldownReduce(s, { type: "openFloor" }).stage, "floor");
     assert.equal(s.stage, "tower");
-    assert.equal(s.floor, 3);
   });
 
   test("re-picking the same floor from inside a flat keeps the flat", () => {
@@ -110,12 +153,15 @@ describe("onyx drill-down — stages", () => {
     assert.equal(again.stage, "floor");
   });
 
-  test("floors are clamped to the tower", () => {
-    assert.equal(onyxDrilldownReduce(onyxDrilldownInitial(), { type: "openFloor", floor: 0 }).floor, 1);
-    assert.equal(
-      onyxDrilldownReduce(onyxDrilldownInitial(), { type: "openFloor", floor: 999 }).floor,
-      ONYX_FLOORS,
-    );
+  test("floors are clamped to the tower by the camera, which owns the maths", () => {
+    // The reducer stores no floor to clamp; the camera clamps whatever it is
+    // handed, so an out-of-range floor still frames a real band.
+    assert.deepEqual(onyxFocusForFloor(0, VIEW0), onyxFocusForFloor(1, VIEW0));
+    assert.deepEqual(onyxFocusForFloor(999, VIEW0), onyxFocusForFloor(ONYX_FLOORS, VIEW0));
+    // ...and the breadcrumb label is clamped the same way.
+    const floorState = onyxDrilldownReduce(onyxDrilldownInitial(), { type: "openFloor", floor: 1 });
+    assert.equal(onyxBreadcrumb(floorState, 999)[1].label, `Floor ${ONYX_FLOORS}`);
+    assert.equal(onyxBreadcrumb(floorState, 0)[1].label, "Floor 1");
   });
 
   test("the plan / 360 view is a preference that survives stepping back and in", () => {
@@ -142,13 +188,13 @@ describe("onyx drill-down — stages", () => {
       { type: "openFlat", unitNumber: "2104" },
       { type: "openRoom" },
     );
-    assert.deepEqual(onyxBreadcrumb(s).map((c) => c.label), [
+    assert.deepEqual(onyxBreadcrumb(s, 21).map((c) => c.label), [
       "Tower",
       "Floor 21",
       "Unit 2104",
       "360° tour",
     ]);
-    assert.deepEqual(onyxBreadcrumb(onyxDrilldownInitial()).map((c) => c.label), ["Tower"]);
+    assert.deepEqual(onyxBreadcrumb(onyxDrilldownInitial(), 21).map((c) => c.label), ["Tower"]);
   });
 
   test("unit numbers decode to floors, and rubbish decodes to nothing", () => {
@@ -161,7 +207,7 @@ describe("onyx drill-down — stages", () => {
 
 describe("onyx drill-down — camera", () => {
   test("the tower stage is the untouched render", () => {
-    assert.deepEqual(onyxFocusForState(onyxDrilldownInitial(), VIEW0), ONYX_FOCUS_NEUTRAL);
+    assert.deepEqual(onyxFocusForState(onyxDrilldownInitial(), 35, VIEW0), ONYX_FOCUS_NEUTRAL);
     assert.equal(onyxFocusStyle(ONYX_FOCUS_NEUTRAL).transform, "translate(0%, 0%) scale(1)");
   });
 
@@ -204,7 +250,7 @@ describe("onyx drill-down — camera", () => {
   test("going deeper than the floor pushes the camera in, not out", () => {
     const floorState = run(onyxDrilldownInitial(), { type: "openFloor", floor: 18 });
     const flatState = onyxDrilldownReduce(floorState, { type: "openFlat", unitNumber: "1804" });
-    assert.ok(onyxFocusForState(flatState, VIEW0).scale >= onyxFocusForState(floorState, VIEW0).scale);
+    assert.ok(onyxFocusForState(flatState, 18, VIEW0).scale >= onyxFocusForState(floorState, 18, VIEW0).scale);
   });
 
   test("the style is one transform on one origin — the compositor's job", () => {
@@ -251,12 +297,15 @@ describe("onyx drill-down — what the sections below must be told", () => {
       { type: "openFloor", floor: 21 },
       { type: "openFlat", unitNumber: "2104" },
     );
-    assert.equal(onyxDrilldownReduce(flat, { type: "setFloor", floor: 9 }).unitNumber, null);
+    assert.equal(onyxDrilldownReduce(flat, { type: "openFloor", floor: 9 }).unitNumber, null);
   });
 
-  test("opening a flat can move the floor, so the floor must be republished too", () => {
+  test("opening a flat can move the floor, so the explorer must republish it", () => {
     const s = run(onyxDrilldownInitial(), { type: "openFloor", floor: 21 }, { type: "openFlat", unitNumber: "0904" });
-    assert.equal(s.floor, 9);
+    // The reducer keeps no floor; the floor to publish is the one the unit
+    // number encodes, and the explorer sends it to the parent.
+    assert.equal(onyxFloorOfUnit(s.unitNumber!), 9);
+    assert.ok(!("floor" in s));
   });
 });
 
@@ -355,8 +404,8 @@ describe("onyx drill-down — the camera follows the active angle", () => {
       { type: "openFloor", floor: 18 },
       { type: "openFlat", unitNumber: "1804" },
     );
-    assert.notDeepEqual(onyxFocusForState(flat, VIEW0), onyxFocusForState(flat, TEST_ONLY_VIEW_045));
+    assert.notDeepEqual(onyxFocusForState(flat, 18, VIEW0), onyxFocusForState(flat, 18, TEST_ONLY_VIEW_045));
     // The tower stage is neutral on every angle.
-    assert.deepEqual(onyxFocusForState(onyxDrilldownInitial(), TEST_ONLY_VIEW_045), ONYX_FOCUS_NEUTRAL);
+    assert.deepEqual(onyxFocusForState(onyxDrilldownInitial(), 18, TEST_ONLY_VIEW_045), ONYX_FOCUS_NEUTRAL);
   });
 });

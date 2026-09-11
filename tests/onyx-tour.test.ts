@@ -158,3 +158,49 @@ describe("onyx 360 tour — unit context", () => {
     for (const scene of tour.scenes) assert.match(scene.plan, /to be confirmed/);
   });
 });
+
+describe("onyx 360 tour — the no-unit (typical residence) state", () => {
+  const tourTsx = fs.readFileSync(
+    path.join(ROOT, "src/components/showcase/onyx-tour.tsx"),
+    "utf8",
+  );
+  const showcase = fs.readFileSync(
+    path.join(ROOT, "src/components/showcase/onyx-showcase.tsx"),
+    "utf8",
+  );
+
+  test("the unit-less tour resolves all five scenes with real panorama files", () => {
+    const scenes = onyxTourScenes();
+    assert.deepEqual(
+      scenes.map((s) => s.id).sort(),
+      ["balcony", "bedroom", "dining", "kitchen", "living"],
+    );
+    for (const scene of scenes) {
+      assert.ok(scene.title.length > 0);
+      const file = path.join(ROOT, "public", scene.image);
+      assert.ok(fs.existsSync(file), `missing panorama: ${scene.image}`);
+      assert.ok(fs.statSync(file).size > 10_000, `${scene.image} looks like a placeholder`);
+      assert.ok(scene.hotspots.length > 0, `${scene.id} has no way out`);
+    }
+  });
+
+  test("OnyxTour takes an optional unit, so the no-unit state runs the same viewer", () => {
+    assert.match(tourTsx, /unitNumber\?: string;/);
+    assert.match(tourTsx, /onyxTourScenes\(\)/);
+    // No second viewer: the panorama logic is not duplicated.
+    assert.equal((tourTsx.match(/^\s*<PanoramaViewer$/gm) ?? []).length, 1);
+  });
+
+  test("the typical-residence copy is honest and stays vendor-free", () => {
+    assert.match(tourTsx, /typical residence/i);
+    assert.match(tourTsx, /pick a unit/i);
+    assert.match(tourTsx, /REPRESENTATIVE_NOTE/);
+  });
+
+  test("the dead placeholder branch and its asset plumbing are gone", () => {
+    assert.ok(!/render to be confirmed/.test(showcase), "the placeholder box is still rendered");
+    assert.ok(!/ONYX_OPTIONAL_MEDIA/.test(showcase), "the empty assets constant is still there");
+    assert.ok(!/assets\.interiors/.test(showcase), "the dead interiors lookup is still there");
+    assert.match(showcase, /<OnyxTour unitNumber=\{unit\?\.number\}/);
+  });
+});

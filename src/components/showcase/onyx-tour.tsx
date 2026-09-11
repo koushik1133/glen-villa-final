@@ -22,26 +22,43 @@ import {
   ONYX_TOUR_ROOMS,
   REPRESENTATIVE_NOTE,
   onyxTourFor,
+  onyxTourScenes,
   roomCentre,
   type OnyxRoomId,
 } from "@/lib/showcase/onyx-tour";
 import { ONYX_PLATE_LAYOUT, onyxUnitPosition } from "@/lib/showcase/onyx-units";
 
+/**
+ * `unitNumber` is optional. With a unit, this is that unit's tour: its plan
+ * captions, its headline and its tile lit on the plate. Without one, the same
+ * five rooms are shown as a TYPICAL residence — the panoramas are identical
+ * either way, because they are representative interiors — and the captions fall
+ * back to the room's own name.
+ */
 export function OnyxTour({
   unitNumber,
   brandId,
 }: {
-  unitNumber: string;
+  unitNumber?: string;
   brandId: string;
 }) {
-  const tour = useMemo(() => onyxTourFor(unitNumber), [unitNumber]);
+  const tour = useMemo(
+    () =>
+      unitNumber
+        ? onyxTourFor(unitNumber)
+        : {
+            headline: "Typical residence · five rooms",
+            scenes: onyxTourScenes(),
+          },
+    [unitNumber],
+  );
   const [roomId, setRoomId] = useState<OnyxRoomId>("living");
   const [yaw, setYaw] = useState(0);
   const [visible, setVisible] = useState(false);
   const [seconds, setSeconds] = useState(0);
 
   const scene = tour.scenes.find((s) => s.id === roomId) ?? tour.scenes[0];
-  const position = onyxUnitPosition(unitNumber);
+  const position = unitNumber ? onyxUnitPosition(unitNumber) : null;
 
   // Soft cross-fade: the incoming room fades up over the frame that is already
   // painted, so switching rooms never flashes the page background.
@@ -69,8 +86,12 @@ export function OnyxTour({
   return (
     <Card>
       <SectionTitle
-        title="360° interior tour"
-        hint="Drag to look around, scroll to zoom, and step through a doorway to walk into the next room."
+        title={unitNumber ? "360° interior tour" : "360° interior tour — a typical residence"}
+        hint={
+          unitNumber
+            ? "Drag to look around, scroll to zoom, and step through a doorway to walk into the next room."
+            : "Drag to look around, scroll to zoom, and step through a doorway to walk into the next room. This is a typical residence — pick a unit on the plate above to see that unit's own plan, status and room dimensions."
+        }
         action={
           <div className="flex items-center gap-1.5">
             <Badge tone="neutral">{tour.headline}</Badge>
@@ -117,7 +138,11 @@ export function OnyxTour({
               </span>
             </>
           }
-          caption={`${scene.plan} — unit ${unitNumber} apartment plan. ${REPRESENTATIVE_NOTE}`}
+          caption={
+            unitNumber
+              ? `${scene.plan} — unit ${unitNumber} apartment plan. ${REPRESENTATIVE_NOTE}`
+              : `${scene.plan} — typical residence; pick a unit for its own plan dimensions. ${REPRESENTATIVE_NOTE}`
+          }
         />
       </div>
 
@@ -264,7 +289,8 @@ function Minimap({
 /* CTA — a real lead on the existing CRM path.                          */
 /* ------------------------------------------------------------------ */
 
-function SiteVisitCta({ unitNumber, brandId }: { unitNumber: string; brandId: string }) {
+function SiteVisitCta({ unitNumber, brandId }: { unitNumber?: string; brandId: string }) {
+  const subject = unitNumber ? `unit ${unitNumber}` : "a typical residence";
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -298,8 +324,8 @@ function SiteVisitCta({ unitNumber, brandId }: { unitNumber: string; brandId: st
           email: email.trim() || undefined,
           source: "website",
           projectInterest: "Glentree Onyx",
-          unitType: `Unit ${unitNumber}`,
-          notes: `Site visit requested from the 360 tour of unit ${unitNumber}.`,
+          unitType: unitNumber ? `Unit ${unitNumber}` : "Typical residence",
+          notes: `Site visit requested from the 360 tour of ${subject}.`,
         }),
       });
       const json = (await res.json()) as { ok?: boolean; error?: string };
@@ -320,7 +346,7 @@ function SiteVisitCta({ unitNumber, brandId }: { unitNumber: string; brandId: st
     return (
       <p className="mt-4 flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-[12.5px] text-emerald-200">
         <Check className="size-3.5" aria-hidden />
-        Lead created for unit {unitNumber}. It is in the CRM pipeline as a new enquiry.
+        Lead created for {subject}. It is in the CRM pipeline as a new enquiry.
       </p>
     );
   }
@@ -341,7 +367,7 @@ function SiteVisitCta({ unitNumber, brandId }: { unitNumber: string; brandId: st
       ) : (
         <form onSubmit={submit} className="rounded-xl border border-ink-700/70 bg-ink-800/40 p-3">
           <p className="mb-2 text-[12px] text-mist-300">
-            Site visit for unit {unitNumber} — this raises a lead in the CRM.
+            Site visit for {subject} — this raises a lead in the CRM.
           </p>
           <div className="grid gap-2 sm:grid-cols-3">
             <input

@@ -6,10 +6,10 @@ These five equirectangular panoramas are **CC0 (public domain) HDRIs from Poly H
 | File | Poly Haven source |
 |---|---|
 | living.webp | lebombo |
-| dining.webp | lythwood_room |
+| dining.webp | cayley_interior |
 | bedroom.webp | hotel_room |
-| kitchen.webp | vintage_measuring_lab |
-| balcony.webp | rooftop_night |
+| kitchen.webp | brown_photostudio_04 |
+| balcony.webp | hotel_rooftop_balcony |
 
 **They are representative interiors, not photographs of a Glentree Onyx apartment.**
 The UI must label them that way wherever they are shown. Replace them with the

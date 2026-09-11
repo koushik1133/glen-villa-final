@@ -110,6 +110,15 @@ export function PanoramaViewer({
     paintedRef.current = false;
     camRef.current = { yaw: scene.initialYaw ?? 0, pitch: 0, fov: DEFAULT_FOV };
     velRef.current = { yaw: 0, pitch: 0 };
+    // Wipe the backing store. Without this the previous room stays painted
+    // underneath the loading overlay, so a switch to a slow-decoding scene
+    // looks like the click did nothing — and anything sampling the canvas
+    // mid-load reads the room the viewer already left.
+    {
+      const canvas = canvasRef.current;
+      const ctx = canvas?.getContext("2d");
+      if (canvas && ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
 
     const img = new Image();
     img.decoding = "async";

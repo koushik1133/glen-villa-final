@@ -74,8 +74,6 @@ function TowerSkeleton() {
   );
 }
 
-const ROOMS = ["Living", "Master bedroom", "Kitchen", "Balcony"] as const;
-type Room = (typeof ROOMS)[number];
 
 /* ------------------------------------------------------------------ */
 /* Inventory                                                           */
@@ -186,34 +184,6 @@ function provisionalUnits(): Unit[] {
   return out;
 }
 
-/* ------------------------------------------------------------------ */
-/* Optional media. Dropped in by the asset pipeline at                 */
-/* public/showcase/onyx/assets.json; absent by default.                */
-/* ------------------------------------------------------------------ */
-
-type Assets = {
-  elevation?: string | null;
-  pano?: string | null;
-  floorPlans?: Record<string, string>;
-  interiors?: Partial<Record<Room, string>>;
-};
-
-/**
- * Sourced from the typed asset registry rather than fetched.
- *
- * This used to GET /showcase/onyx/assets.json, a file the asset pipeline never
- * writes any more — the registry in src/lib/showcase/assets.ts replaced it. The
- * request 404'd on every render of this panel and the result was always an
- * empty object, so every consumer below silently used its fallback. Reading the
- * registry keeps the same shape with no request and no dead 404 in the log.
- *
- * Deliberately empty. The published "typical floor plan" sheet was briefly wired
- * in here as every floor's `planImage`, but the plate renders it *behind* the
- * seven unit tiles, so the drawing and the tile labels fought each other and
- * neither could be read. The sheet is still reachable on its own under the
- * "3D apartment plans" disclosure, which is where a full-page drawing belongs.
- */
-const ONYX_OPTIONAL_MEDIA: Assets = {};
 
 /* ------------------------------------------------------------------ */
 
@@ -222,7 +192,6 @@ export function OnyxShowcase({ brandId }: { brandId: string }) {
   const [provisional, setProvisional] = useState(false);
   const [loading, setLoading] = useState(true);
   const [canWrite, setCanWrite] = useState(true);
-  const assets = ONYX_OPTIONAL_MEDIA;
   const [floor, setFloor] = useState(FLOORS);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -282,25 +251,30 @@ export function OnyxShowcase({ brandId }: { brandId: string }) {
 
   /** The same units the plate below shows, with their sale status resolved to
    *  the colours the explorer paints — one source of truth for both. */
-  const explorerUnits: ExplorerUnit[] = useMemo(
+  const explorerUnitsByFloor: ReadonlyMap<number, ExplorerUnit[]> = useMemo(
     () =>
-      floorUnits.map((u) => {
-        const meta = STATUS_META[u.status];
-        const type = onyxUnitType(u.number);
-        return {
-          id: u.id,
-          number: u.number,
-          bhk: u.bhk !== "To be confirmed" ? u.bhk : type?.bhk ?? u.bhk,
-          sizeSqft: u.sizeSqft ?? type?.sqFt ?? null,
-          facing: u.facing ?? type?.facing ?? null,
-          priceLabel: u.priceLabel,
-          statusLabel: meta.label,
-          fill: meta.fill,
-          stroke: meta.stroke,
-          sellable: SELLABLE.has(u.status),
-        };
-      }),
-    [floorUnits],
+      new Map(
+        [...byFloor.entries()].map(([f, list]) => [
+          f,
+          list.map((u) => {
+            const meta = STATUS_META[u.status];
+            const type = onyxUnitType(u.number);
+            return {
+              id: u.id,
+              number: u.number,
+              bhk: u.bhk !== "To be confirmed" ? u.bhk : type?.bhk ?? u.bhk,
+              sizeSqft: u.sizeSqft ?? type?.sqFt ?? null,
+              facing: u.facing ?? type?.facing ?? null,
+              priceLabel: u.priceLabel,
+              statusLabel: meta.label,
+              fill: meta.fill,
+              stroke: meta.stroke,
+              sellable: SELLABLE.has(u.status),
+            };
+          }),
+        ]),
+      ),
+    [byFloor],
   );
   const selected = units.find((u) => u.id === selectedId) ?? null;
 
@@ -365,7 +339,7 @@ export function OnyxShowcase({ brandId }: { brandId: string }) {
             ) : (
               <OnyxTowerExplorer
                 summaries={floorSummaries}
-                units={explorerUnits}
+                unitsByFloor={explorerUnitsByFloor}
                 floor={floor}
                 onFloorChange={setFloor}
                 onSelectUnit={setSelectedId}
@@ -396,7 +370,6 @@ export function OnyxShowcase({ brandId }: { brandId: string }) {
         />
         <FloorPlate
           units={floorUnits}
-          planImage={assets.floorPlans?.[String(floor)] ?? null}
           selectedId={selectedId}
           onSelect={setSelectedId}
         />
@@ -426,7 +399,7 @@ export function OnyxShowcase({ brandId }: { brandId: string }) {
           onStatus={setStatus}
           onClose={() => setSelectedId(null)}
         />
-        <InteriorViewer unit={selected} assets={assets} brandId={brandId} />
+        <InteriorViewer unit={selected} brandId={brandId} />
       </div>
 
       {/* E — project information */}
@@ -555,12 +528,10 @@ function plateSlot(unitNumber: string): { x: number; y: number; w: number; h: nu
 
 function FloorPlate({
   units,
-  planImage,
   selectedId,
   onSelect,
 }: {
   units: Unit[];
-  planImage: string | null;
   selectedId: string | null;
   onSelect: (id: string) => void;
 }) {
@@ -580,16 +551,6 @@ function FloorPlate({
   return (
     <div className="relative overflow-x-auto">
       <div className="relative min-w-[560px]">
-        {planImage && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={planImage}
-            alt={`Floor plan`}
-            loading="lazy"
-            decoding="async"
-            className="pointer-events-none absolute inset-0 size-full rounded-2xl object-contain opacity-60"
-          />
-        )}
         <svg
           viewBox={`0 0 ${PLATE_W} ${PLATE_H}`}
           className="relative w-full"
@@ -597,9 +558,7 @@ function FloorPlate({
           role="group"
           aria-label="Floor plate — select a unit"
         >
-          {!planImage && (
-            <rect x="0" y="0" width={PLATE_W} height={PLATE_H} rx="14" fill="#0d1424" stroke="#ffffff14" />
-          )}
+          <rect x="0" y="0" width={PLATE_W} height={PLATE_H} rx="14" fill="#0d1424" stroke="#ffffff14" />
 
           {/* central core: lift lobby + staircase, between units 1 and 5 */}
           <g>
@@ -877,55 +836,13 @@ const OnyxTour = dynamic(() => import("./onyx-tour").then((m) => m.OnyxTour), {
   ),
 });
 
-function InteriorViewer({ unit, assets, brandId }: { unit: Unit | null; assets: Assets; brandId: string }) {
-  const [room, setRoom] = useState<Room>("Living");
-
-  // Every unit on the plate has the same five-room tour; the captions, header
-  // and minimap are that unit's own plan data.
-  if (unit) return <OnyxTour unitNumber={unit.number} brandId={brandId} />;
-
-  // Nothing selected: show whatever flat renders the asset pipeline supplied.
-  return (
-    <Card>
-      <SectionTitle
-        title="Interior views"
-        hint="Pick a unit to walk through its 360° tour."
-      />
-      <div className="mb-3 flex flex-wrap gap-1.5" role="tablist" aria-label="Room">
-        {ROOMS.map((r) => (
-          <Button
-            key={r}
-            size="sm"
-            role="tab"
-            aria-selected={r === room}
-            variant={r === room ? "primary" : "secondary"}
-            onClick={() => setRoom(r)}
-          >
-            {r}
-          </Button>
-        ))}
-      </div>
-      <div
-        className="grid w-full place-items-center overflow-hidden rounded-xl border border-ink-700/70 bg-ink-800/40"
-        style={{ aspectRatio: "16 / 10" }}
-      >
-        {assets.interiors?.[room] ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={assets.interiors[room] as string}
-            alt={`${room} render`}
-            loading="lazy"
-            decoding="async"
-            className="size-full object-cover"
-          />
-        ) : (
-          <p className="px-6 text-center text-[12.5px] text-mist-400">
-            {room} render to be confirmed — no image has been supplied for this room yet.
-          </p>
-        )}
-      </div>
-    </Card>
-  );
+function InteriorViewer({ unit, brandId }: { unit: Unit | null; brandId: string }) {
+  // Every unit on the plate has the same five-room tour — the panoramas are
+  // representative interiors, identical for every flat. With a unit selected
+  // the captions, header and minimap are that unit's own plan data; with
+  // nothing selected the same tour runs as a TYPICAL residence, which is what
+  // it honestly is. There is no placeholder branch: both paths paint panoramas.
+  return <OnyxTour unitNumber={unit?.number} brandId={brandId} />;
 }
 
 /* ------------------------------------------------------------------ */

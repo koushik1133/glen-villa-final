@@ -68,7 +68,24 @@ function hasSessionCookie(req: NextRequest): boolean {
   return req.cookies.getAll().some((c) => /^sb-.*-auth-token/.test(c.name) && c.value.length > 20);
 }
 
-function securityHeaders(nonce: string, isDev: boolean): Record<string, string> {
+/**
+ * Whether this request actually arrived over TLS.
+ *
+ * `upgrade-insecure-requests` and HSTS are correct on a real HTTPS deployment
+ * and actively harmful on a plain-http origin: the browser rewrites every
+ * same-origin request to https://, so on a locally served production build the
+ * server actions and RSC prefetches fail with ERR_SSL_PROTOCOL_ERROR and the
+ * user sees "Failed to fetch" on sign-in. NODE_ENV cannot tell us this —
+ * `npm start` on localhost is production. The scheme can. Behind a proxy the
+ * socket is plain http, so the forwarded header is what carries the truth.
+ */
+function isSecureRequest(req: NextRequest): boolean {
+  const forwarded = req.headers.get("x-forwarded-proto");
+  if (forwarded) return forwarded.split(",")[0]!.trim() === "https";
+  return req.nextUrl.protocol === "https:";
+}
+
+function securityHeaders(nonce: string, isDev: boolean, secure: boolean): Record<string, string> {
   const supabase = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
   const supabaseWs = supabase.replace(/^https:/, "wss:");
 
@@ -91,7 +108,7 @@ function securityHeaders(nonce: string, isDev: boolean): Record<string, string> 
     "base-uri 'none'",
     "object-src 'none'",
     "form-action 'self'",
-    ...(isDev ? [] : ["upgrade-insecure-requests"]),
+    ...(!isDev && secure ? ["upgrade-insecure-requests"] : []),
   ].join("; ");
 
   return {
@@ -102,7 +119,9 @@ function securityHeaders(nonce: string, isDev: boolean): Record<string, string> 
     "Permissions-Policy": "camera=(), microphone=(self), geolocation=(self), payment=()",
     "Cross-Origin-Opener-Policy": "same-origin",
     "Cross-Origin-Resource-Policy": "same-origin",
-    ...(isDev ? {} : { "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload" }),
+    ...(!isDev && secure
+      ? { "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload" }
+      : {}),
   };
 }
 
@@ -167,11 +186,12 @@ async function withRefreshedSession(
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const isDev = process.env.NODE_ENV !== "production";
+  const secure = isSecureRequest(req);
   const nonce = crypto.randomUUID().replace(/-/g, "");
 
   const requestHeaders = new Headers(req.headers);
   requestHeaders.set("x-nonce", nonce);
-  requestHeaders.set("Content-Security-Policy", securityHeaders(nonce, isDev)["Content-Security-Policy"]);
+  requestHeaders.set("Content-Security-Policy", securityHeaders(nonce, isDev, secure)["Content-Security-Policy"]);
   // Layouts cannot read the pathname directly; publish it so the page guard can.
   requestHeaders.set("x-pathname", pathname);
 
@@ -191,19 +211,19 @@ export async function middleware(req: NextRequest) {
     if (!signedIn) {
       if (pathname.startsWith("/api/")) {
         const res = NextResponse.json({ ok: false, error: "Sign in to continue." }, { status: 401 });
-        for (const [k, v] of Object.entries(securityHeaders(nonce, isDev))) res.headers.set(k, v);
+        for (const [k, v] of Object.entries(securityHeaders(nonce, isDev, secure))) res.headers.set(k, v);
         return res;
       }
       const url = req.nextUrl.clone();
       url.pathname = "/signin";
       url.searchParams.set("next", pathname);
       const res = NextResponse.redirect(url);
-      for (const [k, v] of Object.entries(securityHeaders(nonce, isDev))) res.headers.set(k, v);
+      for (const [k, v] of Object.entries(securityHeaders(nonce, isDev, secure))) res.headers.set(k, v);
       return res;
     }
   }
 
-  for (const [k, v] of Object.entries(securityHeaders(nonce, isDev))) refreshed.headers.set(k, v);
+  for (const [k, v] of Object.entries(securityHeaders(nonce, isDev, secure))) refreshed.headers.set(k, v);
   return refreshed;
 }
 

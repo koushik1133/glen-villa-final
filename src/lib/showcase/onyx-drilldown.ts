@@ -39,22 +39,38 @@ export type OnyxFlatView = "360" | "plan";
 
 export type OnyxDrilldownState = {
   stage: OnyxStage;
-  /** Always set: the rail and the sections below track this even at stage "tower". */
-  floor: number;
   /** The flat, once one has been picked. Null at stages "tower" and "floor". */
   unitNumber: string | null;
   /** Which face of the flat stage 4 is showing. */
   view: OnyxFlatView;
 };
 
-export function onyxDrilldownInitial(floor = ONYX_FLOORS): OnyxDrilldownState {
-  return { stage: "tower", floor: clampFloor(floor), unitNumber: null, view: "360" };
+/**
+ * THE SELECTED FLOOR IS NOT IN HERE, ON PURPOSE.
+ *
+ * It used to be, and the parent showcase kept its own `floor` state as well —
+ * two owners reconciled by two opposing effects. Depending on effect ordering
+ * they settled at different values, and a render could commit with the tower's
+ * readout label on one floor and the plate, the rail and the unit card on
+ * another. That was the "glitch" the client reported three times.
+ *
+ * The floor now has exactly one owner: the parent. Every helper below that
+ * needs it takes it as an explicit parameter.
+ */
+export function onyxDrilldownInitial(): OnyxDrilldownState {
+  return { stage: "tower", unitNumber: null, view: "360" };
 }
 
 export type OnyxDrilldownAction =
-  | { type: "openFloor"; floor: number }
-  /** Track a floor change made elsewhere (the rail) without changing stage. */
-  | { type: "setFloor"; floor: number }
+  /**
+   * Open the floor stage.
+   *
+   * `floor` is NOT stored — the caller owns the floor and tells the parent.
+   * It is passed only so the reducer can honour one invariant: re-picking the
+   * floor you are already inside keeps that floor's flat, while moving to any
+   * other floor (or omitting it) clears it, because the flat is on the old one.
+   */
+  | { type: "openFloor"; floor?: number }
   | { type: "openFlat"; unitNumber: string }
   | { type: "openRoom"; view?: OnyxFlatView }
   | { type: "setView"; view: OnyxFlatView }
@@ -83,29 +99,20 @@ export function onyxDrilldownReduce(
 ): OnyxDrilldownState {
   switch (action.type) {
     case "openFloor": {
-      const floor = clampFloor(action.floor);
+      const floor = action.floor === undefined ? null : clampFloor(action.floor);
       // Re-picking a floor from inside it should not drop you deeper.
-      const keepFlat = state.unitNumber && onyxFloorOfUnit(state.unitNumber) === floor;
+      const keepFlat =
+        floor !== null && state.unitNumber !== null && onyxFloorOfUnit(state.unitNumber) === floor;
       return {
         stage: "floor",
-        floor,
         unitNumber: keepFlat ? state.unitNumber : null,
         view: state.view,
       };
     }
-    case "setFloor": {
-      const floor = clampFloor(action.floor);
-      if (floor === state.floor) return state;
-      // Deeper stages cannot survive a floor change: the flat is on the old one.
-      return state.stage === "tower"
-        ? { ...state, floor }
-        : { stage: "floor", floor, unitNumber: null, view: state.view };
-    }
     case "openFlat": {
       const unitNumber = String(action.unitNumber ?? "").trim();
       if (!unitNumber) return state;
-      const floor = onyxFloorOfUnit(unitNumber) ?? state.floor;
-      return { stage: "flat", floor: clampFloor(floor), unitNumber, view: state.view };
+      return { stage: "flat", unitNumber, view: state.view };
     }
     case "openRoom":
       if (!state.unitNumber) return state;
@@ -123,11 +130,11 @@ export function onyxDrilldownReduce(
       // Leaving the flat behind clears it, so stage "floor" never shows a
       // stale selection highlighted on the plate.
       if (stage === "floor") return { ...state, stage, unitNumber: null };
-      if (stage === "tower") return { stage: "tower", floor: state.floor, unitNumber: null, view: state.view };
+      if (stage === "tower") return { stage: "tower", unitNumber: null, view: state.view };
       return { ...state, stage };
     }
     case "reset":
-      return onyxDrilldownInitial(state.floor);
+      return onyxDrilldownInitial();
     default:
       return state;
   }
@@ -142,10 +149,14 @@ export function onyxFloorOfUnit(unitNumber: string): number | null {
   return Number.isFinite(floor) && floor >= 1 ? floor : null;
 }
 
-/** Breadcrumb trail for the current state — label plus the stage it returns to. */
-export function onyxBreadcrumb(state: OnyxDrilldownState): Array<{ stage: OnyxStage; label: string }> {
+/** Breadcrumb trail for the current state — label plus the stage it returns to.
+ *  The floor is passed in: the state does not carry one. */
+export function onyxBreadcrumb(
+  state: OnyxDrilldownState,
+  floor: number,
+): Array<{ stage: OnyxStage; label: string }> {
   const trail: Array<{ stage: OnyxStage; label: string }> = [{ stage: "tower", label: "Tower" }];
-  if (state.stage !== "tower") trail.push({ stage: "floor", label: `Floor ${state.floor}` });
+  if (state.stage !== "tower") trail.push({ stage: "floor", label: `Floor ${clampFloor(floor)}` });
   if (state.unitNumber && (state.stage === "flat" || state.stage === "room")) {
     trail.push({ stage: "flat", label: `Unit ${state.unitNumber}` });
   }
@@ -245,15 +256,16 @@ export function onyxFocusForFloor(
 /** The focus for a whole state — one function so the component never branches. */
 export function onyxFocusForState(
   state: OnyxDrilldownState,
+  floor: number,
   view: OnyxFocusView,
   opts: OnyxFocusOptions = {},
 ): OnyxFocus {
   if (state.stage === "tower") return ONYX_FOCUS_NEUTRAL;
-  const base = onyxFocusForFloor(state.floor, view, opts);
+  const base = onyxFocusForFloor(floor, view, opts);
   // Stages 3 and 4 push in a touch further, so stepping in always reads as
   // movement even when stage 2 already hit the zoom cap.
   if (state.stage === "floor") return base;
-  return onyxFocusForFloor(state.floor, view, { ...opts, scale: base.scale + 0.35 });
+  return onyxFocusForFloor(floor, view, { ...opts, scale: base.scale + 0.35 });
 }
 
 /** Ready-made CSS for a focus. Both layers get exactly this. */

@@ -1054,3 +1054,36 @@ describe("channel connection stats are gated like the page that shows them", () 
     );
   });
 });
+
+/**
+ * REGRESSION: signing in on a locally served production build failed with
+ * "Failed to fetch".
+ *
+ * The CSP sent `upgrade-insecure-requests` whenever NODE_ENV was production.
+ * But `npm start` on localhost IS production and is served over plain http, so
+ * the browser dutifully rewrote every same-origin request to https:// and the
+ * server action POST died with ERR_SSL_PROTOCOL_ERROR before it left the page.
+ * The header (and HSTS, which is equally meaningless without TLS) must key off
+ * the request's real scheme, not the build mode.
+ */
+describe("transport-security headers follow the actual scheme", () => {
+  const src = fs.readFileSync(path.join(process.cwd(), "src/middleware.ts"), "utf8");
+
+  test("upgrade-insecure-requests is gated on a secure request, not just on prod", () => {
+    assert.match(src, /!isDev && secure \? \["upgrade-insecure-requests"\]/);
+    assert.doesNotMatch(
+      src,
+      /isDev \? \[\] : \["upgrade-insecure-requests"\]/,
+      "gating on build mode alone breaks http origins",
+    );
+  });
+
+  test("HSTS is gated the same way", () => {
+    assert.match(src, /!isDev && secure\s*\n?\s*\?\s*\{\s*"Strict-Transport-Security"/);
+  });
+
+  test("a proxy's forwarded scheme is trusted ahead of the socket", () => {
+    assert.match(src, /x-forwarded-proto/);
+    assert.match(src, /forwarded\.split\(","\)\[0\]/);
+  });
+});

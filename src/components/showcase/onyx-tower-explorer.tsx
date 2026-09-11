@@ -42,6 +42,7 @@ import {
   onyxDrilldownReduce,
   onyxFocusForState,
   onyxFocusStyle,
+  onyxFloorOfUnit,
   type OnyxStage,
 } from "@/lib/showcase/onyx-drilldown";
 import { ONYX_PLATE_LAYOUT, onyxUnitType } from "@/lib/showcase/onyx-units";
@@ -87,9 +88,11 @@ function usePrefersReducedMotion(): boolean {
 
 /* ------------------------------------------------------------------ */
 
+const EMPTY_UNITS: ExplorerUnit[] = [];
+
 export function OnyxTowerExplorer({
   summaries,
-  units,
+  unitsByFloor,
   floor,
   onFloorChange,
   onSelectUnit,
@@ -97,8 +100,17 @@ export function OnyxTowerExplorer({
   src,
 }: {
   summaries: FloorSummary[];
-  /** The units on `floor`, in plate order. */
-  units: ExplorerUnit[];
+  /**
+   * Units keyed by floor, in plate order.
+   *
+   * A single pre-resolved `units` list used to be passed for the parent's
+   * current floor. The plate then drew its title from the explorer's own
+   * own floor state but its tiles from that prop, and the two advance on
+   * different ticks — so every floor change had a frame showing one floor's
+   * heading above another floor's units, which the 700ms camera transition
+   * made plainly visible. Both now read from the `floor` prop.
+   */
+  unitsByFloor: ReadonlyMap<number, ExplorerUnit[]>;
   floor: number;
   onFloorChange: (floor: number) => void;
   /**
@@ -111,7 +123,15 @@ export function OnyxTowerExplorer({
   brandId: string;
   src?: string;
 }) {
-  const [state, dispatch] = useReducer(onyxDrilldownReduce, floor, onyxDrilldownInitial);
+  /**
+   * SINGLE OWNER. The selected floor lives in the parent and arrives as the
+   * `floor` prop; this reducer carries only the stage, the flat and the view.
+   * It used to carry a floor too, kept in step with the parent's by two
+   * opposing effects — which is exactly how the tower's readout label and the
+   * plate/rail/unit card below could end up on different floors with no
+   * interaction at all.
+   */
+  const [state, dispatch] = useReducer(onyxDrilldownReduce, undefined, onyxDrilldownInitial);
   /**
    * The turntable angle lives HERE, not in the render, because the drill-down
    * camera must be computed from the angle actually on screen: every render
@@ -124,27 +144,44 @@ export function OnyxTowerExplorer({
   const panelRef = useRef<HTMLDivElement | null>(null);
   const lastStage = useRef<OnyxStage>(state.stage);
 
-  /* The floor is the shared contract with the rail and the sections below. */
+  /**
+   * The ONE effect that reacts to the floor moving underneath us (a rail click,
+   * the arrow buttons, anything in the parent). A flat opened on the old floor
+   * cannot survive, so anything deeper than "floor" falls back to the plate.
+   * At stage "tower" the floor simply follows and the tower stays closed.
+   */
+  const lastFloor = useRef(floor);
   useEffect(() => {
-    // A rail click while the tower is closed follows the floor but does not
-    // force the tower open; from inside, it re-opens the new floor's plate.
-    dispatch({ type: "setFloor", floor });
-  }, [floor]);
+    if (lastFloor.current === floor) return;
+    lastFloor.current = floor;
+    if (state.stage === "tower" || state.stage === "floor") return;
+    dispatch({ type: "openFloor" });
+  }, [floor, state.stage]);
 
   const openFloor = useCallback(
     (f: number) => {
-      dispatch({ type: "openFloor", floor: f });
+      // The parent owns the floor; we only move the stage. Record it so the
+      // floor-changed effect below does not also fire on our own change and
+      // undo the stage we just asked for.
+      lastFloor.current = f;
       onFloorChange(f);
+      dispatch({ type: "openFloor", floor: f });
     },
     [onFloorChange],
   );
 
   const openFlat = useCallback(
     (u: ExplorerUnit) => {
+      // Opening a flat adopts that flat's floor — told to the parent, not stored.
+      const f = onyxFloorOfUnit(u.number);
+      if (f !== null && f !== floor) {
+        lastFloor.current = f;
+        onFloorChange(f);
+      }
       dispatch({ type: "openFlat", unitNumber: u.number });
       onSelectUnit(u.id);
     },
-    [onSelectUnit],
+    [floor, onFloorChange, onSelectUnit],
   );
 
   /* Escape steps back exactly one stage. */
@@ -171,25 +208,21 @@ export function OnyxTowerExplorer({
   const view = ONYX_TOWER_VIEWS[Math.min(viewIndex, ONYX_TOWER_VIEWS.length - 1)];
 
   const focus = useMemo(
-    () => (reduced ? ONYX_FOCUS_NEUTRAL : onyxFocusForState(state, view, { focusX: 0.28, focusY: 0.46 })),
-    [reduced, state, view],
+    () => (reduced ? ONYX_FOCUS_NEUTRAL : onyxFocusForState(state, floor, view, { focusX: 0.28, focusY: 0.46 })),
+    [reduced, state, floor, view],
   );
   const focusStyle = onyxFocusStyle(focus);
-  const crumbs = onyxBreadcrumb(state);
+  const crumbs = onyxBreadcrumb(state, floor);
   const open = state.stage !== "tower";
 
+  /* One source of truth for the opened stage: the floor prop. */
+  const units = useMemo(() => unitsByFloor.get(floor) ?? EMPTY_UNITS, [unitsByFloor, floor]);
   const unit = units.find((u) => u.number === state.unitNumber) ?? null;
 
-  /* Keep the sections below in step with the stages above. The reducer clears
-     the flat on "back", on a breadcrumb jump and on a floor change, and it can
-     move the floor itself (opening a flat adopts that flat's floor) — none of
-     which goes through openFloor/openFlat, so without this the plate and the
-     unit-detail card below would keep showing a unit the explorer has closed,
-     or one that is not on the floor being shown. */
-  useEffect(() => {
-    if (state.floor !== floor) onFloorChange(state.floor);
-  }, [state.floor, floor, onFloorChange]);
-
+  /* Keep the sections below in step with the stages above: the reducer clears
+     the flat on "back" and on a breadcrumb jump, neither of which goes through
+     openFloor/openFlat. (The floor needs no such republishing — the parent
+     already owns it.) */
   const reportedUnitId = useRef<string | null | undefined>(undefined);
   useEffect(() => {
     const id = unit?.id ?? null;
@@ -207,7 +240,7 @@ export function OnyxTowerExplorer({
     <div ref={frameRef} className="relative" data-stage={state.stage}>
       <OnyxTowerRender
         summaries={summaries}
-        selected={state.floor}
+        selected={floor}
         onSelectFloor={openFloor}
         src={src}
         chromeless={open}
@@ -215,7 +248,7 @@ export function OnyxTowerExplorer({
         onViewIndexChange={setViewIndex}
         focusStyle={focusStyle}
         focusTransition={!reduced}
-        spotlightFloor={open ? state.floor : null}
+        spotlightFloor={open ? floor : null}
         overlay={
           <>
             {/* Breadcrumb + back. Present from stage 2 on. */}
@@ -270,7 +303,7 @@ export function OnyxTowerExplorer({
               aria-live="polite"
             >
               {state.stage === "floor" && (
-                <PlatePanel floor={state.floor} units={units} onOpenFlat={openFlat} />
+                <PlatePanel floor={floor} units={units} onOpenFlat={openFlat} />
               )}
 
               {state.stage === "flat" && unit && (
