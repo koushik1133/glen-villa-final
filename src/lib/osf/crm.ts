@@ -466,21 +466,26 @@ export interface LeadDetail {
 }
 
 export async function leadDetail(id: string): Promise<LeadDetail | null> {
-  const { data: leadData } = await db()
-    .from("villa_leads")
-    .select(
-      `*, assignee:villa_team_members(id, name, role),
-       project:villa_projects(id, name),
-       villa_type:villa_types(id, name, price_inr)`,
-    )
-    .eq("id", id)
-    .maybeSingle();
-
-  if (!leadData) return null;
-  const lead = leadData as unknown as CrmLead;
-
-  // Every query below is keyed by the same lead id, so none depends on another.
-  const [messages, activities, tasks, followUps, siteVisits, touchpoints, team] = await Promise.all([
+  // Every query here is keyed by the same lead id, the lead's own row included,
+  // so none depends on another and all of them go at once.
+  //
+  // The lead used to be fetched first and awaited on its own purely so the
+  // "no such lead" case could return early. That made the most-opened screen in
+  // the workspace pay two serial round-trips to a database ~200ms away — the
+  // whole page waited on one row before it would ask for anything else. The
+  // early return now happens after the batch; a missing lead wastes seven
+  // parallel reads on a 404 path nobody is waiting on, which is a much better
+  // trade than doubling the latency of every successful open.
+  const [leadRes, messages, activities, tasks, followUps, siteVisits, touchpoints, team] = await Promise.all([
+    db()
+      .from("villa_leads")
+      .select(
+        `*, assignee:villa_team_members(id, name, role),
+         project:villa_projects(id, name),
+         villa_type:villa_types(id, name, price_inr)`,
+      )
+      .eq("id", id)
+      .maybeSingle(),
     db()
       .from("villa_messages")
       .select("id, role, channel, body, media_url, media_kind, created_at")
@@ -517,6 +522,9 @@ export async function leadDetail(id: string): Promise<LeadDetail | null> {
       .limit(50),
     teamMembers(),
   ]);
+
+  if (!leadRes.data) return null;
+  const lead = leadRes.data as unknown as CrmLead;
 
   return {
     lead,
