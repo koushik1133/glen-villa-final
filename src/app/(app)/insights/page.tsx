@@ -46,7 +46,7 @@ export default async function InsightsPage({
     <>
       <TopBar brands={db.brands} brandId={brandId} title="AI Insights" subtitle={`${suggestions.length} recommendations for ${brand.name}`} />
 
-      <div className="space-y-6 p-7">
+      <div className="space-y-6 p-4 sm:p-6 lg:p-7">
         <div className="grid gap-3 md:grid-cols-4">
           <Card>
             <div className="text-[11px] uppercase tracking-wider text-mist-400">Needs attention</div>

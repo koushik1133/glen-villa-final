@@ -60,7 +60,7 @@ export default async function ChannelPage({
         right={<Badge tone={live.length ? "good" : "neutral"}>{live.length ? "connected" : "not connected"}</Badge>}
       />
 
-      <div className="space-y-6 p-7">
+      <div className="space-y-6 p-4 sm:p-6 lg:p-7">
         <Link href={`/channels${link}`} className="inline-flex items-center gap-1.5 text-[12px] text-mist-400 hover:text-mist-100">
           <ArrowLeft size={13} /> All channels
         </Link>

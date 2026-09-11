@@ -48,7 +48,7 @@ export default async function ReviewsPage({
     <>
       <TopBar brands={db.brands} brandId={brandId} title="Reviews" subtitle={`${reviews.length} reviews · ${replyRate.toFixed(0)}% answered · ${brand.name}`} />
 
-      <div className="space-y-6 p-7">
+      <div className="space-y-6 p-4 sm:p-6 lg:p-7">
         <div className="grid gap-3 md:grid-cols-4">
           <Stat label="Average rating" value={avg.toFixed(2)} sub={`${reviews.length} total reviews`} />
           <Stat label="Reply rate" value={fmt.pct(replyRate, 0)} sub={`${reviews.length - replied} unanswered`} />

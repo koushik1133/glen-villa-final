@@ -33,7 +33,7 @@ export default async function EngagementPage({
         subtitle={`${open.length} open · ${leads.length} look like leads · ${brand.name}`}
       />
 
-      <div className="space-y-6 p-7">
+      <div className="space-y-6 p-4 sm:p-6 lg:p-7">
         <div className="grid gap-3 md:grid-cols-4">
           <Stat label="Open" value={String(open.length)} sub="awaiting a reply" />
           <Stat label="Leads detected" value={String(leads.length)} sub="asking about price or availability" />

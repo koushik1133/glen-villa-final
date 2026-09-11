@@ -34,7 +34,7 @@ export default async function VoicePage({
       fallback={
         <>
           <TopBar brands={db.brands} brandId={brandId} title="Voice agent" subtitle={`${brand.name} · last ${days} days`} />
-          <div className="p-7"><CardSkeleton rows={5} /></div>
+          <div className="p-4 sm:p-6 lg:p-7"><CardSkeleton rows={5} /></div>
         </>
       }
     >
@@ -62,7 +62,7 @@ async function VoiceSection({
         title="Voice agent"
         subtitle={`${overview.funnel.calls} call${overview.funnel.calls === 1 ? "" : "s"} in ${days} days · ${brand.name}`}
       />
-      <div className="p-7">
+      <div className="p-4 sm:p-6 lg:p-7">
         <VoicePanel initial={overview} brandId={brandId} canEditSettings={hasPermission(session, "workflows.manage")} />
       </div>
     </>

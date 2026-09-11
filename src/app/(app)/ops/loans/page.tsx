@@ -20,7 +20,7 @@ export default async function LoanWorkspacePage() {
   const defaults = defaultChecklist(session.orgId).items;
 
   return (
-    <div className="space-y-6 p-7">
+    <div className="space-y-6 p-4 sm:p-6 lg:p-7">
       <div>
         <h1 className="text-[19px] font-semibold tracking-tight">Loan department</h1>
         <p className="text-[12px] text-mist-400">

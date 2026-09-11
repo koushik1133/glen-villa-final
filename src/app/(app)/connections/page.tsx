@@ -31,7 +31,7 @@ export default async function ConnectionsPage({
         right={<Badge tone={DRIVER === "live" ? "good" : "warn"}>driver: {DRIVER}</Badge>}
       />
 
-      <div className="space-y-6 p-7">
+      <div className="space-y-6 p-4 sm:p-6 lg:p-7">
         <ConnectPanel
           brandId={brandId}
           rows={CONNECT_SPECS.map<ConnectRow>((spec) => {

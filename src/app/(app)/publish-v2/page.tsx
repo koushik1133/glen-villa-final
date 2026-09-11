@@ -23,7 +23,7 @@ export default async function PublishV2Page({
         right={<Badge tone="good">pipeline active</Badge>}
       />
 
-      <div className="p-7">
+      <div className="p-4 sm:p-6 lg:p-7">
         <V2Form brandId={brandId} brandName={brand.name} />
       </div>
     </>

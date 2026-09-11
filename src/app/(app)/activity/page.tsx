@@ -16,7 +16,7 @@ export default async function ActivityPage({
   return (
     <>
       <TopBar brands={db.brands} brandId={brandId} title="Activity" subtitle={`Everything the system and the team did · ${brand.name}`} />
-      <div className="p-7">
+      <div className="p-4 sm:p-6 lg:p-7">
         <Card>
           <SectionTitle title="Audit log" hint="Automated actions are labelled so nothing the AI did is ambiguous" />
           <div className="space-y-0">

@@ -363,7 +363,7 @@ export function V2Form({ brandId, brandName }: V2FormProps) {
       {/* ========================================================================= */}
       {/* HERO / PIPELINE BANNER                                                    */}
       {/* ========================================================================= */}
-      <Card variant="liquid" className="relative overflow-hidden border-brand-500/30 p-7">
+      <Card variant="liquid" className="relative overflow-hidden border-brand-500/30 p-4 sm:p-6 lg:p-7">
         <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-brand-500/10 blur-3xl pointer-events-none" />
         <div className="absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-purple-500/10 blur-3xl pointer-events-none" />
 

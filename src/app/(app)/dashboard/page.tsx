@@ -90,7 +90,7 @@ export default async function DashboardPage({
         }
       />
 
-      <div className="space-y-6 p-7">
+      <div className="space-y-6 p-4 sm:p-6 lg:p-7">
         {/* AI executive summary — the thing a business owner actually reads. */}
         <Card className="rise border-brand-500/25 bg-gradient-to-br from-brand-500/[0.07] to-transparent">
           <div className="flex items-start gap-3">

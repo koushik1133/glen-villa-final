@@ -63,7 +63,7 @@ export function MessagesView() {
 
   if (m.error && !m.ready) {
     return (
-      <div className="p-7">
+      <div className="p-4 sm:p-6 lg:p-7">
         <div className="card flex items-start gap-3 border-warn-500/30 bg-warn-500/[0.05] p-5">
           <AlertTriangle size={16} className="mt-0.5 shrink-0 text-warn-400" />
           <div className="text-[12.5px] leading-relaxed text-mist-300">

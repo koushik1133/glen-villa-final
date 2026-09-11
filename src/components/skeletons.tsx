@@ -21,7 +21,7 @@ export function CardSkeleton({ rows = 3, className = "" }: { rows?: number; clas
 /** Full-page fallback used by route-level loading.tsx files. */
 export function PageSkeleton({ blocks = 3 }: { blocks?: number }) {
   return (
-    <div className="space-y-6 p-7">
+    <div className="space-y-6 p-4 sm:p-6 lg:p-7">
       <div className="animate-pulse space-y-2">
         <div className="h-4 w-48 rounded bg-ink-700/70" />
         <div className="h-2.5 w-72 rounded bg-ink-800" />

@@ -80,7 +80,7 @@ export default async function AppointmentsPage({
         title="Site visits"
         subtitle={`${today.length} today · ${live.length} upcoming · ${brand.name}`}
       />
-      <div className="space-y-5 p-7">
+      <div className="space-y-5 p-4 sm:p-6 lg:p-7">
         {!hasCrm ? (
           <CrmEmpty brandName={brand.name} brandId={brandId} />
         ) : (

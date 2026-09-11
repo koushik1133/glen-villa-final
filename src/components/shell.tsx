@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   Activity, BarChart3, CalendarCheck, CalendarDays, Film, Gauge, Inbox, KanbanSquare, Lightbulb, MapPin,
   Megaphone, PenSquare, PlugZap, Sparkles, Star, FileText, Settings,
   Users, GitBranch, Contact, UserCheck, ListTodo, BellRing, Building2, Wallet, ShieldCheck, MessageSquare,
-  PhoneCall,
+  PhoneCall, Menu, X,
   Instagram, Facebook, Linkedin, Youtube, Workflow,
 } from "lucide-react";
 import clsx from "clsx";
@@ -121,8 +122,74 @@ export function Sidebar({
   const params = useSearchParams();
   const qs = params.get("brand") ? `?brand=${params.get("brand")}` : "";
 
+  /**
+   * Below `lg` the sidebar is an off-canvas drawer.
+   *
+   * It used to be a permanent 240px column in a flex row at every width, so on
+   * a 375px phone the whole application had 135px to render into. Nothing was
+   * usable; the dashboard was effectively desktop-only.
+   */
+  const [open, setOpen] = useState(false);
+
+  // Opening a link must reveal the page it opened, not leave the drawer over it.
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname, params]);
+
+  // Escape closes it, and the page behind must not scroll under the drawer.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    const { overflow } = document.body.style;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = overflow;
+    };
+  }, [open]);
+
   return (
-    <aside className="sticky top-0 flex h-screen w-[240px] shrink-0 flex-col border-r border-ink-800/80 bg-ink-950/50 backdrop-blur-3xl shadow-lg">
+    <>
+      {/* The opener. Fixed so it is reachable from anywhere on a long page, and
+          gone entirely at lg where the real sidebar is always on screen. */}
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-label="Open navigation"
+        aria-expanded={open}
+        className="fixed left-3 top-3 z-50 grid h-10 w-10 place-items-center rounded-xl border border-ink-700/80 bg-ink-900/80 text-mist-200 backdrop-blur-xl transition hover:bg-ink-800 lg:hidden"
+      >
+        <Menu size={18} strokeWidth={1.75} aria-hidden />
+      </button>
+
+      {open && (
+        <div
+          className="fixed inset-0 z-40 bg-ink-950/70 backdrop-blur-sm lg:hidden"
+          onClick={() => setOpen(false)}
+          aria-hidden
+        />
+      )}
+
+    <aside
+      className={clsx(
+        "z-50 flex h-screen w-[260px] shrink-0 flex-col border-r border-ink-800/80 bg-ink-950/95 backdrop-blur-3xl shadow-lg transition-transform duration-200",
+        "fixed inset-y-0 left-0",
+        open ? "translate-x-0" : "-translate-x-full",
+        // At lg it stops being a drawer and goes back to being a column.
+        "lg:sticky lg:top-0 lg:w-[240px] lg:translate-x-0 lg:bg-ink-950/50",
+      )}
+    >
+      <button
+        type="button"
+        onClick={() => setOpen(false)}
+        aria-label="Close navigation"
+        className="absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-lg text-mist-400 transition hover:bg-ink-800 hover:text-mist-100 lg:hidden"
+      >
+        <X size={16} strokeWidth={1.75} aria-hidden />
+      </button>
       <div className="flex items-center gap-3 px-5 py-5 border-b border-ink-800/40">
         <div className="relative grid h-9 w-9 place-items-center rounded-2xl bg-gradient-to-br from-brand-400 via-brand-500 to-brand-600 text-sm font-bold text-[var(--a-on)] shadow-lg shadow-brand-500/25 border border-white/20">
           <span className="font-extrabold tracking-tight">V</span>
@@ -200,6 +267,7 @@ export function Sidebar({
         </div>
       )}
     </aside>
+    </>
   );
 }
 
@@ -236,7 +304,7 @@ export function TopBar({
   const range = params.get("range") ?? "30";
 
   return (
-    <header className="sticky top-0 z-20 flex items-center gap-4 border-b border-ink-800/70 bg-ink-950/60 px-7 py-3.5 backdrop-blur-3xl">
+    <header className="sticky top-0 z-20 flex items-center gap-4 border-b border-ink-800/70 bg-ink-950/60 px-4 sm:px-6 lg:px-7 py-3.5 backdrop-blur-3xl">
       <div className="min-w-0 flex-1">
         <h1 className="truncate text-[17.5px] font-bold tracking-tight gradient-heading">{title}</h1>
         {subtitle && <p className="truncate text-xs text-mist-400">{subtitle}</p>}

@@ -40,7 +40,7 @@ export default async function Customer360({ params }: { params: Promise<{ id: st
   const documents = db.documents.filter((d) => d.customerId === id);
 
   return (
-    <div className="space-y-6 p-7">
+    <div className="space-y-6 p-4 sm:p-6 lg:p-7">
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex-1">
           <h1 className="text-[19px] font-semibold tracking-tight">{c.name}</h1>

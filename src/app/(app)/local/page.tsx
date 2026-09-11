@@ -50,7 +50,7 @@ export default async function LocalPage({
     <>
       <TopBar brands={db.brands} brandId={brandId} title="Local visibility" subtitle={`Google Business Profile & local pack · ${brand.name}`} />
 
-      <div className="space-y-6 p-7">
+      <div className="space-y-6 p-4 sm:p-6 lg:p-7">
         <div className="grid gap-3 md:grid-cols-4">
           <Stat label="Profile views" value={fmt.n(t.impressions)} delta={pctChange(t.impressions, tPrev.impressions)} sub="Search + Maps combined" />
           <Stat label="Interactions" value={fmt.n(t.engagements)} delta={pctChange(t.engagements, tPrev.engagements)} sub="calls, directions, clicks" />

@@ -37,7 +37,7 @@ export default async function PipelinePage({
   return (
     <>
       <TopBar brands={db.brands} brandId={brandId} title="Pipeline" subtitle={`${leads.length} deals · ${brand.name}`} />
-      <div className="p-7">
+      <div className="p-4 sm:p-6 lg:p-7">
         {leads.length === 0 ? <CrmEmpty brandName={brand.name} brandId={brandId} /> : <Pipeline leads={leads} />}
       </div>
     </>

@@ -68,7 +68,7 @@ export default async function AnalyticsPage({
     <>
       <TopBar brands={db.brands} brandId={brandId} title="Analytics" subtitle={`${brand.name} · live multi-platform performance`} />
 
-      <div className="space-y-6 p-7">
+      <div className="space-y-6 p-4 sm:p-6 lg:p-7">
         <UploadPostLiveStudioLazy brandId={brandId} />
 
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">

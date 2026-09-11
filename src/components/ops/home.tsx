@@ -107,7 +107,7 @@ export function OpsHome({
   const visible = DESTINATIONS.filter((d) => allowed.has(d.needs));
 
   return (
-    <div className="mx-auto max-w-4xl p-7 sm:p-10 space-y-8">
+    <div className="mx-auto max-w-4xl p-4 sm:p-6 lg:p-7 sm:p-10 space-y-8">
       {/* Hero Header Banner */}
       <div className="liquid-glass-card relative overflow-hidden p-6 sm:p-8">
         <div className="absolute right-0 top-0 -mt-10 -mr-10 h-56 w-56 rounded-full bg-gradient-to-br from-purple-500/20 via-pink-500/15 to-transparent blur-3xl pointer-events-none" />

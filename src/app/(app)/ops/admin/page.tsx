@@ -144,7 +144,7 @@ export default async function AdminPage() {
   };
 
   return (
-    <div className="space-y-5 p-7">
+    <div className="space-y-5 p-4 sm:p-6 lg:p-7">
       <div>
         <h1 className="text-[19px] font-semibold tracking-tight">Control centre</h1>
         <p className="text-[12px] text-mist-400">

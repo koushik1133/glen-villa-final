@@ -36,14 +36,16 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <div className="app-ambient flex min-h-screen">
       <div className="app-ambient-glow" aria-hidden="true" />
-      <Suspense fallback={<div className="w-[240px] shrink-0 border-r border-ink-800" />}>
+      <Suspense fallback={<div className="hidden w-[240px] shrink-0 border-r border-ink-800 lg:block" />}>
         <Sidebar
           counts={{}}
           permissions={permissions}
           sessionInfo={{ name: session.fullName, email: session.email, role: session.roles[0] }}
         />
       </Suspense>
-      <main className="min-w-0 flex-1 pb-24">
+      {/* pt-16 below lg clears the fixed drawer opener, which would otherwise
+          sit on top of the first heading on every page. */}
+      <main className="min-w-0 flex-1 pb-24 pt-16 lg:pt-0">
         {allowed ? children : <NoAccess pathname={pathname} required={required} roles={session.roles} />}
       </main>
       <LiquidDock />

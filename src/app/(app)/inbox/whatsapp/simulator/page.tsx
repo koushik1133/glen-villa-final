@@ -91,7 +91,7 @@ export default function SimulatorPage() {
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <div className="card flex h-[560px] flex-col p-0">
-            <div className="flex items-center justify-between border-b border-[var(--color-line)] px-4 py-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--color-line)] px-4 py-3">
               <div className="flex items-center gap-2 text-sm">
                 <span className="text-[var(--color-muted)]">Test number</span>
                 <input

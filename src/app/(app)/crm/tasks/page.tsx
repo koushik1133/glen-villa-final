@@ -24,7 +24,7 @@ export default async function TasksPage({
   return (
     <>
       <TopBar brands={db.brands} brandId={brandId} title="Tasks" subtitle={`${tasks.filter((t) => t.status === "open").length} open · ${brand.name}`} />
-      <div className="space-y-5 p-7">
+      <div className="space-y-5 p-4 sm:p-6 lg:p-7">
         {!hasCrm ? (
           <CrmEmpty brandName={brand.name} brandId={brandId} />
         ) : (

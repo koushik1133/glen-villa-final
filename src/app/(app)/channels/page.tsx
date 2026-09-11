@@ -45,7 +45,7 @@ export default async function ChannelsIndexPage({
         subtitle={`${brand.name} · ${connected.length} of ${snaps.length} connected · last ${days} days`}
       />
 
-      <div className="space-y-6 p-7">
+      <div className="space-y-6 p-4 sm:p-6 lg:p-7">
         {connected.length === 0 ? (
           <Empty
             title={`No channels are connected for ${brand.name}`}

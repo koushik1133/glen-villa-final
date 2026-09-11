@@ -65,7 +65,7 @@ export default async function CalendarPage({
         }
       />
 
-      <div className="space-y-5 p-7">
+      <div className="space-y-5 p-4 sm:p-6 lg:p-7">
         <div className="grid gap-3 md:grid-cols-4">
           <Card><div className="text-[11px] uppercase tracking-wider text-mist-400">Scheduled</div><div className="tnum mt-1 text-2xl font-semibold">{queued.length}</div></Card>
           <Card><div className="text-[11px] uppercase tracking-wider text-mist-400">Awaiting approval</div><div className="tnum mt-1 text-2xl font-semibold text-warn-400">{awaiting.length}</div></Card>

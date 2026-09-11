@@ -203,7 +203,7 @@ function RepFilter({
   counts: Map<string, number>;
 }) {
   return (
-    <form action={BASE} method="GET" className="flex items-center gap-2">
+    <form action={BASE} method="GET" className="flex flex-wrap items-center gap-2">
       <label className="label" htmlFor="rep">
         Assignee
       </label>

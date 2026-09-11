@@ -24,7 +24,7 @@ export default async function SalesWorkspacePage() {
   const name = (id?: string) => db.teamMembers.find((m) => m.id === id)?.name ?? "Unassigned";
 
   return (
-    <div className="space-y-6 p-7">
+    <div className="space-y-6 p-4 sm:p-6 lg:p-7">
       <div>
         <h1 className="text-[19px] font-semibold tracking-tight">Sales workspace</h1>
         <p className="text-[12px] text-mist-400">

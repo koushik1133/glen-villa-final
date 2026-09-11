@@ -16,13 +16,13 @@ export function PageHeader({
 }) {
   return (
     <header className="mb-7 flex flex-wrap items-start justify-between gap-4">
-      <div>
+      <div className="min-w-0">
         <h1 className="font-[family-name:var(--font-display)] text-[28px] leading-tight tracking-tight text-[var(--color-ink)]">
           {title}
         </h1>
         {sub && <p className="mt-1.5 max-w-2xl text-sm text-[var(--color-muted)]">{sub}</p>}
       </div>
-      {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
+      {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
     </header>
   );
 }
@@ -46,7 +46,7 @@ export function Card({
     <section className={`card ${gold ? "card-gold" : ""} ${className}`}>
       {(title || actions) && (
         <header className="mb-4 flex items-start justify-between gap-3">
-          <div>
+          <div className="min-w-0">
             {title && <h2 className="text-sm font-semibold text-[var(--color-ink)]">{title}</h2>}
             {hint && <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)]">{hint}</p>}
           </div>

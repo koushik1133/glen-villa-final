@@ -69,7 +69,7 @@ export default async function AdsPage({
         subtitle={`${campaigns.length} campaigns · ${brand.name} · last ${days} days`}
       />
 
-      <div className="space-y-6 p-7">
+      <div className="space-y-6 p-4 sm:p-6 lg:p-7">
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-6">
           <Stat label="Spend" value={fmt.money(t.spend)} delta={pctChange(t.spend, tPrev.spend)} sub={`${fmt.money(t.spend / days)}/day`} />
           <Stat label="Revenue" value={fmt.money(t.conversionValue)} delta={pctChange(t.conversionValue, tPrev.conversionValue)} sub={`${Math.round(t.conversions)} conversions`} />

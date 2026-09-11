@@ -44,7 +44,7 @@ export default async function SettingsPage({
   return (
     <>
       <TopBar brands={db.brands} brandId={brandId} title="Settings" subtitle={brand.name} />
-      <div className="space-y-6 p-7">
+      <div className="space-y-6 p-4 sm:p-6 lg:p-7">
         <Card>
           <SectionTitle title="System status" hint="What is wired up on this install" />
           <div className="grid gap-2 md:grid-cols-2">

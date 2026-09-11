@@ -35,7 +35,7 @@ export default async function FollowUpsPage({
   return (
     <>
       <TopBar brands={db.brands} brandId={brandId} title="Follow-ups" subtitle={`${auto.length} automated reminders · ${brand.name}`} />
-      <div className="space-y-5 p-7">
+      <div className="space-y-5 p-4 sm:p-6 lg:p-7">
         {!hasCrm ? (
           <CrmEmpty brandName={brand.name} brandId={brandId} />
         ) : (

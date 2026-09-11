@@ -19,7 +19,7 @@ export default function AppError({
   }, [error]);
 
   return (
-    <div className="p-7">
+    <div className="p-4 sm:p-6 lg:p-7">
       <div className="rounded-xl border border-ink-700 bg-ink-900 p-6">
         <h2 className="text-base font-semibold">Something went wrong</h2>
         <p className="mt-1 text-sm text-mist-300">

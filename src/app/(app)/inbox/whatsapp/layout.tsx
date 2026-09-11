@@ -21,7 +21,11 @@ export default function WhatsAppWorkspaceLayout({
   return (
     <div className="osf-root flex min-h-screen flex-col">
       <WorkspaceNav />
-      <div className="min-h-0 flex-1">{children}</div>
+      {/* The ported pages return bare fragments — they relied on the deleted
+          console's own <main> for their gutter, so without this they sat flush
+          against the sidebar. The gutter tightens on a phone, where 28px of
+          padding either side is a fifth of the screen. */}
+      <div className="min-h-0 min-w-0 flex-1 px-4 py-5 sm:px-6 sm:py-6 lg:px-4 sm:px-6 lg:px-7">{children}</div>
     </div>
   );
 }

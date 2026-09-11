@@ -50,7 +50,7 @@ export default async function AutomationPage({
         right={<Badge tone={formProblem ? "bad" : "good"}>{formProblem ? "not configured" : "configured"}</Badge>}
       />
 
-      <div className="p-7">
+      <div className="p-4 sm:p-6 lg:p-7">
         <N8nPanel
           inboundUrl={inboundUrl}
           inboundSecretConfigured={Boolean(process.env.N8N_WEBHOOK_SECRET)}

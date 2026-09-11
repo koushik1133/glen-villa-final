@@ -71,7 +71,7 @@ export default async function SignInPage({
             </div>
           </div>
 
-          <div className="auth-card p-7 sm:p-8">
+          <div className="auth-card p-4 sm:p-6 lg:p-7 sm:p-8">
             {!isSupabaseConfigured() ? (
               <NotConfigured />
             ) : rotating ? (

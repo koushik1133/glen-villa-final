@@ -189,7 +189,7 @@ function ReelPreview({ draft, brand }: { draft: StudioDraft; brand: Brand }) {
 
   return (
     <div className="flex flex-col items-center">
-      <div className="relative w-[296px] rounded-[2.5rem] border-[9px] border-[var(--s-raised)] bg-black shadow-[0_32px_64px_-24px_rgba(0,0,0,0.95),0_0_0_1px_rgba(255,255,255,0.06)]">
+      <div className="relative w-[296px] max-w-full rounded-[2.5rem] border-[9px] border-[var(--s-raised)] bg-black shadow-[0_32px_64px_-24px_rgba(0,0,0,0.95),0_0_0_1px_rgba(255,255,255,0.06)]">
         <div className="absolute left-1/2 top-1.5 z-20 h-[18px] w-[86px] -translate-x-1/2 rounded-full bg-[var(--s-raised)]" />
         <div className="h-[526px] overflow-y-auto overscroll-contain rounded-[1.9rem] bg-[var(--color-void)]">
           {/* Cover — what a viewer sees before they tap play. */}

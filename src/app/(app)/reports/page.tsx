@@ -64,7 +64,7 @@ export default async function ReportsPage({
         right={<PrintButton />}
       />
 
-      <div className="p-7">
+      <div className="p-4 sm:p-6 lg:p-7">
         <div className="mx-auto max-w-4xl space-y-5">
           <Card className="border-brand-500/25 bg-gradient-to-br from-brand-500/[0.06] to-transparent">
             <div className="flex items-start justify-between gap-4">

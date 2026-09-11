@@ -24,7 +24,7 @@ export default async function StudioPage({
         subtitle={`Edit once, render per network · ${brand.name}`}
         right={<Badge tone={hasFfmpeg() ? "good" : "warn"}>{hasFfmpeg() ? "ffmpeg ready" : "ffmpeg not found"}</Badge>}
       />
-      <div className="p-7">
+      <div className="p-4 sm:p-6 lg:p-7">
         <Studio brand={brand} media={media} defaultEdit={DEFAULT_EDIT} />
       </div>
     </>

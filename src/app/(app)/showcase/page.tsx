@@ -129,7 +129,7 @@ export default async function ShowcasePage({
         }
       />
 
-      <div className="space-y-6 p-7">
+      <div className="space-y-6 p-4 sm:p-6 lg:p-7">
         {/* A. Project switcher */}
         <div className="inline-flex items-center gap-1 rounded-full border border-ink-700/70 bg-ink-900/60 p-1">
           {([

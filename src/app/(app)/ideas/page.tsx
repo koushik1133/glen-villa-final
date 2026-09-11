@@ -25,7 +25,7 @@ export default async function IdeasPage({
     <>
       <TopBar brands={db.brands} brandId={brandId} title="Post ideas" subtitle={`${ideas.length} ideas generated from your own data · ${brand.name}`} />
 
-      <div className="p-7">
+      <div className="p-4 sm:p-6 lg:p-7">
         {/* Ideas are derived from this brand's own signals, so an empty store means
             there is nothing to derive from yet. Saying so beats a page header
             floating above an empty grid, which reads as a failed fetch. */}

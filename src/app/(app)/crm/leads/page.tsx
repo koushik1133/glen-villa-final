@@ -25,7 +25,7 @@ export default async function LeadsPage({
   return (
     <>
       <TopBar brands={db.brands} brandId={brandId} title="Leads" subtitle={`${leads.length} leads · ${brand.name}`} />
-      <div className="space-y-5 p-7">
+      <div className="space-y-5 p-4 sm:p-6 lg:p-7">
         {leads.length === 0 ? (
           <CrmEmpty brandName={brand.name} brandId={brandId} />
         ) : (

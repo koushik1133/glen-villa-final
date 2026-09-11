@@ -52,7 +52,7 @@ export default async function ComposerPage({
   return (
     <>
       <TopBar brands={db.brands} brandId={brandId} title="Composer" subtitle={`Write once, publish everywhere · ${brand.name}`} />
-      <div className="p-7">
+      <div className="p-4 sm:p-6 lg:p-7">
         <Composer brand={brand} connections={connections} media={media} slots={slots} />
       </div>
     </>

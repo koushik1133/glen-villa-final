@@ -27,7 +27,10 @@ export function WorkspaceNav() {
 
   return (
     <div className="border-b border-ink-700/70 bg-ink-900/40">
-      <div className="flex flex-wrap items-center gap-1 px-6 pt-4">
+      {/* Scrolls sideways on a phone rather than wrapping. Thirteen sections
+          wrapped onto four rows pushed the page itself off the bottom of the
+          screen before any content appeared. */}
+      <div className="flex items-center gap-1 overflow-x-auto px-4 pt-3 [scrollbar-width:none] sm:flex-wrap sm:overflow-visible sm:px-6 sm:pt-4 [&::-webkit-scrollbar]:hidden">
         {NAV_GROUPS.map((g) => {
           const current = g.label === group.label;
           // Link to the group's first screen — a group is a heading, not a page.
@@ -38,7 +41,7 @@ export function WorkspaceNav() {
               href={target}
               aria-current={current ? "page" : undefined}
               className={clsx(
-                "rounded-full px-3 py-1.5 text-[12.5px] font-medium transition",
+                "shrink-0 rounded-full px-3 py-1.5 text-[12.5px] font-medium transition",
                 current
                   ? "bg-ink-700 text-mist-100"
                   : "text-mist-400 hover:bg-ink-800 hover:text-mist-200",
@@ -50,7 +53,7 @@ export function WorkspaceNav() {
         })}
       </div>
 
-      <div className="flex flex-wrap items-center gap-x-1 gap-y-0.5 px-6 pb-3 pt-2">
+      <div className="flex items-center gap-x-1 gap-y-0.5 overflow-x-auto px-4 pb-3 pt-2 [scrollbar-width:none] sm:flex-wrap sm:overflow-visible sm:px-6 [&::-webkit-scrollbar]:hidden">
         {group.items.map((item) => {
           const current = item.href === active;
           const Icon = item.icon;
@@ -60,7 +63,7 @@ export function WorkspaceNav() {
               href={item.href}
               aria-current={current ? "page" : undefined}
               className={clsx(
-                "inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12.5px] transition",
+                "inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12.5px] transition",
                 current
                   ? "bg-ink-800 text-mist-100"
                   : "text-mist-400 hover:bg-ink-800/60 hover:text-mist-200",

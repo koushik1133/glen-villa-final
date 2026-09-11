@@ -36,7 +36,7 @@ export default async function LoanCasePage({ params }: { params: Promise<{ caseI
   const officers = db.teamMembers.filter((m) => m.orgId === session.orgId && m.role === "LOAN_OFFICER" && m.active);
 
   return (
-    <div className="space-y-5 p-7">
+    <div className="space-y-5 p-4 sm:p-6 lg:p-7">
       <Link href="/ops/loans" className="inline-flex items-center gap-1.5 text-[12px] text-mist-400 hover:text-mist-100">
         <ArrowLeft size={13} /> All cases
       </Link>

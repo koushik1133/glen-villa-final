@@ -18,7 +18,7 @@ export default async function VoiceSettingsPage({
   return (
     <>
       <TopBar brands={db.brands} brandId={brandId} title="Voice agent settings" subtitle={brand.name} />
-      <div className="p-7">
+      <div className="p-4 sm:p-6 lg:p-7">
         <VoiceSettingsForm initial={config} brandId={brandId} />
       </div>
     </>

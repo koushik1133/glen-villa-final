@@ -20,7 +20,7 @@ export default async function WhatsAppTrainingPage({
         title="WhatsApp AI"
         subtitle={`Train the assistant · ${brand.name}`}
       />
-      <div className="p-7">
+      <div className="p-4 sm:p-6 lg:p-7">
         <WhatsAppTrainingPanel brandId={brandId} />
       </div>
     </>

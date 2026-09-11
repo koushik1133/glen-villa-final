@@ -498,6 +498,10 @@ body {
   align-items: center;
   gap: 0.5rem;
   padding: 0.45rem 0.75rem;
+  /* Never wider than the screen it floats over. */
+  max-width: calc(100vw - 1.5rem);
+  overflow-x: auto;
+  scrollbar-width: none;
   border-radius: 9999px;
   background: var(--liquid-glass-bg);
   backdrop-filter: blur(32px) saturate(210%) contrast(104%);
