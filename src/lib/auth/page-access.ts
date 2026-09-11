@@ -61,6 +61,17 @@ const RULES: Array<[RegExp, Permission]> = [
   [/^\/automation/, "marketing.read"],
   [/^\/publish-v2/, "marketing.read"],
 
+  // Ported villa-os-f module (/os). Its own Supabase RBAC is not in force here
+  // — Villa-os's session gate is — so every screen under it states a permission
+  // exactly like the rest of this map. The module reads live customer, revenue
+  // and pipeline data, so the floor is sales.read rather than a general view
+  // permission, and its configuration screens sit with the other config screens.
+  [/^\/os\/(settings|whatsapp|simulator|automation)/, "workflows.manage"],
+  [/^\/os\/(marketing|properties)/, "marketing.read"],
+  [/^\/os\/(analytics|activity|ai)/, "analytics.view"],
+  [/^\/os\/communication/, "customers.read"],
+  [/^\/os/, "sales.read"],
+
   // Configuration
   [/^\/(connections|settings)/, "workflows.manage"],
 ];

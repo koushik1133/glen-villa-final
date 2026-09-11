@@ -920,6 +920,14 @@ describe("every API route states a permission, or authenticates by its own mecha
     // Session introspection and sign-out: reporting who you already are cannot
     // require a permission, and it returns nothing the caller did not present.
     "src/app/api/ops/session/route.ts",
+    // Ported /os module. Each was read before being listed here: all three
+    // compare a secret in constant time and fail CLOSED when it is unset, so
+    // an unconfigured deployment rejects traffic rather than trusting it.
+    // /api/osf/whatsapp and /api/osf/instagram are not listed because they
+    // already satisfy the check below via verifySignature().
+    "src/app/api/osf/evolution/route.ts",      // shared token, sha256 + timingSafeEqual
+    "src/app/api/osf/cron/follow-ups/route.ts", // Bearer CRON_SECRET, timingSafeEqual
+    "src/app/api/osf/cron/outbound/route.ts",   // Bearer CRON_SECRET, timingSafeEqual
   ]);
 
   const CHECKS =

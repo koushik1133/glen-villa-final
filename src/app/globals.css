@@ -1034,3 +1034,71 @@ textarea:focus-visible {
   outline: 2px solid var(--color-brand-400);
   outline-offset: 1px;
 }
+
+
+/* =========================================================================
+   Ported villa-os-f module (/os). Its palette is registered with Tailwind so
+   the module's utilities (bg-void, text-gold-500, border-line) compile, but the
+   surface colours are applied only under .osf-root — the source app painted
+   html/body directly, which would have repainted every Villa-os screen.
+   ========================================================================= */
+@theme {
+  /* ---- villa-os-f (/os module) palette — see src/app/(osf)/layout.tsx ---- */
+  /* Surfaces, darkest to lightest */
+  --color-void: #0a0a0c;
+  --color-canvas: #0f0f12;
+  --color-surface: #16161a;
+  --color-raised: #1d1d22;
+  --color-line: #26262d;
+  --color-line-strong: #33333c;
+
+  /* Type */
+  --color-ink: #f2f0ea;
+  --color-muted: #8b8a94;
+  --color-faint: #5c5b66;
+
+  /* Gold — the accent. 500 is the brand value. */
+  --color-gold-100: #f5e6b8;
+  --color-gold-300: #e3c766;
+  --color-gold-500: #d4af37;
+  --color-gold-600: #b8952c;
+  --color-gold-700: #8a6f1f;
+  --color-gold-soft: rgba(212, 175, 55, 0.12);
+  --color-gold-line: rgba(212, 175, 55, 0.28);
+
+  /* Status */
+  --color-hot: #ff7a5c;
+  --color-warm: #efb45c;
+  --color-cold: #7d8ba1;
+  --color-success: #5ec98d;
+  --color-danger: #f4695f;
+  --color-info: #6da8e8;
+
+  /* Chart series — distinguishable on dark, and colour-blind safe order */
+  --color-chart-1: #d4af37;
+  --color-chart-2: #6da8e8;
+  --color-chart-3: #5ec98d;
+  --color-chart-4: #c98ee0;
+  --color-chart-5: #ff9e6c;
+  --color-chart-6: #59c8c3;
+
+  --font-display: "Georgia", "Times New Roman", serif;
+}
+
+.osf-root {
+  background: var(--color-void);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+.osf-root *,
+.osf-root {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line-strong) transparent;
+}
+.osf-root *::-webkit-scrollbar { width: 10px; height: 10px; }
+.osf-root *::-webkit-scrollbar-track { background: transparent; }
+.osf-root *::-webkit-scrollbar-thumb {
+  background: var(--color-line-strong);
+  border-radius: 6px;
+}

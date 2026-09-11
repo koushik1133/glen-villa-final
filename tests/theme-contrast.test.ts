@@ -31,7 +31,23 @@ const SCAN = ["src/components", "src/app"];
  * Directories skipped entirely. A QA harness whose whole purpose is to render
  * the bad states side by side cannot also be held to the rule it demonstrates.
  */
-const SKIP_DIRS = [/(^|\/)qa-harness(\/|$)/];
+const SKIP_DIRS = [
+  /(^|\/)qa-harness(\/|$)/,
+  /**
+   * The ported villa-os-f module (/os). It does not participate in this app's
+   * light/dark theme at all: `src/app/(osf)/layout.tsx` wraps it in `.osf-root`,
+   * which pins its own fixed dark-luxury palette (see the block at the end of
+   * globals.css). A utility there is on a permanently dark surface by
+   * construction, which is exactly the exemption this file's failure message
+   * describes — listing its files one by one would be a hundred entries all
+   * giving the same reason.
+   *
+   * This is a scope exemption, not a quality one: if that module is ever made
+   * theme-aware, delete these two patterns and fix what they surface.
+   */
+  /^src\/app\/\(osf\)\//,
+  /^src\/components\/osf\//,
+];
 
 /** Utilities whose colour is baked in and therefore identical in both themes. */
 const RAW = new RegExp(

@@ -44,8 +44,22 @@ const SELF_AUTHENTICATING = [
   "/auth/callback",        // OAuth / magic-link code exchange, single-use code
 ];
 
+/**
+ * Ported villa-os-f webhook endpoints. EXACT matches, never prefixes.
+ *
+ * Meta and the Evolution server POST these with no cookie and no way to supply
+ * one, and each verifies its own caller and fails closed when unconfigured:
+ * /api/osf/whatsapp and /api/osf/instagram check Meta's HMAC signature,
+ * /api/osf/evolution a shared token, /api/osf/cron/* a constant-time
+ * CRON_SECRET. Exact matching matters — /api/osf/whatsapp/test-voice is an
+ * operator tool that burns transcription credit and must stay behind the gate.
+ */
+const OSF_WEBHOOKS_EXACT = ["/api/osf/whatsapp", "/api/osf/instagram", "/api/osf/evolution"];
+
 function isPublic(pathname: string): boolean {
   if (PUBLIC_PATHS.includes(pathname)) return true;
+  if (OSF_WEBHOOKS_EXACT.includes(pathname)) return true;
+  if (pathname.startsWith("/api/osf/cron/")) return true;
   if (SELF_AUTHENTICATING.some((p) => pathname.startsWith(p))) return true;
   // Next internals and static assets.
   return (
