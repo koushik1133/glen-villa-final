@@ -26,11 +26,11 @@ export const dynamic = "force-dynamic";
 
 /** Which page each action came from, so a failed write lands back on it. */
 const RETURN_TO: Record<string, string> = {
-  tenant: "/os/settings",
-  "add-member": "/os/settings/team",
-  "set-role": "/os/settings/team",
-  "set-channel": "/os/settings/integrations",
-  "sync-integrations": "/os/settings/integrations",
+  tenant: "/inbox/whatsapp/settings",
+  "add-member": "/inbox/whatsapp/settings/team",
+  "set-role": "/inbox/whatsapp/settings/team",
+  "set-channel": "/inbox/whatsapp/settings/integrations",
+  "sync-integrations": "/inbox/whatsapp/settings/integrations",
 };
 
 export async function POST(request: Request) {
@@ -86,16 +86,16 @@ export async function POST(request: Request) {
       result = { ok: false, error: `Unknown action: ${action}` };
   }
 
-  const fallback = RETURN_TO[action] ?? "/os/settings";
+  const fallback = RETURN_TO[action] ?? "/inbox/whatsapp/settings";
 
   if (result.ok) {
     revalidatePath(fallback);
     // The tenant name and logo are rendered into the studio's device mockups.
-    if (action === "tenant") revalidatePath("/os/marketing/studio");
+    if (action === "tenant") revalidatePath("/inbox/whatsapp/marketing/studio");
   }
 
   // safePath is applied here rather than left to respond(), whose own fallback
-  // is "/os" — a tampered `next` should still land the browser back on the page
+  // is "/inbox/whatsapp" — a tampered `next` should still land the browser back on the page
   // the form was submitted from.
   const outcome: ActionResult = result.ok ? { ok: true, id: result.id } : result;
   return respond(request, body, safePath(body.get("next"), fallback), outcome);

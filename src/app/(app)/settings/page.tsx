@@ -60,7 +60,18 @@ export default async function SettingsPage({
           </div>
         </Card>
 
-        {isAdmin && <AdminDiagnostics rows={vendorDiagnostics(activeProvider())} />}
+        {/*
+          Vendor diagnostics name the third parties behind the product, so they
+          are gated on an environment flag rather than on a permission. The
+          client's own administrator holds `users.manage` — gating on that alone
+          would have shown them the whole supplier list in one card, which is
+          exactly what white-labelling is meant to prevent. Operators set
+          SHOW_VENDOR_DIAGNOSTICS=1 on their own deployments; the client's does
+          not have it.
+        */}
+        {isAdmin && process.env.SHOW_VENDOR_DIAGNOSTICS === "1" && (
+          <AdminDiagnostics rows={vendorDiagnostics(activeProvider())} />
+        )}
         {/* One Meta Graph call — streamed so the rest of Settings paints first. */}
         {isAdmin && (
           <Suspense fallback={<CardSkeleton rows={4} />}>

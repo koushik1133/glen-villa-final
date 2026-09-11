@@ -1043,51 +1043,65 @@ textarea:focus-visible {
    html/body directly, which would have repainted every Villa-os screen.
    ========================================================================= */
 @theme {
-  /* ---- villa-os-f (/os module) palette — see src/app/(osf)/layout.tsx ---- */
-  /* Surfaces, darkest to lightest */
-  --color-void: #0a0a0c;
-  --color-canvas: #0f0f12;
-  --color-surface: #16161a;
-  --color-raised: #1d1d22;
-  --color-line: #26262d;
-  --color-line-strong: #33333c;
+  /* --------------------------------------------------------------------
+     WhatsApp workspace palette.
 
-  /* Type */
-  --color-ink: #f2f0ea;
-  --color-muted: #8b8a94;
-  --color-faint: #5c5b66;
+     These names came from the ported app, which shipped a fixed dark-and-gold
+     look of its own. Every one of them is now an ALIAS onto this app's own
+     semantic layer (--s-* surfaces, --t-* text, --a-* accent, --c-* status),
+     so the workspace wears the same colours as the rest of the dashboard and
+     follows the light/dark switch with it. The gold is gone.
 
-  /* Gold — the accent. 500 is the brand value. */
-  --color-gold-100: #f5e6b8;
-  --color-gold-300: #e3c766;
-  --color-gold-500: #d4af37;
-  --color-gold-600: #b8952c;
-  --color-gold-700: #8a6f1f;
-  --color-gold-soft: rgba(212, 175, 55, 0.12);
-  --color-gold-line: rgba(212, 175, 55, 0.28);
+     Aliasing rather than rewriting ~1,500 utility usages keeps one source of
+     truth: change a token in :root and this moves with it.
+     -------------------------------------------------------------------- */
+  --color-void: var(--s-bg);
+  --color-canvas: var(--s-surface);
+  --color-surface: var(--s-surface);
+  --color-raised: var(--s-raised);
+  --color-line: var(--s-border);
+  --color-line-strong: var(--s-border-strong);
 
-  /* Status */
-  --color-hot: #ff7a5c;
-  --color-warm: #efb45c;
-  --color-cold: #7d8ba1;
-  --color-success: #5ec98d;
-  --color-danger: #f4695f;
-  --color-info: #6da8e8;
+  --color-ink: var(--t-primary);
+  --color-muted: var(--t-muted);
+  --color-faint: var(--t-faint);
 
-  /* Chart series — distinguishable on dark, and colour-blind safe order */
-  --color-chart-1: #d4af37;
-  --color-chart-2: #6da8e8;
-  --color-chart-3: #5ec98d;
-  --color-chart-4: #c98ee0;
-  --color-chart-5: #ff9e6c;
-  --color-chart-6: #59c8c3;
+  /* Was the gold ramp; now the app's own monochrome accent. The names stay so
+     the ported markup keeps compiling — only the colour changed. */
+  --color-gold-100: var(--a-100);
+  --color-gold-300: var(--a-300);
+  --color-gold-500: var(--a-500);
+  --color-gold-600: var(--a-600);
+  --color-gold-700: var(--a-400);
+  --color-gold-soft: color-mix(in oklab, var(--a-500) 12%, transparent);
+  --color-gold-line: color-mix(in oklab, var(--a-500) 28%, transparent);
 
-  --font-display: "Georgia", "Times New Roman", serif;
+  /* Lead temperature and status, on the app's status colours. Cold is
+     deliberately the muted text colour rather than a hue: "cold" is the
+     absence of a signal, and colouring it competes with the leads that matter. */
+  --color-hot: var(--c-bad);
+  --color-warm: var(--c-warn);
+  --color-cold: var(--t-muted);
+  --color-success: var(--c-good);
+  --color-danger: var(--c-bad);
+  --color-info: var(--color-viz-2);
+
+  /* Chart series — the app's own visualisation ramp. */
+  --color-chart-1: var(--color-viz-1);
+  --color-chart-2: var(--color-viz-2);
+  --color-chart-3: var(--color-viz-3);
+  --color-chart-4: var(--color-viz-4);
+  --color-chart-5: var(--color-viz-5);
+  --color-chart-6: var(--color-viz-6);
+
+  /* The ported UI set headings in a serif. The rest of the dashboard does not,
+     and one screen in Georgia reads as a different product. */
+  --font-display: var(--font-sans);
 }
 
 .osf-root {
-  background: var(--color-void);
-  color: var(--color-ink);
+  background: var(--s-bg);
+  color: var(--t-primary);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -1118,13 +1132,12 @@ textarea:focus-visible {
   .osf-root .card {
       @apply relative rounded-2xl border border-[var(--color-line)] p-5;
       background: linear-gradient(160deg, var(--color-surface) 0%, var(--color-canvas) 100%);
-      box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.03) inset,
-                  0 12px 32px -12px rgba(0, 0, 0, 0.7);
+      box-shadow: var(--shadow-card);
     }
 
   .osf-root .card-gold {
       @apply border-[var(--color-gold-line)];
-      background: linear-gradient(160deg, rgba(212,175,55,0.07) 0%, var(--color-canvas) 70%);
+      background: linear-gradient(160deg, color-mix(in oklab, var(--a-500) 7%, transparent) 0%, var(--color-canvas) 70%);
     }
 
   .osf-root .label {

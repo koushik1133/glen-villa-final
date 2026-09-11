@@ -50,7 +50,7 @@ export async function POST(request: Request) {
       metadata: { unit_id: str("unitId"), status: str("status") },
     });
 
-    revalidatePath("/os/properties/inventory");
+    revalidatePath("/inbox/whatsapp/properties/inventory");
     return respond(isJson, request, { ok: true }, 200);
   }
 
@@ -88,7 +88,7 @@ export async function POST(request: Request) {
     metadata: { unit_id: result.unit.id, project_id: result.unit.project_id },
   });
 
-  revalidatePath("/os/properties/inventory");
+  revalidatePath("/inbox/whatsapp/properties/inventory");
   return respond(isJson, request, { ok: true, unit: result.unit }, 200);
 }
 
@@ -96,7 +96,7 @@ export async function POST(request: Request) {
 function respond(isJson: boolean, request: Request, body: Record<string, unknown>, status: number) {
   if (isJson) return NextResponse.json(body, { status });
 
-  const url = new URL("/os/properties/inventory", request.url);
+  const url = new URL("/inbox/whatsapp/properties/inventory", request.url);
   if (typeof body.error === "string") url.searchParams.set("error", body.error);
   return NextResponse.redirect(url, { status: 303 });
 }

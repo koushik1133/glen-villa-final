@@ -13,7 +13,7 @@ export async function POST(request: Request) {
   if (denied) return denied;
   const body = await readPost(request);
   const action = body.get("action");
-  const redirectTo = safePath(body.get("next"), "/os/crm/tasks");
+  const redirectTo = safePath(body.get("next"), "/inbox/whatsapp/crm/tasks");
 
   let result: ActionResult;
 
@@ -68,7 +68,7 @@ export async function POST(request: Request) {
       );
   }
 
-  if (result.ok) revalidatePath("/os/crm/tasks");
+  if (result.ok) revalidatePath("/inbox/whatsapp/crm/tasks");
 
   return respond(request, body, redirectTo, result);
 }

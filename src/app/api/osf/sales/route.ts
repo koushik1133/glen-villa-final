@@ -56,16 +56,16 @@ export async function POST(request: Request) {
         notes: body.get("notes") ?? null,
       });
       if (result.ok) {
-        revalidatePath("/os/sales/site-visits");
-        revalidatePath("/os/crm/leads");
+        revalidatePath("/inbox/whatsapp/sales/site-visits");
+        revalidatePath("/inbox/whatsapp/crm/leads");
       }
-      return finish("/os/sales/site-visits", result);
+      return finish("/inbox/whatsapp/sales/site-visits", result);
     }
 
     case "visit-status": {
       const result = await updateSiteVisitStatus(body.get("visitId") ?? "", body.get("status") ?? "");
-      if (result.ok) revalidatePath("/os/sales/site-visits");
-      return finish("/os/sales/site-visits", result);
+      if (result.ok) revalidatePath("/inbox/whatsapp/sales/site-visits");
+      return finish("/inbox/whatsapp/sales/site-visits", result);
     }
 
     case "visit-outcome": {
@@ -74,8 +74,8 @@ export async function POST(request: Request) {
         body.get("outcome"),
         body.get("feedback"),
       );
-      if (result.ok) revalidatePath("/os/sales/site-visits");
-      return finish("/os/sales/site-visits", result);
+      if (result.ok) revalidatePath("/inbox/whatsapp/sales/site-visits");
+      return finish("/inbox/whatsapp/sales/site-visits", result);
     }
 
     // -------------------------------------------------------------- bookings
@@ -92,16 +92,16 @@ export async function POST(request: Request) {
         notes: body.get("notes") ?? null,
       });
       if (result.ok) {
-        revalidatePath("/os/sales/bookings");
-        revalidatePath("/os/sales/revenue");
-        revalidatePath("/os/crm/leads");
+        revalidatePath("/inbox/whatsapp/sales/bookings");
+        revalidatePath("/inbox/whatsapp/sales/revenue");
+        revalidatePath("/inbox/whatsapp/crm/leads");
       }
       // A new booking's detail page is where the payment schedule gets built,
       // so land there rather than back on the list.
       return respond(
         request,
         body,
-        result.ok ? `/os/sales/bookings/${result.data.id}` : "/os/sales/bookings",
+        result.ok ? `/inbox/whatsapp/sales/bookings/${result.data.id}` : "/inbox/whatsapp/sales/bookings",
         result,
       );
     }
@@ -110,10 +110,10 @@ export async function POST(request: Request) {
       const bookingId = body.get("bookingId") ?? "";
       const result = await updateBookingStatus(bookingId, body.get("status") ?? "");
       if (result.ok) {
-        revalidatePath("/os/sales/bookings");
-        revalidatePath("/os/sales/revenue");
+        revalidatePath("/inbox/whatsapp/sales/bookings");
+        revalidatePath("/inbox/whatsapp/sales/revenue");
       }
-      return finish(`/os/sales/bookings/${bookingId}`, result);
+      return finish(`/inbox/whatsapp/sales/bookings/${bookingId}`, result);
     }
 
     case "add-payment": {
@@ -126,20 +126,20 @@ export async function POST(request: Request) {
         status: body.get("status"),
       });
       if (result.ok) {
-        revalidatePath("/os/sales/bookings");
-        revalidatePath("/os/sales/revenue");
+        revalidatePath("/inbox/whatsapp/sales/bookings");
+        revalidatePath("/inbox/whatsapp/sales/revenue");
       }
-      return finish(`/os/sales/bookings/${bookingId}`, result);
+      return finish(`/inbox/whatsapp/sales/bookings/${bookingId}`, result);
     }
 
     case "payment-status": {
       const bookingId = body.get("bookingId") ?? "";
       const result = await setPaymentStatus(body.get("paymentId") ?? "", body.get("status") ?? "");
       if (result.ok) {
-        revalidatePath("/os/sales/bookings");
-        revalidatePath("/os/sales/revenue");
+        revalidatePath("/inbox/whatsapp/sales/bookings");
+        revalidatePath("/inbox/whatsapp/sales/revenue");
       }
-      return finish(`/os/sales/bookings/${bookingId}`, result);
+      return finish(`/inbox/whatsapp/sales/bookings/${bookingId}`, result);
     }
 
     // ------------------------------------------------------------------ team
@@ -154,14 +154,14 @@ export async function POST(request: Request) {
         languages: body.get("languages") ?? null,
         acceptsLeads: body.get("acceptsLeads") === undefined ? true : body.bool("acceptsLeads"),
       });
-      if (result.ok) revalidatePath("/os/sales/team");
-      return finish("/os/sales/team", result);
+      if (result.ok) revalidatePath("/inbox/whatsapp/sales/team");
+      return finish("/inbox/whatsapp/sales/team", result);
     }
 
     case "toggle-member": {
       const result = await toggleMemberActive(body.get("memberId") ?? "");
-      if (result.ok) revalidatePath("/os/sales/team");
-      return finish("/os/sales/team", result);
+      if (result.ok) revalidatePath("/inbox/whatsapp/sales/team");
+      return finish("/inbox/whatsapp/sales/team", result);
     }
 
     default:

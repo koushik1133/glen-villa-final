@@ -23,7 +23,7 @@ export const dynamic = "force-dynamic";
  * costing the customer their reply.
  */
 
-const COMM_PATHS = ["/os/communication/inbox", "/os/communication/whatsapp", "/os/communication/email"];
+const COMM_PATHS = ["/inbox/whatsapp/communication/inbox", "/inbox/whatsapp/communication/whatsapp", "/inbox/whatsapp/communication/email"];
 
 /** "Ravi | Saturday 11am" → ["Ravi", "Saturday 11am"]. */
 function splitParams(raw: string | undefined): string[] {
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
   if (denied) return denied;
   const body = await readPost(request);
   const action = body.get("action");
-  const redirectTo = safePath(body.get("next"), "/os/communication/whatsapp");
+  const redirectTo = safePath(body.get("next"), "/inbox/whatsapp/communication/whatsapp");
 
   let result: ActionResult;
   let leadId: string | undefined;
@@ -80,7 +80,7 @@ export async function POST(request: Request) {
   if (result.ok) {
     for (const path of COMM_PATHS) revalidatePath(path);
     // Sending pauses the AI on the lead, which the lead's own page renders.
-    if (leadId) revalidatePath(`/os/crm/leads/${leadId}`);
+    if (leadId) revalidatePath(`/inbox/whatsapp/crm/leads/${leadId}`);
   }
 
   return respond(request, body, redirectTo, result);

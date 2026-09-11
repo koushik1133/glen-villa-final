@@ -35,7 +35,7 @@ export async function POST(request: Request) {
 
   if (action === "send" || action === "resume") {
     const id = body.get("id");
-    if (!id) return respond(request, body, "/os/marketing/broadcasts", { ok: false, error: "id required" });
+    if (!id) return respond(request, body, "/inbox/whatsapp/marketing/broadcasts", { ok: false, error: "id required" });
 
     if (action === "send") await prepareBroadcast(id);
 
@@ -47,25 +47,25 @@ export async function POST(request: Request) {
       last = await sendBroadcastBatch(id);
     }
 
-    return respond(request, body, "/os/marketing/broadcasts", { ok: true, ...last });
+    return respond(request, body, "/inbox/whatsapp/marketing/broadcasts", { ok: true, ...last });
   }
 
   if (action === "pause" || action === "cancel") {
     const id = body.get("id");
-    if (!id) return respond(request, body, "/os/marketing/broadcasts", { ok: false, error: "id required" });
+    if (!id) return respond(request, body, "/inbox/whatsapp/marketing/broadcasts", { ok: false, error: "id required" });
     const { error } = await supabase
       .from("villa_broadcasts")
       .update({ status: action === "pause" ? "paused" : "cancelled" })
       .eq("id", id);
-    if (error) return respond(request, body, "/os/marketing/broadcasts", { ok: false, error: error.message });
-    return respond(request, body, "/os/marketing/broadcasts", { ok: true });
+    if (error) return respond(request, body, "/inbox/whatsapp/marketing/broadcasts", { ok: false, error: error.message });
+    return respond(request, body, "/inbox/whatsapp/marketing/broadcasts", { ok: true });
   }
 
   // create
   const name = body.get("name");
   const templateId = body.get("template_id");
   if (!name || !templateId) {
-    return respond(request, body, "/os/marketing/broadcasts", { ok: false, error: "name and template_id are required" });
+    return respond(request, body, "/inbox/whatsapp/marketing/broadcasts", { ok: false, error: "name and template_id are required" });
   }
 
   const { data: template } = await supabase
@@ -73,9 +73,9 @@ export async function POST(request: Request) {
     .select("id, status, variables")
     .eq("id", templateId)
     .maybeSingle();
-  if (!template) return respond(request, body, "/os/marketing/broadcasts", { ok: false, error: "template not found" });
+  if (!template) return respond(request, body, "/inbox/whatsapp/marketing/broadcasts", { ok: false, error: "template not found" });
   if (template.status !== "approved") {
-    return respond(request, body, "/os/marketing/broadcasts", { ok: false, error: "That template is not approved yet. Meta rejects sends of unapproved templates." });
+    return respond(request, body, "/inbox/whatsapp/marketing/broadcasts", { ok: false, error: "That template is not approved yet. Meta rejects sends of unapproved templates." });
   }
 
   let variables: string[] = [];
@@ -110,7 +110,7 @@ export async function POST(request: Request) {
     })
     .select("id")
     .single();
-  if (error) return respond(request, body, "/os/marketing/broadcasts", { ok: false, error: error.message });
+  if (error) return respond(request, body, "/inbox/whatsapp/marketing/broadcasts", { ok: false, error: error.message });
 
-  return respond(request, body, "/os/marketing/broadcasts", { ok: true, id: data.id });
+  return respond(request, body, "/inbox/whatsapp/marketing/broadcasts", { ok: true, id: data.id });
 }

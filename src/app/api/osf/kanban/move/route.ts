@@ -38,12 +38,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: result.error }, { status: 400 });
   }
 
-  revalidatePath("/os/crm/pipeline");
+  revalidatePath("/inbox/whatsapp/crm/pipeline");
 
   // Form submits navigate on POST — send the browser back to the board rather
   // than rendering the raw JSON response.
   if (!contentType.includes("application/json")) {
-    return NextResponse.redirect(new URL("/os/crm/pipeline", request.url), { status: 303 });
+    return NextResponse.redirect(new URL("/inbox/whatsapp/crm/pipeline", request.url), { status: 303 });
   }
   return NextResponse.json({ ok: true });
 }

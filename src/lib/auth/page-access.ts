@@ -18,6 +18,17 @@ const RULES: Array<[RegExp, Permission]> = [
   [/^\/ops\/loans/, "loans.read"],
   [/^\/ops\/customers/, "customers.read"],
   [/^\/ops\/messages/, "customers.read"],
+  // The WhatsApp workspace. Its screens moved under /inbox/whatsapp when the
+  // ported console was folded into that tab, and they must keep the permission
+  // their SUBJECT deserves rather than inheriting the inbox's customers.read —
+  // revenue, pipeline and integration settings are not front-desk data.
+  // Listed before the general /inbox/whatsapp rule because first match wins.
+  [/^\/inbox\/whatsapp\/(settings|whatsapp|simulator|automation|training)/, "workflows.manage"],
+  [/^\/inbox\/whatsapp\/(marketing|properties)/, "marketing.read"],
+  [/^\/inbox\/whatsapp\/(analytics|activity|ai|overview)/, "analytics.view"],
+  [/^\/inbox\/whatsapp\/communication/, "customers.read"],
+  [/^\/inbox\/whatsapp\/(crm|sales)/, "sales.read"],
+  // Fallback: the inbox itself, which IS front-desk work.
   [/^\/inbox\/whatsapp/, "customers.read"],
 
   // Analytics and reporting — business performance, not everyone's business.
@@ -60,17 +71,6 @@ const RULES: Array<[RegExp, Permission]> = [
   // capability, each on the data rather than on the door.
   [/^\/automation/, "marketing.read"],
   [/^\/publish-v2/, "marketing.read"],
-
-  // Ported villa-os-f module (/os). Its own Supabase RBAC is not in force here
-  // — Villa-os's session gate is — so every screen under it states a permission
-  // exactly like the rest of this map. The module reads live customer, revenue
-  // and pipeline data, so the floor is sales.read rather than a general view
-  // permission, and its configuration screens sit with the other config screens.
-  [/^\/os\/(settings|whatsapp|simulator|automation)/, "workflows.manage"],
-  [/^\/os\/(marketing|properties)/, "marketing.read"],
-  [/^\/os\/(analytics|activity|ai)/, "analytics.view"],
-  [/^\/os\/communication/, "customers.read"],
-  [/^\/os/, "sales.read"],
 
   // Configuration
   [/^\/(connections|settings)/, "workflows.manage"],

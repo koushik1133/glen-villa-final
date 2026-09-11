@@ -493,7 +493,7 @@ async function executeAction(
           str(config, "description") ??
           `${automation.name} matched ${who} on ${triggerEvent}.`,
         severity,
-        href: str(config, "href") ?? `/os/crm/leads/${lead.id}`,
+        href: str(config, "href") ?? `/inbox/whatsapp/crm/leads/${lead.id}`,
         leadId: lead.id,
       });
       return { done: true, line: `notify: notification created (${severity})` };

@@ -46,7 +46,7 @@ const AXIS = {
 function ChartTooltip() {
   return (
     <Tooltip
-      cursor={{ fill: "rgba(255,255,255,0.04)" }}
+      cursor={{ fill: "color-mix(in oklab, var(--t-primary) 6%, transparent)" }}
       contentStyle={{
         background: "var(--color-raised)",
         border: "1px solid var(--color-line-strong)",

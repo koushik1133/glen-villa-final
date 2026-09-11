@@ -8,7 +8,6 @@ import {
   Users, GitBranch, Contact, UserCheck, ListTodo, BellRing, Building2, Wallet, ShieldCheck, MessageSquare,
   PhoneCall,
   Instagram, Facebook, Linkedin, Youtube, Workflow,
-  LayoutGrid,
 } from "lucide-react";
 import clsx from "clsx";
 import type { Brand } from "@/lib/types";
@@ -67,7 +66,9 @@ const NAV: NavSection[] = [
   // on customers.read like the directory, so they filter with the CRM group.
   { group: "Engage", items: [
     { href: "/voice", label: "Voice calls", icon: PhoneCall },
-    { href: "/voice/whatsapp-training", label: "WhatsApp AI", icon: MessageSquare },
+    // One door for everything WhatsApp: the inbox, the assistant's training
+    // and the sales workspace behind it, as tabs rather than as three
+    // separate sidebar entries pointing at the same subject.
     { href: "/inbox/whatsapp", label: "WhatsApp", icon: Inbox },
   ]},
   { group: "Grow", items: [
@@ -75,13 +76,6 @@ const NAV: NavSection[] = [
     { href: "/engagement", label: "Engagement", icon: Inbox, badgeKey: "inbox" as const },
     { href: "/reviews", label: "Reviews", icon: Star, badgeKey: "reviews" as const },
     { href: "/local", label: "Local visibility", icon: MapPin },
-  ]},
-  // The ported villa-os-f module. It is a whole second console — its own CRM,
-  // properties, marketing and analytics on its own Supabase project — so it
-  // gets one door rather than thirty links interleaved with Villa-os's own.
-  // `requiredPermissionFor` gates /os on sales.read, same as this link.
-  { group: "Sales OS", items: [
-    { href: "/os", label: "Open Sales OS", icon: LayoutGrid },
   ]},
   { group: "Operations", items: [
     { href: "/ops", label: "Workspace", icon: Building2 },

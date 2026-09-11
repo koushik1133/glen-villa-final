@@ -29,9 +29,9 @@ export const dynamic = "force-dynamic";
  * the same parser.
  */
 
-const WORKFLOWS = "/os/automation/workflows";
-const ROUTING = "/os/automation/routing";
-const NOTIFICATIONS = "/os/automation/notifications";
+const WORKFLOWS = "/inbox/whatsapp/automation/workflows";
+const ROUTING = "/inbox/whatsapp/automation/routing";
+const NOTIFICATIONS = "/inbox/whatsapp/automation/notifications";
 
 /** Condition rows the form may submit, as `condition0Field`, `condition1Field`… */
 const MAX_CONDITIONS = 6;

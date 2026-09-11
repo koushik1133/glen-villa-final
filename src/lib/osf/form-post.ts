@@ -14,7 +14,7 @@ export interface PostBody {
   json: boolean;
   /** Trimmed value, or undefined when absent or blank. */
   get(name: string): string | undefined;
-  /** Checkbox semantics: "on" from a form, true/"true"/os"1" from JSON. */
+  /** Checkbox semantics: "on" from a form, true/"true"/inbox/whatsapp"1" from JSON. */
   bool(name: string): boolean;
 }
 
@@ -61,7 +61,7 @@ export async function readPost(request: Request): Promise<PostBody> {
  *
  * A plain `startsWith("//")` test is not enough, because `respond()` feeds the
  * result to the WHATWG URL parser and that parser normalises before it decides
- * on an origin: it drops tab/CR/LF anywhere in the input and treats `\` as `/os`
+ * on an origin: it drops tab/CR/LF anywhere in the input and treats `\` as `/inbox/whatsapp`
  * for http(s). So `/\evil.com` and `/<TAB>/evil.com` both parse as an
  * authority. Normalise the same way first, then confirm against the parser
  * itself and hand back its canonical output rather than the raw string.
@@ -69,8 +69,8 @@ export async function readPost(request: Request): Promise<PostBody> {
 export function safePath(value: string | undefined, fallback: string): string {
   if (!value) return fallback;
 
-  const normalized = value.replace(/[\t\n\r]/g, "").replace(/\\/g, "/os");
-  if (!normalized.startsWith("/os") || normalized.startsWith("//")) return fallback;
+  const normalized = value.replace(/[\t\n\r]/g, "").replace(/\\/g, "/inbox/whatsapp");
+  if (!normalized.startsWith("/inbox/whatsapp") || normalized.startsWith("//")) return fallback;
 
   const base = "http://safe-path.invalid";
   try {
@@ -81,7 +81,7 @@ export function safePath(value: string | undefined, fallback: string): string {
     // second pass too. `/./\evil.com` is same-origin here but normalises to
     // `//evil.com`, which is protocol-relative the next time round.
     const path = `${url.pathname}${url.search}${url.hash}`;
-    if (!path.startsWith("/os") || path.startsWith("//")) return fallback;
+    if (!path.startsWith("/inbox/whatsapp") || path.startsWith("//")) return fallback;
     return path;
   } catch {
     return fallback;
@@ -114,7 +114,7 @@ export function respond(
   // spoofed one would otherwise decide where the browser lands. A relative
   // Location is valid per RFC 7231 and every browser resolves it against the
   // request origin.
-  const target = new URL(safePath(redirectTo, "/os"), "http://form-post.invalid");
+  const target = new URL(safePath(redirectTo, "/inbox/whatsapp"), "http://form-post.invalid");
   if (!result.ok) target.searchParams.set("error", result.error);
 
   return new NextResponse(null, {

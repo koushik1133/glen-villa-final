@@ -74,13 +74,13 @@ export async function POST(request: Request) {
   if (result.ok) {
     // Both marketing pages read villa_campaign_performance, so a spend edit
     // that refreshed only the table would leave the blended ROAS beside it stale.
-    revalidatePath("/os/marketing/campaigns");
-    revalidatePath("/os/marketing/overview");
+    revalidatePath("/inbox/whatsapp/marketing/campaigns");
+    revalidatePath("/inbox/whatsapp/marketing/overview");
   }
 
   const outcome: ActionResult = result.ok ? { ok: true, id: result.id } : result;
-  // Sanitised here rather than left to respond(), whose own fallback is "/os" —
+  // Sanitised here rather than left to respond(), whose own fallback is "/inbox/whatsapp" —
   // a tampered `next` should still land the browser back on this page.
-  const back = safePath(body.get("next"), "/os/marketing/campaigns");
+  const back = safePath(body.get("next"), "/inbox/whatsapp/marketing/campaigns");
   return respond(request, body, back, outcome);
 }

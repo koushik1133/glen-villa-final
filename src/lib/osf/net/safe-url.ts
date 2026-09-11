@@ -209,13 +209,13 @@ async function allowlistSource(url: URL, raw: string): Promise<MediaUrlSource | 
  * origin — Graph needs an absolute link and will not accept a bare path.
  *
  * A "path" is only treated as one if it cannot be read as an authority. The
- * URL parser drops tab/CR/LF anywhere and treats `\` as `/os`, so `//evil.com`
+ * URL parser drops tab/CR/LF anywhere and treats `\` as `/inbox/whatsapp`, so `//evil.com`
  * and `/\evil.com` would both resolve off-origin; both are rejected here.
  */
 function toAbsolute(candidate: string): URL {
-  if (!candidate.startsWith("/os")) return new URL(candidate);
+  if (!candidate.startsWith("/inbox/whatsapp")) return new URL(candidate);
 
-  const normalized = candidate.replace(/[\t\n\r]/g, "").replace(/\\/g, "/os");
+  const normalized = candidate.replace(/[\t\n\r]/g, "").replace(/\\/g, "/inbox/whatsapp");
   if (normalized.startsWith("//")) {
     throw new UnsafeUrlError("that is not a valid asset path");
   }

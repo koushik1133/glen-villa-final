@@ -93,9 +93,9 @@ export function Stat({
 }
 
 const TEMP_STYLES: Record<string, string> = {
-  hot: "bg-[rgba(255,122,92,0.14)] text-[var(--color-hot)]",
-  warm: "bg-[rgba(239,180,92,0.14)] text-[var(--color-warm)]",
-  cold: "bg-[rgba(125,139,161,0.14)] text-[var(--color-cold)]",
+  hot: "bg-[color-mix(in_oklab,var(--c-bad)_14%,transparent)] text-[var(--color-hot)]",
+  warm: "bg-[color-mix(in_oklab,var(--c-warn)_14%,transparent)] text-[var(--color-warm)]",
+  cold: "bg-[color-mix(in_oklab,var(--t-muted)_14%,transparent)] text-[var(--color-cold)]",
 };
 
 export function TemperaturePill({ value }: { value: string }) {
@@ -110,10 +110,10 @@ export function TemperaturePill({ value }: { value: string }) {
 const TONE_STYLES = {
   neutral: "bg-[var(--color-raised)] text-[var(--color-muted)]",
   gold: "bg-[var(--color-gold-soft)] text-[var(--color-gold-300)]",
-  success: "bg-[rgba(94,201,141,0.14)] text-[var(--color-success)]",
-  warning: "bg-[rgba(239,180,92,0.14)] text-[var(--color-warm)]",
-  danger: "bg-[rgba(244,105,95,0.14)] text-[var(--color-danger)]",
-  info: "bg-[rgba(109,168,232,0.14)] text-[var(--color-info)]",
+  success: "bg-[color-mix(in_oklab,var(--c-good)_14%,transparent)] text-[var(--color-success)]",
+  warning: "bg-[color-mix(in_oklab,var(--c-warn)_14%,transparent)] text-[var(--color-warm)]",
+  danger: "bg-[color-mix(in_oklab,var(--c-bad)_14%,transparent)] text-[var(--color-danger)]",
+  info: "bg-[color-mix(in_oklab,var(--color-viz-2)_14%,transparent)] text-[var(--color-info)]",
 } as const;
 
 export type BadgeTone = keyof typeof TONE_STYLES;
@@ -140,12 +140,12 @@ export function SetupNotice({ missing, detail }: { missing: string[]; detail?: s
       {missing.length > 0 && (
         <>
           <p className="mt-1.5 text-sm text-[var(--color-ink)]">
-            Open <code className="rounded bg-black/40 px-1.5 py-0.5 text-xs">.env.local</code> and set:
+            Open <code className="rounded bg-[var(--color-raised)] px-1.5 py-0.5 text-xs">.env.local</code> and set:
           </p>
           <ul className="mt-2 space-y-1">
             {missing.map((m) => (
               <li key={m}>
-                <code className="rounded bg-black/40 px-1.5 py-0.5 text-xs text-[var(--color-gold-100)]">
+                <code className="rounded bg-[var(--color-raised)] px-1.5 py-0.5 text-xs text-[var(--color-gold-100)]">
                   {m}
                 </code>
               </li>

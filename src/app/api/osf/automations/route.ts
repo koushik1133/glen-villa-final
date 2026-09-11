@@ -145,7 +145,7 @@ export async function POST(request: Request) {
 
   const fail = (error: string, status: number) => {
     if (isJson) return NextResponse.json({ error }, { status });
-    const url = new URL("/os/automation/workflows", request.url);
+    const url = new URL("/inbox/whatsapp/automation/workflows", request.url);
     url.searchParams.set("error", error);
     return NextResponse.redirect(url, { status: 303 });
   };
@@ -154,10 +154,10 @@ export async function POST(request: Request) {
     if (typeof id !== "string" || !id) return fail("id is required", 400);
     const result = await toggleAutomation(id);
     if (!result.ok) return fail(result.error, 400);
-    revalidatePath("/os/automation/workflows");
+    revalidatePath("/inbox/whatsapp/automation/workflows");
     return isJson
       ? NextResponse.json({ ok: true, isActive: result.isActive })
-      : NextResponse.redirect(new URL("/os/automation/workflows", request.url), { status: 303 });
+      : NextResponse.redirect(new URL("/inbox/whatsapp/automation/workflows", request.url), { status: 303 });
   }
 
   if (intent !== "create") return fail(`unknown intent: ${String(intent)}`, 400);
@@ -172,8 +172,8 @@ export async function POST(request: Request) {
   });
   if (!result.ok) return fail(result.error, 400);
 
-  revalidatePath("/os/automation/workflows");
+  revalidatePath("/inbox/whatsapp/automation/workflows");
   return isJson
     ? NextResponse.json({ ok: true, id: result.id })
-    : NextResponse.redirect(new URL("/os/automation/workflows", request.url), { status: 303 });
+    : NextResponse.redirect(new URL("/inbox/whatsapp/automation/workflows", request.url), { status: 303 });
 }

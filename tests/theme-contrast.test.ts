@@ -33,20 +33,6 @@ const SCAN = ["src/components", "src/app"];
  */
 const SKIP_DIRS = [
   /(^|\/)qa-harness(\/|$)/,
-  /**
-   * The ported villa-os-f module (/os). It does not participate in this app's
-   * light/dark theme at all: `src/app/(osf)/layout.tsx` wraps it in `.osf-root`,
-   * which pins its own fixed dark-luxury palette (see the block at the end of
-   * globals.css). A utility there is on a permanently dark surface by
-   * construction, which is exactly the exemption this file's failure message
-   * describes — listing its files one by one would be a hundred entries all
-   * giving the same reason.
-   *
-   * This is a scope exemption, not a quality one: if that module is ever made
-   * theme-aware, delete these two patterns and fix what they surface.
-   */
-  /^src\/app\/\(osf\)\//,
-  /^src\/components\/osf\//,
 ];
 
 /** Utilities whose colour is baked in and therefore identical in both themes. */
@@ -70,6 +56,10 @@ const EXEMPT_FILES: Record<string, string> = {
     "every label sits directly on the photoreal tower render inside a fixed bg-black frame — the surface never flips",
   "src/components/auth/sign-in-form.tsx":
     "inline Google mark; its path fills are the vendor's fixed brand colours",
+  "src/app/(app)/inbox/whatsapp/marketing/studio/DevicePreview.tsx":
+    "renders what a post will look like ON Instagram, WhatsApp and Facebook — " +
+    "their chrome is fixed brand colour, so a preview that flipped with our " +
+    "theme would stop being a preview of anything",
 };
 
 /**
@@ -87,6 +77,8 @@ const ALLOW: Record<string, string> = {
   "src/components/showcase/cinematic-stage.tsx:bg-white/40": "slide indicator dots, over the image",
   "src/components/showcase/cinematic-stage.tsx:bg-white/70": "active slide indicator dot, over the image",
   "src/components/showcase/serenity-master-plan.tsx:bg-black/80": "modal scrim over the aerial master plan",
+  "src/components/osf/shell/CommandPalette.tsx:bg-black/70":
+    "scrim behind the command dialog — a dark veil is correct under a modal in either theme",
   "src/components/showcase/serenity-master-plan.tsx:bg-black/85": "modal scrim over the interior tour",
   "src/components/showcase/serenity-master-plan.tsx:ring-black/40":
     "villa dot outline drawn on the aerial photograph, not on a themed surface",

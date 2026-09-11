@@ -230,8 +230,8 @@ export async function audit(input: AuditInput): Promise<void> {
 export const AREA_PERMISSIONS: Array<{ prefix: string; permission: Permission }> = [
   { prefix: "/team", permission: "team:read" },
   { prefix: "/admin", permission: "settings:write" },
-  { prefix: "/os/analytics", permission: "analytics:read" },
-  { prefix: "/os/marketing", permission: "marketing:read" },
+  { prefix: "/inbox/whatsapp/analytics", permission: "analytics:read" },
+  { prefix: "/inbox/whatsapp/marketing", permission: "marketing:read" },
   { prefix: "/construction", permission: "construction:read" },
   { prefix: "/loans", permission: "loan:read" },
   { prefix: "/audit", permission: "audit:read" },

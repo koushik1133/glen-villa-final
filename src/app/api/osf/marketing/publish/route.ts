@@ -100,8 +100,8 @@ export async function POST(request: Request) {
   }
 
   if (result.ok) {
-    revalidatePath("/os/marketing/studio");
-    revalidatePath("/os/marketing/whatsapp");
+    revalidatePath("/inbox/whatsapp/marketing/studio");
+    revalidatePath("/inbox/whatsapp/marketing/whatsapp");
   }
 
   if (body.json) {
@@ -113,7 +113,7 @@ export async function POST(request: Request) {
   // Relative Location, and the target is re-derived from an allowlisted path
   // rather than from request.url — a spoofed Host header must not choose where
   // the browser lands.
-  const target = new URL(safePath(body.get("next"), "/os/marketing/studio"), "http://form-post.invalid");
+  const target = new URL(safePath(body.get("next"), "/inbox/whatsapp/marketing/studio"), "http://form-post.invalid");
   if (!result.ok) target.searchParams.set("error", result.error);
 
   return new NextResponse(null, {

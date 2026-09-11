@@ -31,17 +31,17 @@ export async function POST(request: Request) {
     if (typeof id !== "string" || !id) {
       return isJson
         ? NextResponse.json({ error: "id is required" }, { status: 400 })
-        : NextResponse.redirect(new URL("/os/automation/notifications", request.url), { status: 303 });
+        : NextResponse.redirect(new URL("/inbox/whatsapp/automation/notifications", request.url), { status: 303 });
     }
     await markRead(id);
   } else {
     return isJson
       ? NextResponse.json({ error: `unknown intent: ${String(intent)}` }, { status: 400 })
-      : NextResponse.redirect(new URL("/os/automation/notifications", request.url), { status: 303 });
+      : NextResponse.redirect(new URL("/inbox/whatsapp/automation/notifications", request.url), { status: 303 });
   }
 
-  revalidatePath("/os/automation/notifications");
+  revalidatePath("/inbox/whatsapp/automation/notifications");
   return isJson
     ? NextResponse.json({ ok: true })
-    : NextResponse.redirect(new URL("/os/automation/notifications", request.url), { status: 303 });
+    : NextResponse.redirect(new URL("/inbox/whatsapp/automation/notifications", request.url), { status: 303 });
 }

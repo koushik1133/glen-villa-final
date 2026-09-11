@@ -34,7 +34,7 @@ export async function POST(request: Request) {
 
   const respond = (payload: Record<string, unknown>, status = 200) => {
     if (!isJson) {
-      return NextResponse.redirect(new URL("/os/ai/insights", request.url), { status: 303 });
+      return NextResponse.redirect(new URL("/inbox/whatsapp/ai/insights", request.url), { status: 303 });
     }
     return NextResponse.json(payload, { status });
   };
@@ -44,13 +44,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "id is required to dismiss" }, { status: 400 });
     }
     const result = await dismissInsight(id);
-    revalidatePath("/os/ai/insights");
+    revalidatePath("/inbox/whatsapp/ai/insights");
     return result.ok ? respond({ ok: true }) : respond({ error: result.error }, 500);
   }
 
   if (action === "generate" || action === undefined || action === null || action === "") {
     const result = await generateInsights();
-    revalidatePath("/os/ai/insights");
+    revalidatePath("/inbox/whatsapp/ai/insights");
     if (!result.ok) return respond({ error: result.error }, 500);
     return respond({
       ok: true,

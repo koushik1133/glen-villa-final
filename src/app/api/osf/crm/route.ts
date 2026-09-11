@@ -27,12 +27,12 @@ export const dynamic = "force-dynamic";
 
 /** Pages whose data any of these actions can change. */
 const CRM_PATHS = [
-  "/os/crm/leads",
-  "/os/crm/pipeline",
-  "/os/crm/tasks",
-  "/os/crm/follow-ups",
-  "/os/crm/contacts",
-  "/os/crm/customers",
+  "/inbox/whatsapp/crm/leads",
+  "/inbox/whatsapp/crm/pipeline",
+  "/inbox/whatsapp/crm/tasks",
+  "/inbox/whatsapp/crm/follow-ups",
+  "/inbox/whatsapp/crm/contacts",
+  "/inbox/whatsapp/crm/customers",
 ];
 
 export async function POST(request: Request) {
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
   if (denied) return denied;
   const body = await readPost(request);
   const action = body.get("action");
-  const redirectTo = safePath(body.get("next"), "/os/crm/leads");
+  const redirectTo = safePath(body.get("next"), "/inbox/whatsapp/crm/leads");
 
   let result: ActionResult;
 
@@ -115,9 +115,9 @@ export async function POST(request: Request) {
   if (result.ok) {
     for (const path of CRM_PATHS) revalidatePath(path);
     // The lead the form came from is a dynamic segment, so it needs its own
-    // pass — revalidating "/os/crm/leads" does not reach "/os/crm/leads/[id]".
+    // pass — revalidating "/inbox/whatsapp/crm/leads" does not reach "/inbox/whatsapp/crm/leads/[id]".
     const leadId = body.get("leadId");
-    if (leadId) revalidatePath(`/os/crm/leads/${leadId}`);
+    if (leadId) revalidatePath(`/inbox/whatsapp/crm/leads/${leadId}`);
   }
 
   return respond(request, body, redirectTo, result);

@@ -24,11 +24,11 @@ export async function POST(request: Request) {
   const denied = await guard("marketing.publish");
   if (denied) return denied;
   const body = await readPost(request);
-  const back = safePath(body.get("next"), "/os/properties/inventory");
+  const back = safePath(body.get("next"), "/inbox/whatsapp/properties/inventory");
   const action = body.get("action") ?? "create-unit";
 
   const finish = (result: ActionResult) => {
-    if (result.ok) revalidatePath("/os/properties/inventory");
+    if (result.ok) revalidatePath("/inbox/whatsapp/properties/inventory");
     return respond(request, body, back, result);
   };
 

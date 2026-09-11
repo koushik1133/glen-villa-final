@@ -36,7 +36,7 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <div className="flex h-full flex-col bg-[var(--color-canvas)]">
       <div className="shrink-0 px-5 pb-4 pt-5">
-        <Link href="/os" onClick={onNavigate} className="flex items-center gap-2.5">
+        <Link href="/inbox/whatsapp" onClick={onNavigate} className="flex items-center gap-2.5">
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-[var(--color-gold-line)] bg-[var(--color-gold-soft)] font-[family-name:var(--font-display)] text-[15px] leading-none text-[var(--color-gold-300)]">
             V
           </span>

@@ -60,23 +60,23 @@ export async function POST(request: Request) {
         assignedTo: fields.assignedTo || null,
       });
       if (result.ok) {
-        revalidatePath("/os/sales/bookings");
-        revalidatePath("/os/sales/revenue");
-        revalidatePath("/os/crm/pipeline");
-        revalidatePath("/os/crm/leads");
+        revalidatePath("/inbox/whatsapp/sales/bookings");
+        revalidatePath("/inbox/whatsapp/sales/revenue");
+        revalidatePath("/inbox/whatsapp/crm/pipeline");
+        revalidatePath("/inbox/whatsapp/crm/leads");
       }
-      return respond(result, result.ok ? `/os/sales/bookings/${result.data.id}` : "/os/sales/bookings");
+      return respond(result, result.ok ? `/inbox/whatsapp/sales/bookings/${result.data.id}` : "/inbox/whatsapp/sales/bookings");
     }
 
     case "update-status": {
       const bookingId = fields.bookingId ?? "";
       const result = await updateBookingStatus(bookingId, fields.status ?? "");
       if (result.ok) {
-        revalidatePath("/os/sales/bookings");
-        revalidatePath(`/os/sales/bookings/${bookingId}`);
-        revalidatePath("/os/sales/revenue");
+        revalidatePath("/inbox/whatsapp/sales/bookings");
+        revalidatePath(`/inbox/whatsapp/sales/bookings/${bookingId}`);
+        revalidatePath("/inbox/whatsapp/sales/revenue");
       }
-      return respond(result, `/os/sales/bookings/${bookingId}`);
+      return respond(result, `/inbox/whatsapp/sales/bookings/${bookingId}`);
     }
 
     case "add-payment": {
@@ -89,22 +89,22 @@ export async function POST(request: Request) {
         status: fields.status,
       });
       if (result.ok) {
-        revalidatePath("/os/sales/bookings");
-        revalidatePath(`/os/sales/bookings/${bookingId}`);
-        revalidatePath("/os/sales/revenue");
+        revalidatePath("/inbox/whatsapp/sales/bookings");
+        revalidatePath(`/inbox/whatsapp/sales/bookings/${bookingId}`);
+        revalidatePath("/inbox/whatsapp/sales/revenue");
       }
-      return respond(result, `/os/sales/bookings/${bookingId}`);
+      return respond(result, `/inbox/whatsapp/sales/bookings/${bookingId}`);
     }
 
     case "payment-status": {
       const bookingId = fields.bookingId ?? "";
       const result = await setPaymentStatus(fields.paymentId ?? "", fields.status ?? "");
       if (result.ok) {
-        revalidatePath("/os/sales/bookings");
-        revalidatePath(`/os/sales/bookings/${bookingId}`);
-        revalidatePath("/os/sales/revenue");
+        revalidatePath("/inbox/whatsapp/sales/bookings");
+        revalidatePath(`/inbox/whatsapp/sales/bookings/${bookingId}`);
+        revalidatePath("/inbox/whatsapp/sales/revenue");
       }
-      return respond(result, `/os/sales/bookings/${bookingId}`);
+      return respond(result, `/inbox/whatsapp/sales/bookings/${bookingId}`);
     }
 
     default:

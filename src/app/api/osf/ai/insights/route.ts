@@ -10,11 +10,11 @@ export const dynamic = "force-dynamic";
  * Regenerate and dismiss for /ai/insights.
  *
  * Takes a plain form POST (so the page needs no client JS) or JSON, via the
- * shared `readPost`/os`respond` pair — which also means the redirect target is
+ * shared `readPost`/inbox/whatsapp`respond` pair — which also means the redirect target is
  * validated rather than built from the request's own Host header.
  */
 
-const PAGE = "/os/ai/insights";
+const PAGE = "/inbox/whatsapp/ai/insights";
 
 export async function POST(request: Request) {
   const denied = await guard("analytics.view");

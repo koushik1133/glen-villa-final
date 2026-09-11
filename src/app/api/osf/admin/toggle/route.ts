@@ -31,5 +31,5 @@ export async function POST(request: Request) {
     }
   }
 
-  return NextResponse.redirect(new URL("/os/settings", request.url), { status: 303 });
+  return NextResponse.redirect(new URL("/inbox/whatsapp/settings", request.url), { status: 303 });
 }

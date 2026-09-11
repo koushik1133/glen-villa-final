@@ -27,34 +27,34 @@ export async function POST(request: Request) {
     const status = body.get("status");
     const allowed = ["draft", "pending", "approved", "rejected", "paused", "disabled"];
     if (!id || !status || !allowed.includes(status)) {
-      return respond(request, body, "/os/marketing/broadcasts", { ok: false, error: "id and a valid status are required" });
+      return respond(request, body, "/inbox/whatsapp/marketing/broadcasts", { ok: false, error: "id and a valid status are required" });
     }
     const { error } = await supabase
       .from("villa_templates")
       .update({ status, ...(body.get("meta_id") ? { meta_id: body.get("meta_id") } : {}) })
       .eq("id", id);
-    if (error) return respond(request, body, "/os/marketing/broadcasts", { ok: false, error: error.message });
-    return respond(request, body, "/os/marketing/broadcasts", { ok: true });
+    if (error) return respond(request, body, "/inbox/whatsapp/marketing/broadcasts", { ok: false, error: error.message });
+    return respond(request, body, "/inbox/whatsapp/marketing/broadcasts", { ok: true });
   }
 
   if (action === "delete") {
     const id = body.get("id");
-    if (!id) return respond(request, body, "/os/marketing/broadcasts", { ok: false, error: "id required" });
+    if (!id) return respond(request, body, "/inbox/whatsapp/marketing/broadcasts", { ok: false, error: "id required" });
     const { error } = await supabase.from("villa_templates").delete().eq("id", id);
     if (error) {
       // A template a broadcast references is restrict'd — surface that plainly.
-      return respond(request, body, "/os/marketing/broadcasts", { ok: false, error: "This template is used by a broadcast and cannot be deleted." });
+      return respond(request, body, "/inbox/whatsapp/marketing/broadcasts", { ok: false, error: "This template is used by a broadcast and cannot be deleted." });
     }
-    return respond(request, body, "/os/marketing/broadcasts", { ok: true });
+    return respond(request, body, "/inbox/whatsapp/marketing/broadcasts", { ok: true });
   }
 
   const name = body.get("name");
   const templateBody = body.get("body");
   if (!name || !templateBody) {
-    return respond(request, body, "/os/marketing/broadcasts", { ok: false, error: "name and body are required" });
+    return respond(request, body, "/inbox/whatsapp/marketing/broadcasts", { ok: false, error: "name and body are required" });
   }
   if (!/^[a-z0-9_]+$/.test(name)) {
-    return respond(request, body, "/os/marketing/broadcasts", { ok: false, error: "Template names must be lowercase letters, digits and underscores — Meta's rule." });
+    return respond(request, body, "/inbox/whatsapp/marketing/broadcasts", { ok: false, error: "Template names must be lowercase letters, digits and underscores — Meta's rule." });
   }
 
   // {{1}}, {{2}}… count defines how many variables a broadcast must supply.
@@ -73,7 +73,7 @@ export async function POST(request: Request) {
     },
     { onConflict: "name,language" },
   );
-  if (error) return respond(request, body, "/os/marketing/broadcasts", { ok: false, error: error.message });
+  if (error) return respond(request, body, "/inbox/whatsapp/marketing/broadcasts", { ok: false, error: error.message });
 
-  return respond(request, body, "/os/marketing/broadcasts", { ok: true, variables });
+  return respond(request, body, "/inbox/whatsapp/marketing/broadcasts", { ok: true, variables });
 }

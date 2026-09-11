@@ -874,7 +874,7 @@ export function isImageAsset(asset: { mime_type: string | null; url: string }): 
 export function assetExtension(asset: { mime_type: string | null; url: string }): string {
   const fromUrl = /\.([a-z0-9]{2,5})(?:\?|$)/i.exec(asset.url)?.[1];
   if (fromUrl) return fromUrl.toUpperCase();
-  const subtype = asset.mime_type?.split("/os")[1];
+  const subtype = asset.mime_type?.split("/inbox/whatsapp")[1];
   return subtype ? subtype.toUpperCase() : "FILE";
 }
 

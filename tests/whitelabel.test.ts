@@ -13,9 +13,15 @@ import test, { describe } from "node:test";
  * sees them. The admin diagnostics file is the one deliberate exception.
  */
 const ROOT = process.cwd();
+// The WhatsApp workspace lives under src/app/(app)/inbox/whatsapp, so the whole
+// ported console is swept by this guard rather than sitting outside it.
 const SCAN = ["src/components", "src/app/(app)"];
 const ADMIN_ONLY = new Set(["src/components/settings/admin-diagnostics.tsx"]);
-const VENDOR = /\b(bolna|n8n|upload[- _]?post|uploadpost|groq|gemini|resend|supabase|orbit)\b/i;
+// Widened when the WhatsApp workspace was folded in: that console was built
+// against a different set of providers, and every one of them is a name the
+// client must not meet.
+const VENDOR =
+  /\b(bolna|n8n|upload[- _]?post|uploadpost|groq|gemini|resend|supabase|orbit|anthropic|claude|whisper|baileys|evolution ?api|twilio|openai|sendgrid)\b/i;
 
 function walk(dir: string, out: string[] = []): string[] {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -35,9 +41,20 @@ function readable(src: string): string[] {
   const out: string[] = [];
   // Attribute values nobody reads (class hooks, ids, urls) are not prose.
   src = src.replace(/\b(className|id|key|htmlFor|href|src|data-[\w-]+)=("[^"\n]*"|'[^'\n]*')/g, "");
+  // A string being COMPARED against is a code value, not a label. `provider ===
+  // "groq"` decides which branch runs; the branch's own text is what a person
+  // reads, and that is still scanned.
+  src = src.replace(/[=!]==\s*("[^"\n]*"|'[^'\n]*')/g, "=== 0");
   for (const m of src.matchAll(/"((?:[^"\\\n]|\\.)*)"|'((?:[^'\\\n]|\\.)*)'|`((?:[^`\\]|\\.)*)`/g)) out.push(m[1] ?? m[2] ?? m[3]);
   // JSX text may interleave `{expr}`; drop the expressions and keep the prose around them.
-  for (const m of src.matchAll(/>([^<>]+)</g)) out.push(m[1].replace(/\{[^}]*\}/g, " "));
+  // `>...<` catches JSX prose, but it also spans arrow bodies and generics in
+  // ordinary code (`=> (...)`, `Array<...>`), which swept whole server functions
+  // in as "text". Anything carrying statement punctuation is code, not prose.
+  for (const m of src.matchAll(/>([^<>]+)</g)) {
+    const text = m[1].replace(/\{[^}]*\}/g, " ");
+    if (/[;{}]|=>|\.\w+\(/.test(text)) continue;
+    out.push(text);
+  }
   return out
     .map((t) => t.trim())
     .filter(Boolean)
