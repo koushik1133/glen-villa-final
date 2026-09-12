@@ -71,6 +71,14 @@ function isPublic(pathname: string): boolean {
     pathname === "/icon.svg" ||
     pathname === "/apple-icon.png" ||
     pathname.startsWith("/brand/") ||
+    // The client's own customer-facing marketing assets — brochures, the
+    // sanctioned layout, the villa renders. WhatsApp fetches these itself, with
+    // no cookie and no way to supply one, so a gated URL reaches Meta as a
+    // redirect to the sign-in page and the customer receives nothing. Only what
+    // is marked shareable in villa_assets lives in this folder; anything
+    // internal (the sales presentation) stays at the public root and stays
+    // behind the session gate.
+    pathname.startsWith("/brochures/") ||
     pathname.startsWith("/renders/") ||
     pathname.startsWith("/samples/") ||
     // Showcase media only — never the /showcase page itself, which stays gated.

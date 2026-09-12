@@ -209,13 +209,13 @@ async function allowlistSource(url: URL, raw: string): Promise<MediaUrlSource | 
  * origin — Graph needs an absolute link and will not accept a bare path.
  *
  * A "path" is only treated as one if it cannot be read as an authority. The
- * URL parser drops tab/CR/LF anywhere and treats `\` as `/inbox/whatsapp`, so `//evil.com`
+ * URL parser drops tab/CR/LF anywhere and treats `\` as `/`, so `//evil.com`
  * and `/\evil.com` would both resolve off-origin; both are rejected here.
  */
 function toAbsolute(candidate: string): URL {
-  if (!candidate.startsWith("/inbox/whatsapp")) return new URL(candidate);
+  if (!candidate.startsWith("/")) return new URL(candidate);
 
-  const normalized = candidate.replace(/[\t\n\r]/g, "").replace(/\\/g, "/inbox/whatsapp");
+  const normalized = candidate.replace(/[\t\n\r]/g, "").replace(/\\/g, "/");
   if (normalized.startsWith("//")) {
     throw new UnsafeUrlError("that is not a valid asset path");
   }
@@ -250,9 +250,6 @@ export async function assertSendableMediaUrl(raw: unknown): Promise<SendableMedi
   if (url.protocol !== "https:" && url.protocol !== "http:") {
     throw new UnsafeUrlError("only http and https links can be sent");
   }
-  if (url.protocol === "http:" && isProduction()) {
-    throw new UnsafeUrlError("only https links can be sent");
-  }
   if (url.username || url.password) {
     throw new UnsafeUrlError("a link with embedded credentials cannot be sent");
   }
@@ -264,12 +261,32 @@ export async function assertSendableMediaUrl(raw: unknown): Promise<SendableMedi
     );
   }
 
-  // Local development serves the app's own assets from loopback, which the
-  // private-range rule would otherwise reject. Everywhere else, and for every
-  // other source, a private address means something is pointed at internal
-  // infrastructure and must not be handed to Meta.
-  const localDevOrigin = source === "app_origin" && !isProduction();
-  if (!localDevOrigin) await assertResolvesPublic(url.hostname);
+  // Plain http is refused in production for anything on the open internet —
+  // but not for the app's own origin, which a self-hosted deployment commonly
+  // serves over http on a private network name the bridge reaches directly
+  // (host.docker.internal, or loopback). This check ran BEFORE the source was
+  // known, so such a deployment could not send its own brochure at all.
+  if (url.protocol === "http:" && isProduction() && source !== "app_origin") {
+    throw new UnsafeUrlError("only https links can be sent");
+  }
+
+  // The app's OWN origin is exempt from the public-resolution check, in every
+  // environment.
+  //
+  // That check exists to stop a model being talked into pointing Meta at
+  // internal infrastructure. It cannot do that here: `app_origin` means the URL
+  // resolved against NEXT_PUBLIC_APP_URL, a value the operator configures and
+  // no message can influence — the allowlist above is the real control, as the
+  // note on assertResolvesPublic says.
+  //
+  // Enforcing it here was actively harmful. A self-hosted deployment reaches
+  // its own assets on a name that is only meaningful to the machine fetching
+  // them — `host.docker.internal` for a containerised WhatsApp bridge, or
+  // loopback in development. Neither resolves from the app process, so every
+  // brochure, layout and photo spent a DNS timeout and was then refused as
+  // "that host could not be resolved". Measured: 80-115s per send, then the
+  // customer was told the sales team would follow up.
+  if (source !== "app_origin") await assertResolvesPublic(url.hostname);
 
   return { href: url.href, source };
 }

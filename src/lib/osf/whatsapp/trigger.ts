@@ -12,7 +12,7 @@
  *    space (U+202F), non-breaking space (U+00A0), zero-width marks, BOM. A
  *    plain trim() leaves some of these, so "⁠Villa" would fail to match.
  *  - Leading punctuation or an emoji before the word ("👉 Villa", "*Villa*").
- *  - "village"/inbox/whatsapp"villas" must NOT match — the trigger is the whole word "villa",
+ *  - "village"/"villas" must NOT match — the trigger is the whole word "villa",
  *    so the first word must equal it, not merely start with it.
  */
 

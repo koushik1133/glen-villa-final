@@ -104,7 +104,7 @@ function webUrl(value: string | undefined, label: string): string | null | { err
 function logoRef(value: string | undefined): string | null | { error: string } {
   if (value === undefined || value === "") return null;
 
-  if (value.startsWith("/inbox/whatsapp")) {
+  if (value.startsWith("/")) {
     // `//host` is protocol-relative, i.e. a remote origin wearing a path's clothes.
     if (value.startsWith("//")) return { error: "Logo path must not start with //" };
     if (/[\t\n\r\\]/.test(value)) return { error: "Logo path contains an illegal character" };
@@ -116,7 +116,7 @@ function logoRef(value: string | undefined): string | null | { error: string } {
 
 /** True when the browser will actually load this reference under the console's CSP. */
 export function logoIsSameOrigin(value: string | null | undefined): boolean {
-  return typeof value === "string" && value.startsWith("/inbox/whatsapp") && !value.startsWith("//");
+  return typeof value === "string" && value.startsWith("/") && !value.startsWith("//");
 }
 
 function optionalText(value: string | undefined, max: number, label: string): string | null | { error: string } {

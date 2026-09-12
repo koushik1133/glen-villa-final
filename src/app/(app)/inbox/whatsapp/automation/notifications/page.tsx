@@ -75,7 +75,7 @@ function href(read: ReadFilter, kind: string | null): string {
  * this page a redirector for whatever wrote it.
  */
 function inAppHref(value: string | null): string | null {
-  if (!value || !value.startsWith("/inbox/whatsapp") || value.startsWith("//")) return null;
+  if (!value || !value.startsWith("/") || value.startsWith("//")) return null;
   return value;
 }
 

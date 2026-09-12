@@ -89,7 +89,7 @@ function waFormat(text: string): ReactNode[] {
  */
 function Avatar({ brand, size = 32 }: { brand: Brand; size?: number }) {
   const initial = brand.name.trim().charAt(0).toUpperCase() || "V";
-  const local = brand.logoUrl && brand.logoUrl.startsWith("/inbox/whatsapp") && !brand.logoUrl.startsWith("//");
+  const local = brand.logoUrl && brand.logoUrl.startsWith("/") && !brand.logoUrl.startsWith("//");
   return (
     <span
       style={{ width: size, height: size }}

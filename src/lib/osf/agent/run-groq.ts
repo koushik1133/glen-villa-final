@@ -242,6 +242,28 @@ ${kb}` },
 
   try {
    let toolFailNudges = 0;
+  /**
+   * A delivery that fails is final for this turn.
+   *
+   * Without this the model treats "Delivery failed" as something to try again,
+   * and with eight turns available it will: measured at 80-115 seconds of
+   * retrying before the customer got an answer. One failure is enough to know
+   * the send is not going to work; the model should say so and move on, which
+   * is what the tool error already tells it to do.
+   */
+  let deliveryFailures = 0;
+
+  /**
+   * Tool calls already made this run, as name+arguments.
+   *
+   * A model that asks the same question twice gets the same answer twice and
+   * learns nothing, but it still costs a full round-trip each time — and with
+   * eight turns available a repeat loop spent 36 seconds before the customer
+   * saw anything. The second identical call is served from the first result
+   * instead, and the loop stops.
+   */
+  const seenCalls = new Map<string, string>();
+
    for (let turn = 0; turn < MAX_TURNS; turn++) {
     let response;
     try {
@@ -300,6 +322,8 @@ ${kb}` },
     }
 
     const toolCalls = message.tool_calls ?? [];
+    // Set when the model re-asked something it had already been told.
+    let repeatedCall = false;
 
     // Empty content AND no tool call means the model produced nothing usable —
     // usually reasoning that ran into the token ceiling (finish_reason
@@ -339,7 +363,28 @@ ${kb}` },
         // the handler reports a clean error instead of throwing here.
       }
 
+      // An identical call already answered this run is not asked again.
+      const signature = `${call.function.name}:${JSON.stringify(input ?? {})}`;
+      const cached = seenCalls.get(signature);
+      if (cached !== undefined) {
+        repeatedCall = true;
+        messages.push({ role: "tool", tool_call_id: call.id, content: cached });
+        continue;
+      }
+
       const output = await executeTool(ctx, call.function.name, input);
+      seenCalls.set(signature, JSON.stringify(output));
+
+      // One failed send is final. See the note on `deliveryFailures`.
+      if (
+        call.function.name === "send_media" &&
+        output &&
+        typeof output === "object" &&
+        (output as { ok?: boolean }).ok === false
+      ) {
+        deliveryFailures += 1;
+      }
+
       messages.push({
         role: "tool",
         tool_call_id: call.id,
@@ -348,6 +393,15 @@ ${kb}` },
     }
 
     if (lead.opted_out) break;
+
+    // Stop looping once a send has failed. The tool error already tells the
+    // model to say the sales team will follow up; letting it retry only spends
+    // the customer's time on an outcome that will not change.
+    if (deliveryFailures > 0) break;
+
+    // The model is going in circles: it re-issued a call whose answer it already
+    // holds. Another turn produces the same result, so stop and let it answer.
+    if (repeatedCall) break;
 
     // SPEED: the model already gave the customer a reply this turn, and the only
     // tools it called were side-effects (recording the lead, logging, handoff).
