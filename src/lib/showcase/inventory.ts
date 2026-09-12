@@ -3,6 +3,14 @@ import { SERENITY_PLOTS } from "./serenity-plots";
 import { isPublishedPlotSize, villaTypeFor } from "./villa-types";
 import { onyxUnitType } from "./onyx-units";
 import { logActivity } from "../engine/publisher";
+import {
+  HANDOVER_STAGE_DEPARTMENT,
+  HANDOVER_STAGE_LABEL,
+  isHandoverStage,
+  stageAllowedForStatus,
+  type HandoverStage,
+} from "./handover";
+import type { LeadStatus } from "../crm/types";
 import type { InventoryUnit, UnitStatus } from "../types";
 
 /**
@@ -200,11 +208,59 @@ export interface SetStatusOptions {
   notes?: string;
   assignedTo?: string;
   blockedUntil?: string;
+  /** Post-booking stage; see lib/showcase/handover.ts. */
+  handoverStage?: HandoverStage;
   /** Bypass the transition guard for a manager correction. */
   override?: boolean;
 }
 
 export class InventoryError extends Error {}
+
+/* ------------------------------------------------------- CRM synchronisation */
+
+/**
+ * How far along a lead is. Used only to refuse to move one backwards.
+ * `lost` is deliberately absent: a lost lead is never rewritten by inventory.
+ */
+const LEAD_RANK: Record<Exclude<LeadStatus, "lost">, number> = {
+  new: 0,
+  contacted: 1,
+  site_visit_scheduled: 2,
+  negotiation: 3,
+  booking_token_paid: 4,
+  won: 5,
+};
+
+/**
+ * The single mapping from a unit's sale status to the lead's status.
+ *
+ * Exported and pure so the rule can be tested on its own — the whole point of
+ * the synchronisation is that the master plan and the CRM can never disagree,
+ * and a rule inlined inside a `mutate()` callback is a rule nobody can check.
+ *
+ * Returns the status the lead should move to, or `null` for "leave it alone".
+ * Two things are never done: a lead is never moved backwards (a won deal is not
+ * dragged back to "contacted" because somebody re-picked "enquiry" on the plan),
+ * and a lead already marked `lost` is never touched at all — that is a human
+ * judgement with a reason attached to it.
+ */
+export function leadStatusForUnitStatus(
+  unitStatus: UnitStatus,
+  current: LeadStatus,
+): LeadStatus | null {
+  if (current === "lost") return null;
+
+  let target: LeadStatus | null = null;
+  if (unitStatus === "sold") target = "won";
+  else if (unitStatus === "deal_pending") target = "booking_token_paid";
+  // An enquiry only tells us somebody has been in touch; it must not overwrite
+  // a lead that has already progressed past that, so it applies to "new" only.
+  else if (unitStatus === "enquiry" && current === "new") target = "contacted";
+
+  if (!target) return null;
+  if (LEAD_RANK[target as Exclude<LeadStatus, "lost">] <= LEAD_RANK[current]) return null;
+  return target;
+}
 
 /**
  * Move a unit's status, recording who did it.
@@ -212,43 +268,93 @@ export class InventoryError extends Error {}
  * The one hard rule is that "sold" needs a customer on the record (or an
  * explicit override): a unit marked sold with nobody attached is how a villa
  * disappears from the site with no way to find out who bought it.
+ *
+ * `status` may be `null` to edit the other fields (owner, handover stage)
+ * without restating the sale status — changing who owns a villa should not
+ * force the caller to re-assert whether it is sold.
  */
 export function setUnitStatus(
   unitId: string,
-  status: UnitStatus,
+  status: UnitStatus | null,
   actor: string,
   opts: SetStatusOptions = {},
 ): InventoryUnit {
-  if (!UNIT_STATUSES.includes(status)) throw new InventoryError(`Unknown status "${status}".`);
+  if (status !== null && !UNIT_STATUSES.includes(status)) {
+    throw new InventoryError(`Unknown status "${status}".`);
+  }
+  if (opts.handoverStage !== undefined && !isHandoverStage(opts.handoverStage)) {
+    throw new InventoryError(`Unknown handover stage "${opts.handoverStage}".`);
+  }
 
   const updated = mutate((db) => {
     const unit = db.inventoryUnits.find((u) => u.id === unitId);
     if (!unit) throw new InventoryError("Unit not found.");
 
+    const next = status ?? unit.status;
     const customerId = opts.customerId ?? unit.customerId;
-    if (status === "sold" && !customerId && !opts.override) {
+    if (next === "sold" && !customerId && !opts.override) {
       throw new InventoryError("A unit can only be marked sold with a linked customer.");
     }
-    if (status === "deal_pending" && !(opts.leadId ?? unit.leadId) && !opts.override) {
+    if (next === "deal_pending" && !(opts.leadId ?? unit.leadId) && !opts.override) {
       throw new InventoryError("A deal in progress needs a linked lead.");
+    }
+    // A handover past the booking on a unit nobody has committed to buy is a
+    // data bug that reaches the public layout — refuse it rather than paint it.
+    if (opts.handoverStage !== undefined && !opts.override && !stageAllowedForStatus(opts.handoverStage, next)) {
+      throw new InventoryError(
+        `Handover stage "${HANDOVER_STAGE_LABEL[opts.handoverStage]}" needs the unit to be deal pending or sold.`,
+      );
     }
 
     const from = unit.status;
-    unit.status = status;
+    const fromStage = unit.handoverStage;
+    const fromOwner = unit.assignedTo;
+    unit.status = next;
     if (opts.leadId !== undefined) unit.leadId = opts.leadId;
     if (opts.customerId !== undefined) unit.customerId = opts.customerId;
-    if (opts.assignedTo !== undefined) unit.assignedTo = opts.assignedTo;
+    if (opts.assignedTo !== undefined) unit.assignedTo = opts.assignedTo || undefined;
     if (opts.blockedUntil !== undefined) unit.blockedUntil = opts.blockedUntil;
+    if (opts.handoverStage !== undefined) unit.handoverStage = opts.handoverStage;
     // A human touched it: it is no longer demo data and re-seeding leaves it be.
     unit.notes = opts.notes ?? (unit.notes === DEMO_NOTE ? undefined : unit.notes);
     unit.updatedAt = new Date().toISOString();
-    return { unit: { ...unit }, from };
+
+    // Same transaction as the unit write: the CRM lead and the master plan can
+    // never end up describing different realities, not even for one request.
+    const lead = unit.leadId ? db.leads.find((l) => l.id === unit.leadId) : undefined;
+    if (lead) {
+      const target = leadStatusForUnitStatus(unit.status, lead.status);
+      if (target && target !== lead.status) {
+        lead.status = target;
+        if (target === "won") lead.wonAt = lead.wonAt ?? unit.updatedAt;
+        lead.updatedAt = unit.updatedAt;
+      }
+      if (opts.assignedTo !== undefined && unit.assignedTo && lead.assignedTo !== unit.assignedTo) {
+        lead.assignedTo = unit.assignedTo;
+        lead.updatedAt = unit.updatedAt;
+      }
+    }
+
+    return { unit: { ...unit }, from, fromStage, fromOwner };
   });
 
+  const noun = updated.unit.project === "onyx" ? "Flat" : "Villa";
+  const parts: string[] = [];
+  if (status !== null && updated.from !== status) parts.push(`${updated.from} → ${status}`);
+  else if (status !== null) parts.push(status);
+  if (opts.handoverStage !== undefined && opts.handoverStage !== updated.fromStage) {
+    const dept = HANDOVER_STAGE_DEPARTMENT[opts.handoverStage];
+    parts.push(
+      `handover ${HANDOVER_STAGE_LABEL[updated.fromStage ?? "not_started"]} → ${HANDOVER_STAGE_LABEL[opts.handoverStage]}${dept ? ` (${dept})` : ""}`,
+    );
+  }
+  if (opts.assignedTo !== undefined && (updated.unit.assignedTo ?? "") !== (updated.fromOwner ?? "")) {
+    parts.push(`owner → ${updated.unit.assignedTo ?? "unassigned"}`);
+  }
   logActivity(
     updated.unit.brandId,
     "inventory_status",
-    `${updated.unit.project === "onyx" ? "Flat" : "Villa"} ${updated.unit.unitNumber}: ${updated.from} → ${status}`,
+    `${noun} ${updated.unit.unitNumber}: ${parts.length ? parts.join(", ") : "updated"}`,
     actor,
   );
   return updated.unit;

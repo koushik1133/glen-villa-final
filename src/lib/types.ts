@@ -459,6 +459,7 @@ export interface ReportBlock {
 
 import type { Broker, CrmContact, CrmTask, Lead } from "./crm/types";
 import type { OpsDatabase } from "./ops/types";
+import type { HandoverStage } from "./showcase/handover";
 import type { VoiceAgentConfig, VoiceCallRecord } from "./voice/types";
 export type * from "./voice/types";
 export type * from "./crm/types";
@@ -629,6 +630,12 @@ export interface InventoryUnit {
   customerId?: string;
   assignedTo?: string;
   blockedUntil?: string;
+  /**
+   * Where the unit sits after the booking, and therefore which department owns
+   * it. Separate from `status` on purpose: `status` answers "can I buy it?",
+   * this answers "who is working on it?". See lib/showcase/handover.ts.
+   */
+  handoverStage?: HandoverStage;
   updatedAt: string;
   notes?: string;
 }

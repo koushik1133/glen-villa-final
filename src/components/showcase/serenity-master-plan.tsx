@@ -15,6 +15,15 @@ import clsx from "clsx";
 import { Card, SectionTitle } from "../ui";
 import { PanoramaViewer } from "./panorama-viewer";
 import { serenityTourForPlot } from "@/lib/showcase/panorama-scenes";
+import {
+  HANDOVER_STAGES,
+  HANDOVER_STAGE_DEPARTMENT,
+  HANDOVER_STAGE_DESCRIPTION,
+  HANDOVER_STAGE_LABEL,
+  isHandoverStage,
+  type HandoverStage,
+  type PaymentPosition,
+} from "@/lib/showcase/handover";
 
 export type UnitStatus =
   | "available" | "no_leads" | "enquiry" | "deal_pending" | "blocked" | "sold";
@@ -63,6 +72,15 @@ interface UnitRow {
   customerId?: string;
   leadName?: string;
   customerName?: string;
+  /** The sales person who owns this villa. */
+  assignedTo?: string;
+  handoverStage?: HandoverStage;
+}
+
+interface TeamOption {
+  id: string;
+  name: string;
+  role: string;
 }
 
 const STATUSES: UnitStatus[] = [
@@ -116,9 +134,43 @@ function normaliseUnits(payload: unknown): UnitRow[] {
       customerId: typeof u.customerId === "string" ? u.customerId : undefined,
       leadName: typeof u.leadName === "string" ? u.leadName : undefined,
       customerName: typeof u.customerName === "string" ? u.customerName : undefined,
+      assignedTo: typeof u.assignedTo === "string" && u.assignedTo ? u.assignedTo : undefined,
+      handoverStage: isHandoverStage(u.handoverStage) ? u.handoverStage : undefined,
     });
   }
   return out;
+}
+
+/** Same defensive read for the staff list the owner dropdown is built from. */
+function normaliseTeam(payload: unknown): TeamOption[] {
+  const root = payload as Record<string, unknown> | null;
+  if (!Array.isArray(root?.team)) return [];
+  const out: TeamOption[] = [];
+  for (const raw of root.team as unknown[]) {
+    const m = raw as Record<string, unknown>;
+    if (typeof m.name !== "string" || !m.name) continue;
+    out.push({
+      id: typeof m.id === "string" ? m.id : m.name,
+      name: m.name,
+      role: typeof m.role === "string" ? m.role : "",
+    });
+  }
+  return out;
+}
+
+/** `payments` is keyed by unit id; nothing here is ever written back. */
+function normalisePayments(payload: unknown): Record<string, PaymentPosition> {
+  const root = payload as Record<string, unknown> | null;
+  const raw = root?.payments;
+  if (!raw || typeof raw !== "object") return {};
+  return raw as Record<string, PaymentPosition>;
+}
+
+const INR = new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 });
+const money = (n: number) => `₹${INR.format(Math.round(n))}`;
+
+function roleLabel(role: string): string {
+  return role ? role.toLowerCase().replace(/_/g, " ") : "";
 }
 
 const Hotspots = memo(function Hotspots({
@@ -181,6 +233,9 @@ export function SerenityMasterPlan({
   canWrite: boolean;
 }) {
   const [units, setUnits] = useState<Record<string, UnitRow>>({});
+  const [team, setTeam] = useState<TeamOption[]>([]);
+  /** Derived, read-only payment position per unit id. Never edited here. */
+  const [payments, setPayments] = useState<Record<string, PaymentPosition>>({});
   const [loading, setLoading] = useState(true);
   const [imageOk, setImageOk] = useState(true);
   const [hdSrc, setHdSrc] = useState<string | null>(null);
@@ -220,10 +275,14 @@ export function SerenityMasterPlan({
         const map: Record<string, UnitRow> = {};
         for (const u of normaliseUnits(json)) map[u.unitNumber] = u;
         setUnits(map);
+        setTeam(normaliseTeam(json));
+        setPayments(normalisePayments(json));
       })
       .catch((e: unknown) => {
         if (!alive) return;
         setUnits({});
+        setTeam([]);
+        setPayments({});
         setError(e instanceof Error ? e.message : "Could not load sale statuses.");
       })
       .finally(() => alive && setLoading(false));
@@ -353,14 +412,32 @@ export function SerenityMasterPlan({
     setSelected(p.villaNo);
   }, [plots, scale]);
 
-  async function setStatus(villaNo: string, status: UnitStatus) {
+  /**
+   * One PATCH for every editable field on the panel.
+   *
+   * Only the field the user touched is sent: the route no longer demands a
+   * `status`, so changing the owner or the handover stage cannot accidentally
+   * re-assert a sale status this tab last saw minutes ago.
+   */
+  async function patchUnit(
+    villaNo: string,
+    patch: { status?: UnitStatus; assignedTo?: string; handoverStage?: HandoverStage },
+  ) {
     const before = units[villaNo];
     setSaving(true);
     setError(null);
-    setUnits((u) => ({
-      ...u,
-      [villaNo]: { ...(u[villaNo] ?? { id: villaNo, unitNumber: villaNo, status }), status },
-    }));
+    setUnits((u) => {
+      const row = u[villaNo] ?? { id: villaNo, unitNumber: villaNo, status: "available" as UnitStatus };
+      return {
+        ...u,
+        [villaNo]: {
+          ...row,
+          ...(patch.status ? { status: patch.status } : {}),
+          ...(patch.assignedTo !== undefined ? { assignedTo: patch.assignedTo || undefined } : {}),
+          ...(patch.handoverStage ? { handoverStage: patch.handoverStage } : {}),
+        },
+      };
+    });
     try {
       const res = await fetch("/api/showcase/inventory", {
         method: "PATCH",
@@ -370,12 +447,12 @@ export function SerenityMasterPlan({
           unitNumber: villaNo,
           project: "serenity",
           brandId,
-          status,
+          ...patch,
         }),
       });
       const json = (await res.json().catch(() => null)) as { ok?: boolean; error?: string } | null;
       if (!res.ok || (json && json.ok === false)) {
-        setError(json?.error ?? "Could not save the status change.");
+        setError(json?.error ?? "Could not save the change.");
         setUnits((u) => (before ? { ...u, [villaNo]: before } : u));
       }
     } catch {
@@ -647,25 +724,123 @@ export function SerenityMasterPlan({
                 );
               })()}
 
-              {canWrite && (
-                <div className="mt-4 border-t border-ink-800 pt-3">
-                  <label htmlFor="villa-status" className="text-[10.5px] font-semibold uppercase tracking-wider text-mist-400">
-                    Change status
-                  </label>
-                  <div className="mt-1.5 flex items-center gap-2">
-                    <select
-                      id="villa-status"
-                      value={statusOf(selectedPlot.villaNo)}
-                      onChange={(e) => setStatus(selectedPlot.villaNo, e.target.value as UnitStatus)}
-                      className="flex-1 rounded-xl border border-ink-700 bg-ink-900/70 px-2.5 py-1.5 text-xs text-mist-100"
-                    >
-                      {STATUSES.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
-                    </select>
-                    {saving && <Loader2 size={14} className="animate-spin text-mist-400" />}
+              {(() => {
+                const row = units[selectedPlot.villaNo];
+                const stage: HandoverStage = row?.handoverStage ?? "not_started";
+                const dept = HANDOVER_STAGE_DEPARTMENT[stage];
+                const pos = row ? payments[row.id] : undefined;
+                return (
+                  <div className="mt-4 space-y-3 border-t border-ink-800 pt-3">
+                    {canWrite ? (
+                      <div>
+                        <label htmlFor="villa-status" className="text-[10.5px] font-semibold uppercase tracking-wider text-mist-400">
+                          Change status
+                        </label>
+                        <div className="mt-1.5 flex items-center gap-2">
+                          <select
+                            id="villa-status"
+                            value={statusOf(selectedPlot.villaNo)}
+                            onChange={(e) => patchUnit(selectedPlot.villaNo, { status: e.target.value as UnitStatus })}
+                            className="min-w-0 flex-1 rounded-xl border border-ink-700 bg-ink-900/70 px-2.5 py-1.5 text-xs text-mist-100"
+                          >
+                            {STATUSES.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
+                          </select>
+                          {saving && <Loader2 size={14} className="animate-spin text-mist-400" />}
+                        </div>
+                      </div>
+                    ) : null}
+
+                    {/* Who sold it. */}
+                    <div>
+                      <span className="text-[10.5px] font-semibold uppercase tracking-wider text-mist-400">Owner</span>
+                      {canWrite ? (
+                        <select
+                          aria-label="Sales owner"
+                          value={row?.assignedTo ?? ""}
+                          onChange={(e) => patchUnit(selectedPlot.villaNo, { assignedTo: e.target.value })}
+                          className="mt-1.5 w-full min-w-0 rounded-xl border border-ink-700 bg-ink-900/70 px-2.5 py-1.5 text-xs text-mist-100"
+                        >
+                          <option value="">Unassigned</option>
+                          {team.map((m) => (
+                            <option key={`${m.name}::${m.role}`} value={m.name}>
+                              {m.role ? `${m.name} · ${roleLabel(m.role)}` : m.name}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <p className="mt-1 text-[11.5px] text-mist-100">{row?.assignedTo ?? "Unassigned"}</p>
+                      )}
+                    </div>
+
+                    {/* Which department has it, and what they are doing. */}
+                    <div>
+                      <span className="text-[10.5px] font-semibold uppercase tracking-wider text-mist-400">Handover stage</span>
+                      {canWrite ? (
+                        <select
+                          aria-label="Handover stage"
+                          value={stage}
+                          onChange={(e) => patchUnit(selectedPlot.villaNo, { handoverStage: e.target.value as HandoverStage })}
+                          className="mt-1.5 w-full min-w-0 rounded-xl border border-ink-700 bg-ink-900/70 px-2.5 py-1.5 text-xs text-mist-100"
+                        >
+                          {HANDOVER_STAGES.map((s) => (
+                            <option key={s} value={s}>
+                              {HANDOVER_STAGE_DEPARTMENT[s]
+                                ? `${HANDOVER_STAGE_LABEL[s]} · ${HANDOVER_STAGE_DEPARTMENT[s]}`
+                                : HANDOVER_STAGE_LABEL[s]}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <p className="mt-1 text-[11.5px] text-mist-100">{HANDOVER_STAGE_LABEL[stage]}</p>
+                      )}
+                      <p className="mt-1 text-[10.5px] leading-snug text-mist-500">
+                        {dept ? `${dept} · ` : ""}{HANDOVER_STAGE_DESCRIPTION[stage]}
+                      </p>
+                    </div>
+
+                    {/* Payment position. Read-only: these figures are summed from
+                        the receipts accounts recorded against this villa, so there
+                        is nothing here a person may type. A wrong number is fixed
+                        by a transaction in the ledger, never by an edit here. */}
+                    <div>
+                      <span className="text-[10.5px] font-semibold uppercase tracking-wider text-mist-400">Payments</span>
+                      {!pos ? (
+                        <p className="mt-1 text-[11.5px] text-mist-400">No payment record linked yet</p>
+                      ) : (
+                        <dl className="mt-1.5 space-y-1 text-[11.5px]">
+                          <div className="flex justify-between gap-2">
+                            <dt className="text-mist-400">Collected</dt>
+                            <dd className="tnum text-emerald-300">{money(pos.paid)}</dd>
+                          </div>
+                          <div className="flex justify-between gap-2">
+                            <dt className="text-mist-400">Pending</dt>
+                            <dd className="tnum text-mist-100">{money(pos.pending)}</dd>
+                          </div>
+                          <div className="flex justify-between gap-2">
+                            <dt className="text-mist-400">Overdue</dt>
+                            <dd className={clsx("tnum", pos.overdue > 0 ? "text-rose-300" : "text-mist-100")}>
+                              {money(pos.overdue)}
+                            </dd>
+                          </div>
+                          <div className="flex justify-between gap-2">
+                            <dt className="text-mist-400">Next due</dt>
+                            <dd className="text-right text-mist-100">
+                              {pos.next
+                                ? `${pos.next.label} · ${money(pos.next.amount)} · ${pos.next.date.slice(0, 10)}`
+                                : "Fully collected"}
+                            </dd>
+                          </div>
+                        </dl>
+                      )}
+                      <p className="mt-1 text-[10px] leading-snug text-mist-500">
+                        Derived from recorded transactions · read-only here.
+                      </p>
+                    </div>
+
+                    {error && <p className="text-[11px] text-rose-400">{error}</p>}
                   </div>
-                  {error && <p className="mt-2 text-[11px] text-rose-400">{error}</p>}
-                </div>
-              )}
+                );
+              })()}
             </div>
           )}
         </div>
