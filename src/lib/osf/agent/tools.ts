@@ -7,27 +7,35 @@ import type Anthropic from "@anthropic-ai/sdk";
  * position 0 of the prompt, so adding, removing or reordering an entry
  * invalidates the entire prompt cache. Append new tools at the end.
  *
- * Descriptions are prescriptive about WHEN to call, not just what the tool
- * does — that measurably raises the should-call rate.
+ * TOKEN BUDGET — read before editing.
+ *
+ * These schemas are resent on EVERY call and are the largest single item in
+ * each request, so on the Groq free tier (8k tokens/minute) prose here is paid
+ * per turn and directly costs reply latency. Keep every description
+ * telegraphic: one clause for what the tool does, one for when to call it, and
+ * nothing else. Do NOT restore explanatory prose. Anything a parameter NAME
+ * already says (project_slug, villa_type, verbatim) gets no description at all,
+ * and anything execute.ts already enforces (title/body/caption length caps)
+ * must not be re-stated here.
+ *
+ * The clauses that ARE kept are load-bearing behaviour, not decoration:
+ *   - search_knowledge_base must run BEFORE a factual answer, and an empty
+ *     result means the agent does not know.
+ *   - send_media's url must be copied from a get_assets result. A composed URL
+ *     once sent a 404 page to a customer as "brochure.pdf".
+ *   - "brochure" means ALL approved brochures, one send_media call each.
+ *   - a location/map is a text link, never send_media.
  */
 export const TOOLS: Anthropic.Tool[] = [
   {
     name: "search_knowledge_base",
     description:
-      "Search the approved project knowledge base. Call this BEFORE answering any factual question about a project — amenities, clubhouse, parks, specifications, materials, construction, approvals, RERA, HMDA, possession date, location, connectivity, distances, nearby schools or hospitals, sustainability, security, utilities, parking, or anything the customer asks 'what', 'how many', 'is there' or 'do you have' about. Returns only approved content. If it returns nothing relevant, you do not know the answer.",
+      "Approved facts. Call BEFORE any factual answer; no hit = you don't know.",
     input_schema: {
       type: "object",
       properties: {
-        query: {
-          type: "string",
-          description:
-            "What the customer wants to know, in your own words. e.g. 'clubhouse size and facilities' or 'distance to airport'.",
-        },
-        project_slug: {
-          type: "string",
-          description:
-            "Optional. Restrict to one project when the customer named it. Omit to search all projects.",
-        },
+        query: { type: "string" },
+        project_slug: { type: "string" },
       },
       required: ["query"],
     },
@@ -35,17 +43,13 @@ export const TOOLS: Anthropic.Tool[] = [
   {
     name: "get_villa_types",
     description:
-      "List the real villa configurations for a project — plot size, built-up area, facing, bedrooms, floors and price. Call this whenever the customer asks about sizes, BHK, plot area, square footage, facing, or layouts, and ALWAYS before recommending an option. Never describe a villa type from memory. A null price or null bedroom count means that fact is unconfirmed and you must say the sales team will confirm it.",
+      "Real configs/sizes/prices. Call before describing or recommending; null = unconfirmed.",
     input_schema: {
       type: "object",
       properties: {
-        project_slug: { type: "string", description: "Optional project slug filter." },
-        max_budget_inr: {
-          type: "number",
-          description:
-            "Optional. Filter to types at or under this rupee amount. Types with no recorded price are always returned, flagged as unconfirmed.",
-        },
-        bedrooms: { type: "number", description: "Optional bedroom count filter." },
+        project_slug: { type: "string" },
+        max_budget_inr: { type: "number" },
+        bedrooms: { type: "number" },
       },
       required: [],
     },
@@ -53,12 +57,12 @@ export const TOOLS: Anthropic.Tool[] = [
   {
     name: "check_availability",
     description:
-      "Check live unit inventory. Call whenever the customer asks what is available, what is left, how many are unsold, or about a specific unit number. If this reports that no live inventory is connected, tell the customer the sales team will confirm current availability — do NOT imply you can see stock, and never invent a unit number or a count.",
+      "Live inventory. If none, the team confirms; never invent a unit or count.",
     input_schema: {
       type: "object",
       properties: {
-        project_slug: { type: "string", description: "Optional project slug filter." },
-        villa_type: { type: "string", description: "Optional villa type name filter." },
+        project_slug: { type: "string" },
+        villa_type: { type: "string" },
       },
       required: [],
     },
@@ -66,7 +70,7 @@ export const TOOLS: Anthropic.Tool[] = [
   {
     name: "get_assets",
     description:
-      "Retrieve approved marketing material — brochure, floor plan, site plan, master plan, price sheet, images, video, virtual tour, location map. Call when the customer asks for any of these, or when sending one would obviously help (e.g. after recommending a villa type, get its floor plan). Returns only the current approved version. Retrieving does not send it — call send_media to actually deliver it. \"The brochure\" means every brochure this returns, not the first one. kind \"location_map\" returns a map_link to paste into your reply as text, not a file to send.",
+      'Fetch approved files; does not send. "Brochure" = ALL returned. location_map gives a map_link for your text.',
     input_schema: {
       type: "object",
       properties: {
@@ -84,13 +88,9 @@ export const TOOLS: Anthropic.Tool[] = [
             "location_map",
             "other",
           ],
-          description: "Which kind of material to fetch.",
         },
-        project_slug: { type: "string", description: "Optional project slug filter." },
-        villa_type: {
-          type: "string",
-          description: "Optional villa type name, for type-specific floor plans.",
-        },
+        project_slug: { type: "string" },
+        villa_type: { type: "string" },
       },
       required: ["kind"],
     },
@@ -98,11 +98,11 @@ export const TOOLS: Anthropic.Tool[] = [
   {
     name: "send_media",
     description:
-      "Deliver a retrieved asset to the customer on WhatsApp. Only pass a URL that came back from get_assets in this conversation, copied character for character — never a URL you constructed, guessed, shortened or remembered. Include a short caption saying what it is. This sends FILES only: never pass a Google Maps or other web-page link, and never use kind \"location_map\" — a location goes into your reply as a plain text link. When get_assets returned more than one brochure, call this once for EACH of them.",
+      "Send a file. url must be copied exactly from get_assets, never composed. No web/map links, never location_map. One call per file.",
     input_schema: {
       type: "object",
       properties: {
-        url: { type: "string", description: "Asset URL returned by get_assets." },
+        url: { type: "string" },
         kind: {
           type: "string",
           enum: [
@@ -118,60 +118,39 @@ export const TOOLS: Anthropic.Tool[] = [
             "other",
           ],
         },
-        caption: { type: "string", description: "One short line describing the file." },
+        caption: { type: "string" },
       },
       required: ["url", "kind"],
     },
   },
   {
     name: "send_options",
-    description:
-      "Send your message with tappable choices instead of asking the customer to type. Use this whenever the answer is one of a small known set — villa type, budget band, site-visit day, financing method, yes/no. It measurably raises reply rates over free text, so prefer it for any closed question. Do not use it for open questions, and do not send options the customer did not ask to choose between.",
+    description: "2-10 tappable choices. Closed questions only.",
     input_schema: {
       type: "object",
       properties: {
-        body: {
-          type: "string",
-          description: "The question, in your normal voice. Max 1024 characters.",
-        },
+        body: { type: "string" },
         options: {
           type: "array",
-          description:
-            "2 to 10 choices. Up to 3 render as buttons; 4 or more become a tappable menu automatically.",
           items: {
             type: "object",
             properties: {
-              id: {
-                type: "string",
-                description:
-                  "Short stable identifier, e.g. 'budget_3_4cr'. Comes back to you verbatim when tapped.",
-              },
-              title: {
-                type: "string",
-                description: "What the customer sees. Keep under 20 characters or it gets trimmed.",
-              },
-              description: {
-                type: "string",
-                description: "Optional second line, menu style only. Under 72 characters.",
-              },
+              id: { type: "string" },
+              title: { type: "string" },
+              description: { type: "string" },
             },
             required: ["id", "title"],
           },
         },
-        list_button_label: {
-          type: "string",
-          description:
-            "Only for 4+ options: the label on the button that opens the menu, e.g. 'View villa types'. Defaults to 'Choose'.",
-        },
-        footer: { type: "string", description: "Optional small print under the options." },
+        list_button_label: { type: "string" },
+        footer: { type: "string" },
       },
       required: ["body", "options"],
     },
   },
   {
     name: "update_lead",
-    description:
-      "Record what you have learned about this customer in the CRM. Call this the moment they reveal anything — name, city, country, budget, bedrooms, purpose, timeline, financing, facing preference, or what matters to them. Do not batch it to the end of the conversation; the sales team reads this live. Only pass fields you actually learned; omit the rest.",
+    description: "Save what they reveal to the CRM now, not later.",
     input_schema: {
       type: "object",
       properties: {
@@ -179,10 +158,10 @@ export const TOOLS: Anthropic.Tool[] = [
         email: { type: "string" },
         city: { type: "string" },
         country: { type: "string" },
-        is_nri: { type: "boolean", description: "True if they live outside India." },
+        is_nri: { type: "boolean" },
         bedrooms: { type: "number" },
-        budget_min_inr: { type: "number", description: "Lower bound in rupees. 1 crore = 10000000." },
-        budget_max_inr: { type: "number", description: "Upper bound in rupees." },
+        budget_min_inr: { type: "number", description: "Rupees. 1 Cr = 10000000." },
+        budget_max_inr: { type: "number" },
         buyer_purpose: {
           type: "string",
           enum: [
@@ -212,35 +191,27 @@ export const TOOLS: Anthropic.Tool[] = [
           type: "string",
           enum: ["cash", "home_loan", "combination", "undecided"],
         },
-        facing_preference: { type: "string", description: "e.g. East, West, no preference." },
+        facing_preference: { type: "string" },
         preferred_location: { type: "string" },
-        project_slug: { type: "string", description: "Project they are interested in." },
-        villa_type: { type: "string", description: "Villa type they are interested in." },
+        project_slug: { type: "string" },
+        villa_type: { type: "string" },
         amenities_of_interest: { type: "array", items: { type: "string" } },
-        requirements_notes: {
-          type: "string",
-          description: "Anything else worth the sales team knowing, in one or two lines.",
-        },
-        preferred_language: { type: "string", description: "ISO code, e.g. en, hi, te." },
+        requirements_notes: { type: "string" },
+        preferred_language: { type: "string", description: "ISO code: en, hi, te." },
       },
       required: [],
     },
   },
   {
     name: "schedule_site_visit",
-    description:
-      "Log a site visit or virtual tour request. Call as soon as the customer agrees to visit or asks to. Collect the date and rough time first. This creates a request for the sales team to confirm — tell the customer the team will confirm the slot, never that it is already booked.",
+    description: "Log a visit request. The team confirms the slot; never say booked.",
     input_schema: {
       type: "object",
       properties: {
-        preferred_date: { type: "string", description: "ISO date, YYYY-MM-DD." },
-        preferred_time: { type: "string", description: "e.g. 'Saturday morning', '4pm'." },
+        preferred_date: { type: "string", description: "ISO YYYY-MM-DD." },
+        preferred_time: { type: "string" },
         visitor_count: { type: "number" },
-        visit_type: {
-          type: "string",
-          enum: ["site", "virtual"],
-          description: "'virtual' for a video walkthrough, typically for NRI or remote buyers.",
-        },
+        visit_type: { type: "string", enum: ["site", "virtual"] },
         special_requirements: { type: "string" },
       },
       required: ["visit_type"],
@@ -249,7 +220,7 @@ export const TOOLS: Anthropic.Tool[] = [
   {
     name: "request_human_handoff",
     description:
-      "Hand the conversation to a human sales representative and send them a full briefing. Call when the customer asks for a salesperson or manager, wants to negotiate or asks for a discount, is ready to book, asks a legal / tax / financing question beyond approved material, complains or is upset, asks something the knowledge base cannot answer, or shows strong buying intent. Call update_lead first so the briefing is complete. Do not call this twice for the same conversation.",
+      "Hand to a human rep with a briefing — see the reason enum. update_lead first. Once per conversation.",
     input_schema: {
       type: "object",
       properties: {
@@ -270,11 +241,7 @@ export const TOOLS: Anthropic.Tool[] = [
             "other",
           ],
         },
-        summary: {
-          type: "string",
-          description:
-            "Two or three sentences the rep can read in under 30 seconds: who this is, what they want, and what to do next.",
-        },
+        summary: { type: "string", description: "Who, what they want, next step." },
         urgency: { type: "string", enum: ["immediate", "today", "this_week"] },
       },
       required: ["reason", "summary"],
@@ -282,8 +249,7 @@ export const TOOLS: Anthropic.Tool[] = [
   },
   {
     name: "log_objection",
-    description:
-      "Record a concern or push-back the customer raised — price, location, distance, size, amenities, financing, possession timeline, developer trust, maintenance, legal, or needing family approval. Log it even when you address it successfully. This is aggregated anonymously for the marketing team, so log every occurrence.",
+    description: "Log push-back, even if handled well.",
     input_schema: {
       type: "object",
       properties: {
@@ -304,32 +270,30 @@ export const TOOLS: Anthropic.Tool[] = [
             "other",
           ],
         },
-        verbatim: { type: "string", description: "What the customer actually said." },
+        verbatim: { type: "string" },
       },
       required: ["category"],
     },
   },
   {
     name: "log_unanswered_question",
-    description:
-      "Record a question you could not answer from the knowledge base. Call this every time you tell a customer you will have the team confirm something — otherwise nobody follows up and you have made a promise the company cannot keep.",
+    description: "Log what you couldn't answer and promised to check.",
     input_schema: {
       type: "object",
       properties: {
-        topic: { type: "string", description: "Short topic label, e.g. 'maintenance charges'." },
-        verbatim: { type: "string", description: "The customer's question." },
+        topic: { type: "string" },
+        verbatim: { type: "string" },
       },
       required: ["topic"],
     },
   },
   {
     name: "opt_out",
-    description:
-      "Mark this customer as opted out of all messaging. Call immediately and without argument if they say stop, unsubscribe, remove me, don't message me, do not contact me, or anything equivalent in any language. Acknowledge briefly and politely, then send nothing further.",
+    description: "Mark opted out. Call at once on stop/unsubscribe, any language.",
     input_schema: {
       type: "object",
       properties: {
-        verbatim: { type: "string", description: "What they said." },
+        verbatim: { type: "string" },
       },
       required: [],
     },

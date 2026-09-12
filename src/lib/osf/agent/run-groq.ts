@@ -292,9 +292,7 @@ ${kb}` },
   let mediaSent = 0;
   const MAX_MEDIA_PER_MESSAGE = 2;
 
-   const T0 = Date.now(); // TEMP-INSTRUMENT
    for (let turn = 0; turn < MAX_TURNS; turn++) {
-    const tTurn = Date.now(); // TEMP-INSTRUMENT
     let response;
     try {
       response = await completionWithFailover({
@@ -323,7 +321,6 @@ ${kb}` },
       throw e;
     }
 
-    console.error(`[T] turn=${turn} groq_ms=${Date.now() - tTurn} elapsed=${Date.now() - T0} calls=${(response.choices[0]?.message?.tool_calls ?? []).map((c) => `${(c as { function: { name: string; arguments: string } }).function.name}(${(c as { function: { name: string; arguments: string } }).function.arguments})`).join(",")} text=${JSON.stringify((response.choices[0]?.message?.content ?? "").slice(0, 60))} in=${response.usage?.prompt_tokens} out=${response.usage?.completion_tokens}`); // TEMP-INSTRUMENT
     const message = response.choices[0]?.message;
     if (!message) break;
 
@@ -418,9 +415,7 @@ ${kb}` },
         continue;
       }
 
-      const tTool = Date.now(); // TEMP-INSTRUMENT
       const output = await executeTool(ctx, call.function.name, input);
-      console.error(`[T]   tool ${call.function.name} ms=${Date.now() - tTool} ok=${(output as { ok?: boolean }).ok}`); // TEMP-INSTRUMENT
       seenCalls.set(signature, JSON.stringify(output));
 
       // One failed send is final. See the note on `deliveryFailures`.
