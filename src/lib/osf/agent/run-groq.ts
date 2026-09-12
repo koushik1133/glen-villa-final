@@ -119,11 +119,11 @@ async function completionWithFailover(params: CompletionParams): Promise<Complet
     const idx = (activeKey + i) % total;
     try {
       const result = (await clientFor(idx).chat.completions.create({ ...params, stream: false })) as Completion;
-      // Advance rather than stick. The limit that bites is tokens-per-minute,
-      // and one reply spends roughly half a key's minute — so staying on the
-      // key that just worked guarantees the next call 429s on it and pays a
-      // wasted probe. Round-robin gives each key's window a minute to refill
-      // and turns three free keys into three times the throughput.
+      // Advance rather than stick. The limit that bites is tokens-per-minute
+      // (8K measured on x-ratelimit-limit-tokens), and one reply spends roughly
+      // half of that — so staying on the key that just worked guarantees the
+      // next call 429s on it and pays a wasted probe. Round-robin gives each
+      // key's window time to refill before we come back to it.
       activeKey = (idx + 1) % total;
       return result;
     } catch (e) {
@@ -145,18 +145,30 @@ async function completionWithFailover(params: CompletionParams): Promise<Complet
     }
   }
 
-  // Every key is limited right now. Wait out the shortest window, then retry
-  // the whole rotation once more so the message still gets answered.
-  console.warn(`[groq] all ${total} keys limited, waiting ${Math.round(shortestWaitMs / 1000)}s then retrying`);
-  await new Promise((r) => setTimeout(r, Math.min(shortestWaitMs, 30_000)));
-  for (let i = 0; i < total; i++) {
-    const idx = (activeKey + i) % total;
-    try {
-      const result = (await clientFor(idx).chat.completions.create({ ...params, stream: false })) as Completion;
-      activeKey = idx;
-      return result;
-    } catch (e) {
-      if ((e as { status?: number })?.status !== 429) throw e;
+  // Every key is limited right now. The cap is a ROLLING tokens-per-minute
+  // window, so it refills continuously rather than all at once — a few seconds
+  // is often enough, and Groq's advertised "try again in 24s" is the wait for a
+  // full window, not for the next usable slot. So poll in short slices instead
+  // of sleeping the whole advertised delay: it recovers as soon as the budget
+  // does, and it bounds the worst case at roughly 12 seconds instead of 30.
+  // Past that the caller sends its holding line, which beats silence.
+  const SLICE_MS = 4_000;
+  const SLICES = 3;
+  for (let attempt = 0; attempt < SLICES; attempt++) {
+    const waitMs = Math.min(shortestWaitMs, SLICE_MS);
+    console.warn(
+      `[groq] all ${total} keys limited, waiting ${Math.round(waitMs / 1000)}s then retrying (${attempt + 1}/${SLICES})`,
+    );
+    await new Promise((r) => setTimeout(r, waitMs));
+    for (let i = 0; i < total; i++) {
+      const idx = (activeKey + i) % total;
+      try {
+        const result = (await clientFor(idx).chat.completions.create({ ...params, stream: false })) as Completion;
+        activeKey = (idx + 1) % total;
+        return result;
+      } catch (e) {
+        if ((e as { status?: number })?.status !== 429) throw e;
+      }
     }
   }
   throw new Error("All Groq keys are rate-limited. Add another GROQ_API_KEY_FALLBACK or upgrade to a paid tier.");
