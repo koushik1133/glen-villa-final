@@ -167,6 +167,22 @@ export type InboundOutcome =
  * quiet is the correct behaviour: a redelivered webhook, a customer who opted
  * out, and a conversation a human has taken over.
  */
+/**
+ * `villa_messages.media_kind` is a Postgres ENUM shared with `villa_assets`,
+ * whose values describe OUTBOUND sales collateral — brochure, image,
+ * master_plan, other. Inbound media is a different vocabulary: a voice note, a
+ * PDF the buyer scanned, a video of the plot.
+ *
+ * Writing "audio" into that column did not degrade, it THREW — and the insert
+ * that threw was the customer's own message, so a voice note vanished
+ * completely: not stored, not answered, no trace beyond a line in the server
+ * log. Mapped onto the values the column accepts so the message always lands;
+ * the transcript, filename and stored file carry the real detail.
+ */
+function dbMediaKind(kind: InboundMedia["kind"]): "image" | "other" {
+  return kind === "image" ? "image" : "other";
+}
+
 export async function handleInbound(params: {
   /** WhatsApp identity. Omit for Instagram, which uses instagramId instead. */
   phone?: string | null;
@@ -208,7 +224,7 @@ export async function handleInbound(params: {
   // upload yields null and the message is still recorded.
   const mediaPath = params.media ? await storeInboundMedia(lead.id, params.media) : null;
   const mediaColumns = params.media
-    ? { media_kind: params.media.kind, media_url: mediaPath }
+    ? { media_kind: dbMediaKind(params.media.kind), media_url: mediaPath }
     : {};
 
   // Meta redelivers on any non-200, so the same message can arrive twice.

@@ -66,7 +66,7 @@ export const TOOLS: Anthropic.Tool[] = [
   {
     name: "get_assets",
     description:
-      "Retrieve approved marketing material — brochure, floor plan, site plan, master plan, price sheet, images, video, virtual tour, location map. Call when the customer asks for any of these, or when sending one would obviously help (e.g. after recommending a villa type, get its floor plan). Returns only the current approved version. Retrieving does not send it — call send_media to actually deliver it.",
+      "Retrieve approved marketing material — brochure, floor plan, site plan, master plan, price sheet, images, video, virtual tour, location map. Call when the customer asks for any of these, or when sending one would obviously help (e.g. after recommending a villa type, get its floor plan). Returns only the current approved version. Retrieving does not send it — call send_media to actually deliver it. \"The brochure\" means every brochure this returns, not the first one. kind \"location_map\" returns a map_link to paste into your reply as text, not a file to send.",
     input_schema: {
       type: "object",
       properties: {
@@ -98,7 +98,7 @@ export const TOOLS: Anthropic.Tool[] = [
   {
     name: "send_media",
     description:
-      "Deliver a retrieved asset to the customer on WhatsApp. Only pass a URL that came back from get_assets in this conversation — never a URL you constructed. Include a short caption saying what it is.",
+      "Deliver a retrieved asset to the customer on WhatsApp. Only pass a URL that came back from get_assets in this conversation, copied character for character — never a URL you constructed, guessed, shortened or remembered. Include a short caption saying what it is. This sends FILES only: never pass a Google Maps or other web-page link, and never use kind \"location_map\" — a location goes into your reply as a plain text link. When get_assets returned more than one brochure, call this once for EACH of them.",
     input_schema: {
       type: "object",
       properties: {

@@ -556,7 +556,7 @@ export function SerenityMasterPlan({
         </p>
       )}
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
+      <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_272px]">
         <div
           ref={viewportRef}
           onPointerDown={onPointerDown}
@@ -621,7 +621,7 @@ export function SerenityMasterPlan({
         </div>
 
         {/* Detail drawer */}
-        <div className="rounded-2xl border border-ink-700/60 bg-ink-900/50 p-4">
+        <div className="rounded-2xl border border-ink-700/60 bg-ink-900/50 p-4 lg:sticky lg:top-4 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto">
           {!selectedPlot ? (
             <div className="flex h-full min-h-40 flex-col items-center justify-center gap-2 text-center text-[11px] text-mist-500">
               <MapPinned size={18} />
@@ -800,28 +800,6 @@ export function SerenityMasterPlan({
                         <p className="mt-1 text-[11.5px] text-mist-100">
                           {row?.buyerName ?? row?.customerName ?? "Not recorded"}
                         </p>
-                      )}
-                    </div>
-
-                    {/* Who sold it. */}
-                    <div>
-                      <span className="text-[10.5px] font-semibold uppercase tracking-wider text-mist-400">Owner</span>
-                      {canWrite ? (
-                        <select
-                          aria-label="Sales owner"
-                          value={row?.assignedTo ?? ""}
-                          onChange={(e) => patchUnit(selectedPlot.villaNo, { assignedTo: e.target.value })}
-                          className="mt-1.5 w-full min-w-0 rounded-xl border border-ink-700 bg-ink-900/70 px-2.5 py-1.5 text-xs text-mist-100"
-                        >
-                          <option value="">Unassigned</option>
-                          {team.map((m) => (
-                            <option key={`${m.name}::${m.role}`} value={m.name}>
-                              {m.role ? `${m.name} · ${roleLabel(m.role)}` : m.name}
-                            </option>
-                          ))}
-                        </select>
-                      ) : (
-                        <p className="mt-1 text-[11.5px] text-mist-100">{row?.assignedTo ?? "Unassigned"}</p>
                       )}
                     </div>
 

@@ -48,7 +48,12 @@ describe("inbound customer media is kept, not discarded", () => {
 
   test("handleInbound records media_kind and media_url on the row", () => {
     const src = read(CONVERSATION);
-    assert.match(src, /media_kind: params\.media\.kind/);
+    // media_kind goes through dbMediaKind(): the column is a Postgres enum of
+    // OUTBOUND collateral kinds, and writing "audio" into it threw — which lost
+    // the customer's voice note entirely rather than degrading.
+    assert.match(src, /media_kind: dbMediaKind\(params\.media\.kind\)/);
+    assert.match(src, /function dbMediaKind/);
+    assert.match(src, /return kind === "image" \? "image" : "other";/);
     assert.match(src, /media_url: mediaPath/);
     // Both insert paths (with and without a wa_message_id) must carry it.
     const inserts = src.match(/role: "customer"/g) ?? [];

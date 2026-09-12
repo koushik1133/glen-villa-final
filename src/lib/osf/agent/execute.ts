@@ -1,6 +1,12 @@
 import { db } from "../supabase";
 import { env } from "../env";
-import { assertSendableMediaUrl, UnsafeUrlError } from "../net/safe-url";
+import { assertSendableMediaUrl, UnsafeUrlError, type MediaUrlSource } from "../net/safe-url";
+import {
+  assertDeliverableFile,
+  isDeliverableFile,
+  isLinkOnlyUrl,
+  UndeliverableMediaError,
+} from "../net/deliverable";
 import { sendPlainText } from "../whatsapp/outbound";
 import { loadKb } from "./kb";
 import type { AgentReply, AssetKind, Lead, Project, ReplyOption, VillaType } from "../types";
@@ -402,7 +408,13 @@ async function getAssets(input: {
     ? projects.filter((p) => p.slug === input.project_slug)
     : projects;
   const ids = scoped.map((p) => p.id);
-  if (ids.length === 0) return { ok: true, assets: [] };
+  if (ids.length === 0) {
+    // An unknown project_slug used to return a bare empty list with no guidance,
+    // which is how the model ended up improvising a URL. Retry unscoped instead:
+    // the operator's approved assets are the answer either way.
+    ids.push(...projects.map((p) => p.id));
+    if (ids.length === 0) return { ok: true, assets: [], note: NO_ASSET_NOTE };
+  }
 
   // `shareable_by_ai` is the operator's per-asset kill switch on /admin. It
   // gates send_media too (see net/safe-url.ts) — filtering here as well keeps a
@@ -424,39 +436,68 @@ async function getAssets(input: {
   const { data, error } = await query;
   if (error) return { ok: false, error: "asset lookup failed" };
 
-  // Fall back to the single brochure URL from env if nothing is in the CMS yet.
-  if ((!data || data.length === 0) && input.kind === "brochure" && env.brochureUrl) {
-    return {
-      ok: true,
-      assets: [{ title: "Project brochure", url: env.brochureUrl, is_ai_generated: false }],
-    };
-  }
-  if ((!data || data.length === 0) && input.kind === "location_map" && env.projectMapsUrl) {
-    return {
-      ok: true,
-      assets: [{ title: "Location on Google Maps", url: env.projectMapsUrl, is_ai_generated: false }],
-    };
+  const rows = data ?? [];
+
+  // The location is a PLACE, not a file.
+  //
+  // PROJECT_MAPS_URL is a maps.app.goo.gl short link: a 224 KB web page. It was
+  // being handed to send_media and arriving as `location-map.pdf`, an
+  // unopenable document. It is returned here as a link to be typed into the
+  // reply — never as something to attach — alongside the hosted site layout,
+  // which IS a real PDF and is what a customer asking for "the map" usually
+  // wants to see.
+  if (input.kind === "location_map") {
+    const out: ToolResult = { ok: true, assets: rows.map(shapeAsset) };
+    if (env.projectMapsUrl) {
+      out.map_link = env.projectMapsUrl;
+      out.note =
+        `Send this Google Maps link to the customer as plain text in your reply, copied EXACTLY: ${env.projectMapsUrl} — ` +
+        "do NOT call send_media on it and do not retype or shorten it. " +
+        "If they asked for a map, layout or site plan, also call get_assets with kind \"master_plan\" and send that PDF with send_media.";
+    } else if (rows.length === 0) {
+      out.note = NO_ASSET_NOTE;
+    }
+    return out;
   }
 
-  if (!data || data.length === 0) {
-    return {
-      ok: true,
-      assets: [],
-      note:
-        "No approved asset of this kind is uploaded yet. Tell the customer you will have the sales team send it across, and call log_unanswered_question. Do not invent a link.",
-    };
+  if (rows.length === 0) {
+    // Env fallbacks are a LAST resort, and only if they are really a file.
+    // BROCHURE_URL is a Google Drive "view" page — 86 KB of HTML — so it is
+    // rejected here rather than delivered as a broken brochure.
+    if (input.kind === "brochure" && env.brochureUrl) {
+      if (await isDeliverableFile(env.brochureUrl, false)) {
+        return {
+          ok: true,
+          assets: [{ title: "Project brochure", url: env.brochureUrl, is_ai_generated: false }],
+        };
+      }
+    }
+    return { ok: true, assets: [], note: NO_ASSET_NOTE };
   }
 
+  const notes = [
+    "If is_ai_generated is true you must tell the customer the visual is an artist's impression, not a photograph of the built villa.",
+    "Send ONLY these URLs, copied exactly. Never construct, guess or shorten an asset URL.",
+  ];
+  if (input.kind === "brochure" && rows.length > 1) {
+    notes.unshift(
+      `There are ${rows.length} approved brochures. When the customer asks for "the brochure", send ALL of them — ` +
+        "one send_media call each, in the order listed.",
+    );
+  }
+
+  return { ok: true, assets: rows.map(shapeAsset), note: notes.join(" ") };
+}
+
+const NO_ASSET_NOTE =
+  "No approved asset of this kind is uploaded yet. Tell the customer you will have the sales team send it across, and call log_unanswered_question. Do not invent a link.";
+
+function shapeAsset(a: Record<string, unknown>) {
   return {
-    ok: true,
-    assets: data.map((a) => ({
-      title: a.title,
-      description: a.description,
-      url: a.url,
-      is_ai_generated: a.is_ai_generated,
-    })),
-    note:
-      "If is_ai_generated is true you must tell the customer the visual is an artist's impression, not a photograph of the built villa.",
+    title: a.title,
+    description: a.description,
+    url: a.url,
+    is_ai_generated: a.is_ai_generated,
   };
 }
 
@@ -536,6 +577,55 @@ async function sendOptions(
   return { ok: true, data: { sent: true, offered: options.map((o) => o.id) } };
 }
 
+/**
+ * Delivers every current, shareable asset of `kind` for this lead's project.
+ *
+ * Used when the URL the model passed turned out not to be a file. These rows
+ * are the operator's own approved list, each re-checked through the same two
+ * gates, so nothing here can widen what may be sent — it can only narrow it.
+ * Returns how many actually went out.
+ */
+async function sendApprovedAssetsOfKind(
+  ctx: ToolContext,
+  kind: AssetKind,
+  caption?: string,
+): Promise<number> {
+  const supabase = db();
+  let query = supabase
+    .from("villa_assets")
+    .select("url, title")
+    .eq("kind", kind)
+    .eq("is_current", true)
+    .eq("shareable_by_ai", true)
+    .limit(kind === "image" ? 3 : 4);
+  if (ctx.lead.project_interest) query = query.eq("project_id", ctx.lead.project_interest);
+
+  const { data } = await query;
+  if (!data || data.length === 0) return 0;
+
+  let sent = 0;
+  for (const row of data) {
+    try {
+      const { href, source } = await assertSendableMediaUrl(row.url as string);
+      await assertDeliverableFile(href, source === "app_origin");
+      const text = (sent === 0 ? caption : undefined) ?? (row.title as string | null) ?? undefined;
+      await ctx.deliver({ mediaUrl: href, mediaKind: kind, caption: text ?? undefined });
+      await supabase.from("villa_messages").insert({
+        conversation_id: ctx.conversationId,
+        lead_id: ctx.lead.id,
+        role: "agent",
+        body: text ?? null,
+        media_url: href,
+        media_kind: kind,
+      });
+      sent += 1;
+    } catch {
+      /* one bad row must not stop the rest */
+    }
+  }
+  return sent;
+}
+
 async function sendMedia(
   ctx: ToolContext,
   input: { url: string; kind: AssetKind; caption?: string },
@@ -543,12 +633,25 @@ async function sendMedia(
   const kind = cleanEnum(input.kind, ASSET_KINDS);
   if (!kind) return { ok: false, error: "that is not a kind of asset this agent can send" };
 
+  // A location is a link, not an attachment. Refuse before anything else so the
+  // model puts the maps URL in its reply text, where it belongs.
+  if (kind === "location_map" || isLinkOnlyUrl(input.url)) {
+    return {
+      ok: false,
+      error:
+        "The location is a link, not a file — it cannot be attached. Put the Google Maps link from get_assets into your reply as plain text, copied exactly. If they want a map to look at, send the master_plan PDF with send_media instead.",
+    };
+  }
+
+  const caption = cleanText(input.caption, 1024);
+
   // The model chose this URL, and the model is reading a customer message that
   // may be trying to choose it for them. Re-derive the allowlist from our own
   // data before anything leaves for Meta.
   let href: string;
+  let source: MediaUrlSource;
   try {
-    ({ href } = await assertSendableMediaUrl(input.url));
+    ({ href, source } = await assertSendableMediaUrl(input.url));
   } catch (e) {
     if (e instanceof UnsafeUrlError) {
       return {
@@ -559,7 +662,34 @@ async function sendMedia(
     throw e;
   }
 
-  const caption = cleanText(input.caption, 1024);
+  // Allowed is not the same as real. The app's own origin is allowlisted
+  // wholesale, so a path the model invented (observed: `/brobros/???`) passed
+  // and the customer was sent the 404 page as `brochure.pdf`. The env URLs are
+  // allowlisted by value, and both of them are web pages. Confirm there are
+  // file bytes behind this URL before WhatsApp fetches it.
+  try {
+    await assertDeliverableFile(href, source === "app_origin");
+  } catch (e) {
+    if (!(e instanceof UndeliverableMediaError)) throw e;
+    // Rather than leave the customer with nothing — the run loop stops sending
+    // after one failure, and the guarantee in run-groq only fires when
+    // send_media was never called — deliver the operator-approved assets of
+    // this kind, which is exactly what the model was told to send.
+    const rescued = await sendApprovedAssetsOfKind(ctx, kind, caption);
+    if (rescued > 0) {
+      return {
+        ok: true,
+        delivered: true,
+        note:
+          `${e.message} The ${rescued} approved ${kind} file(s) were sent instead. ` +
+          "Confirm to the customer normally and do not mention any problem. Do not call send_media again for this kind.",
+      };
+    }
+    return {
+      ok: false,
+      error: `${e.message} Call get_assets and send only what it returns. Do not tell the customer anything was sent.`,
+    };
+  }
 
   try {
     await ctx.deliver({ mediaUrl: href, mediaKind: kind, caption });

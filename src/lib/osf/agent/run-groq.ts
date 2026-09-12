@@ -25,7 +25,17 @@ function keys(): string[] {
 
 function clientFor(index: number): Groq {
   if (!groqClients[index]) {
-    groqClients[index] = new Groq({ apiKey: keys()[index] });
+    // maxRetries: 0 is load-bearing, not a tidy-up.
+    //
+    // The SDK's default is 2 retries, and on a 429 it honours the
+    // retry-after header — so it SILENTLY slept ~20s inside a single
+    // `create()` call before either succeeding or throwing. That is where the
+    // 25s replies came from: not extra turns, but one call sitting on the
+    // SDK's internal backoff while completionWithFailover below never got the
+    // chance to do the thing it exists for. Each key here is a separate free
+    // account with its own 8K-tokens/minute budget, so rotating to the next
+    // key answers in under a second; waiting does not. Let the 429 surface.
+    groqClients[index] = new Groq({ apiKey: keys()[index], maxRetries: 0 });
   }
   return groqClients[index]!;
 }
@@ -74,7 +84,7 @@ const HISTORY_LIMIT = 6;
  * The reasoning model still gets room; the empty-completion retry below covers
  * the rare case it needs a second pass.
  */
-const MAX_TOKENS = 700;
+const MAX_TOKENS = 500;
 
 /**
  * Runs one customer message through the agent using Groq's free tier.
@@ -109,7 +119,12 @@ async function completionWithFailover(params: CompletionParams): Promise<Complet
     const idx = (activeKey + i) % total;
     try {
       const result = (await clientFor(idx).chat.completions.create({ ...params, stream: false })) as Completion;
-      activeKey = idx; // Stick with whichever key just worked.
+      // Advance rather than stick. The limit that bites is tokens-per-minute,
+      // and one reply spends roughly half a key's minute — so staying on the
+      // key that just worked guarantees the next call 429s on it and pays a
+      // wasted probe. Round-robin gives each key's window a minute to refill
+      // and turns three free keys into three times the throughput.
+      activeKey = (idx + 1) % total;
       return result;
     } catch (e) {
       const status = (e as { status?: number })?.status;
@@ -181,7 +196,9 @@ async function forceSendAsset(
     .eq("kind", kind)
     .eq("is_current", true)
     .eq("shareable_by_ai", true)
-    .limit(kind === "image" ? 3 : 1);
+    // Two images answers "send me a picture"; six is a gallery dump and six
+    // sequential WhatsApp sends. Matches the cap the model is held to above.
+    .limit(kind === "image" ? 2 : 1);
   if (projectId) q = q.eq("project_id", projectId);
   const { data } = await q;
   if (!data || data.length === 0) return false;
@@ -264,7 +281,20 @@ ${kb}` },
    */
   const seenCalls = new Map<string, string>();
 
+  /**
+   * Files actually delivered this run.
+   *
+   * get_assets returns every approved image — six of them — and the model will
+   * happily send_media each one, one sequential round-trip per file, which is
+   * both slow and not what "send me a picture" asked for. Two is a generous
+   * answer to that question; the rest are one message away if they want them.
+   */
+  let mediaSent = 0;
+  const MAX_MEDIA_PER_MESSAGE = 2;
+
+   const T0 = Date.now(); // TEMP-INSTRUMENT
    for (let turn = 0; turn < MAX_TURNS; turn++) {
+    const tTurn = Date.now(); // TEMP-INSTRUMENT
     let response;
     try {
       response = await completionWithFailover({
@@ -293,6 +323,7 @@ ${kb}` },
       throw e;
     }
 
+    console.error(`[T] turn=${turn} groq_ms=${Date.now() - tTurn} elapsed=${Date.now() - T0} calls=${(response.choices[0]?.message?.tool_calls ?? []).map((c) => `${(c as { function: { name: string; arguments: string } }).function.name}(${(c as { function: { name: string; arguments: string } }).function.arguments})`).join(",")} text=${JSON.stringify((response.choices[0]?.message?.content ?? "").slice(0, 60))} in=${response.usage?.prompt_tokens} out=${response.usage?.completion_tokens}`); // TEMP-INSTRUMENT
     const message = response.choices[0]?.message;
     if (!message) break;
 
@@ -372,17 +403,30 @@ ${kb}` },
         continue;
       }
 
+      // Enough files for one message. Answered without a send so the model
+      // never claims it delivered something it did not.
+      if (call.function.name === "send_media" && mediaSent >= MAX_MEDIA_PER_MESSAGE) {
+        messages.push({
+          role: "tool",
+          tool_call_id: call.id,
+          content: JSON.stringify({
+            ok: false,
+            error:
+              "You have already sent this customer the files for this message. Do not send more now — finish your reply and offer to send the rest if they would like.",
+          }),
+        });
+        continue;
+      }
+
+      const tTool = Date.now(); // TEMP-INSTRUMENT
       const output = await executeTool(ctx, call.function.name, input);
+      console.error(`[T]   tool ${call.function.name} ms=${Date.now() - tTool} ok=${(output as { ok?: boolean }).ok}`); // TEMP-INSTRUMENT
       seenCalls.set(signature, JSON.stringify(output));
 
       // One failed send is final. See the note on `deliveryFailures`.
-      if (
-        call.function.name === "send_media" &&
-        output &&
-        typeof output === "object" &&
-        (output as { ok?: boolean }).ok === false
-      ) {
-        deliveryFailures += 1;
+      if (call.function.name === "send_media" && output && typeof output === "object") {
+        if ((output as { ok?: boolean }).ok === false) deliveryFailures += 1;
+        else mediaSent += 1;
       }
 
       messages.push({
