@@ -578,18 +578,29 @@ async function sendOptions(
 }
 
 /**
- * Delivers every current, shareable asset of `kind` for this lead's project.
+ * Delivers the current, shareable assets of `kind` for this lead's project.
  *
- * Used when the URL the model passed turned out not to be a file. These rows
- * are the operator's own approved list, each re-checked through the same two
- * gates, so nothing here can widen what may be sent — it can only narrow it.
- * Returns how many actually went out.
+ * Two callers, one behaviour: send_media falls back to this when the URL the
+ * model passed turned out not to be a file, and the inbound path uses it to
+ * guarantee that "send me the brochure" delivers every approved brochure.
+ *
+ * These rows are the operator's own approved list, and each one is still put
+ * through both gates — the allowlist and the is-it-really-a-file check — so
+ * nothing here can widen what may be sent. It can only narrow it. Returns how
+ * many actually went out.
  */
-async function sendApprovedAssetsOfKind(
-  ctx: ToolContext,
-  kind: AssetKind,
-  caption?: string,
-): Promise<number> {
+export async function deliverApprovedAssets(params: {
+  lead: Lead;
+  conversationId: string;
+  kind: AssetKind;
+  deliver: (reply: AgentReply) => Promise<void>;
+  /** Caption for the first file. Later ones use the asset's own title. */
+  caption?: string;
+  /** Canonical hrefs already delivered this turn; never sent twice. */
+  skip?: ReadonlySet<string>;
+  limit?: number;
+}): Promise<number> {
+  const { lead, conversationId, kind, deliver, caption, skip } = params;
   const supabase = db();
   let query = supabase
     .from("villa_assets")
@@ -597,8 +608,8 @@ async function sendApprovedAssetsOfKind(
     .eq("kind", kind)
     .eq("is_current", true)
     .eq("shareable_by_ai", true)
-    .limit(kind === "image" ? 3 : 4);
-  if (ctx.lead.project_interest) query = query.eq("project_id", ctx.lead.project_interest);
+    .limit(params.limit ?? (kind === "image" ? 3 : 4));
+  if (lead.project_interest) query = query.eq("project_id", lead.project_interest);
 
   const { data } = await query;
   if (!data || data.length === 0) return 0;
@@ -607,12 +618,13 @@ async function sendApprovedAssetsOfKind(
   for (const row of data) {
     try {
       const { href, source } = await assertSendableMediaUrl(row.url as string);
+      if (skip?.has(href)) continue;
       await assertDeliverableFile(href, source === "app_origin");
       const text = (sent === 0 ? caption : undefined) ?? (row.title as string | null) ?? undefined;
-      await ctx.deliver({ mediaUrl: href, mediaKind: kind, caption: text ?? undefined });
+      await deliver({ mediaUrl: href, mediaKind: kind, caption: text ?? undefined });
       await supabase.from("villa_messages").insert({
-        conversation_id: ctx.conversationId,
-        lead_id: ctx.lead.id,
+        conversation_id: conversationId,
+        lead_id: lead.id,
         role: "agent",
         body: text ?? null,
         media_url: href,
@@ -675,7 +687,13 @@ async function sendMedia(
     // after one failure, and the guarantee in run-groq only fires when
     // send_media was never called — deliver the operator-approved assets of
     // this kind, which is exactly what the model was told to send.
-    const rescued = await sendApprovedAssetsOfKind(ctx, kind, caption);
+    const rescued = await deliverApprovedAssets({
+      lead: ctx.lead,
+      conversationId: ctx.conversationId,
+      kind,
+      deliver: ctx.deliver,
+      caption,
+    });
     if (rescued > 0) {
       return {
         ok: true,

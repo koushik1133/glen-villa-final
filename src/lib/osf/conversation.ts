@@ -4,6 +4,8 @@ import { runAgent, type RunResult } from "./agent";
 import { conversationLockKey, withLock } from "./locks";
 import type { AgentReply, Conversation, Lead } from "./types";
 import { storeInboundMedia, type InboundMedia } from "./whatsapp/inbound-media";
+import { env } from "./env";
+import { deliverApprovedAssets } from "./agent/execute";
 
 /**
  * The single inbound path.
@@ -281,6 +283,14 @@ export async function handleInbound(params: {
   //
   // Different customers take different keys, so this never serialises the
   // system as a whole — only one person's own thread.
+  // Everything the turn actually sent, so the location guarantee below can tell
+  // whether the customer already got the link.
+  const sent: AgentReply[] = [];
+  const deliver = async (reply: AgentReply) => {
+    sent.push(reply);
+    await params.deliver(reply);
+  };
+
   const result = await withLock(
     conversationLockKey(lead.id),
     () =>
@@ -288,7 +298,7 @@ export async function handleInbound(params: {
         lead,
         conversation,
         customerMessage: params.text,
-        deliver: params.deliver,
+        deliver,
       }),
     {
       // Short: a customer's own back-to-back messages should not each wait out
@@ -312,9 +322,97 @@ export async function handleInbound(params: {
     return { status: "skipped", reason: "busy", lead };
   }
 
+  // GUARANTEE: someone who asked where the project is gets the map link.
+  //
+  // The location is the one asset that is not a file — it is a Google Maps
+  // link, and the only correct way to deliver it is as text the customer can
+  // tap. Attaching it as a document produced `location-map.pdf`, 220 KB of
+  // HTML that opens to nothing. Leaving it to the model produced the opposite
+  // failure: the link retyped from memory with a character added, and, when
+  // the model was rate-limited, no link at all.
+  //
+  // So it is sent from here, verbatim from the configured value, and only when
+  // the turn did not already carry it.
+  await ensureLocationLink(params.text, sent, lead, conversation.id, deliver);
+
+  // GUARANTEE: "send me the brochure" means both of them.
+  //
+  // There are two approved brochures — the full one and the mini one with the
+  // area statement — and asking for "the brochure" has always meant both. The
+  // model sends both when it is healthy; this tops up whichever it missed.
+  await ensureAllBrochures(params.text, sent, lead, conversation.id, deliver);
+
   // Fired only after the reply has been delivered, so a rule can never delay
   // or block what the customer sees.
   await fireAutomations("lead_status_changed", lead, { reload: true });
 
   return { status: "handled", result, lead };
+}
+
+/** "Where is it?", in the forms customers actually type it. */
+function asksForLocation(text: string): boolean {
+  const t = text.toLowerCase();
+  if (/\b(floor\s?plan|brochure|price|layout plan)\b/.test(t)) return false;
+  return /\b(location|address|directions?|google\s?maps?|map link|pin)\b/.test(t) ||
+    /where (is|are|exactly)|where'?s |how do i (get|reach)|kahan|site address/.test(t);
+}
+
+/**
+ * Sends the configured Google Maps link as plain text, unless this turn
+ * already did. Never throws — a missed link must not fail the webhook.
+ */
+async function ensureLocationLink(
+  customerText: string,
+  sent: AgentReply[],
+  lead: Lead,
+  conversationId: string,
+  deliver: (reply: AgentReply) => Promise<void>,
+): Promise<void> {
+  const link = env.projectMapsUrl;
+  if (!link || !asksForLocation(customerText)) return;
+  if (sent.some((r) => typeof r.text === "string" && r.text.includes(link))) return;
+
+  const body = `Here is the exact location on Google Maps:\n${link}`;
+  try {
+    await deliver({ text: body });
+    await db().from("villa_messages").insert({
+      conversation_id: conversationId,
+      lead_id: lead.id,
+      role: "agent",
+      body,
+    });
+  } catch {
+    /* the customer still has the rest of the turn */
+  }
+}
+
+/**
+ * Sends any approved brochure the turn did not already deliver.
+ *
+ * Only fires when the customer actually asked for one, and only for files that
+ * were not already sent in this same turn — so a healthy model turn that sent
+ * both adds nothing, and a degraded turn that sent one is completed.
+ */
+async function ensureAllBrochures(
+  customerText: string,
+  sent: AgentReply[],
+  lead: Lead,
+  conversationId: string,
+  deliver: (reply: AgentReply) => Promise<void>,
+): Promise<void> {
+  if (!/\b(brochure|brochures|catalog|catalogue)\b/i.test(customerText)) return;
+  const already = new Set(
+    sent.map((r) => r.mediaUrl).filter((u): u is string => typeof u === "string"),
+  );
+  try {
+    await deliverApprovedAssets({
+      lead,
+      conversationId,
+      kind: "brochure",
+      deliver,
+      skip: already,
+    });
+  } catch {
+    /* the customer still has the rest of the turn */
+  }
 }

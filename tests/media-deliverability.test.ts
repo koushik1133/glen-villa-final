@@ -181,3 +181,28 @@ describe("the send path actually applies the check", () => {
     );
   });
 });
+
+describe("the location is delivered as a link, never as a file", () => {
+  const CONVERSATION = "src/lib/osf/conversation.ts";
+
+  test("the inbound path sends the configured maps URL as text", () => {
+    const src = read(CONVERSATION);
+    assert.match(src, /ensureLocationLink\(/, "the location guarantee is gone");
+    const fn = src.slice(src.indexOf("async function ensureLocationLink("));
+    assert.match(fn, /env\.projectMapsUrl/, "the link must come from config, not the model");
+    assert.match(fn, /deliver\(\{ text: body \}\)/, "the link must go out as plain text");
+    assert.doesNotMatch(
+      fn.slice(0, fn.indexOf("\n}")),
+      /mediaUrl/,
+      "the location must never be delivered as media",
+    );
+  });
+
+  test('"send me the brochure" tops up every approved brochure', () => {
+    const src = read(CONVERSATION);
+    assert.match(src, /ensureAllBrochures\(/, "the both-brochures guarantee is gone");
+    const fn = src.slice(src.indexOf("async function ensureAllBrochures("));
+    assert.match(fn, /kind: "brochure"/);
+    assert.match(fn, /skip: already/, "an already-sent brochure must not be sent twice");
+  });
+});
