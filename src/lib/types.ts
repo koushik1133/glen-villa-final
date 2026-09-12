@@ -628,6 +628,15 @@ export interface InventoryUnit {
   priceInr?: number;
   leadId?: string;
   customerId?: string;
+  /**
+   * The buyer's name, typed in by the desk.
+   *
+   * Free text on purpose for now: a sale is often agreed before the buyer
+   * exists as a CRM contact, and forcing a link would mean either blocking the
+   * sale or inventing a record. `customerId` remains the authoritative link
+   * once there is one to make.
+   */
+  buyerName?: string;
   assignedTo?: string;
   blockedUntil?: string;
   /**

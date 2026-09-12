@@ -137,6 +137,7 @@ export async function PATCH(req: Request) {
           customerId?: string;
           notes?: string;
           assignedTo?: string;
+          buyerName?: string;
           blockedUntil?: string;
           handoverStage?: string;
           override?: boolean;
@@ -163,6 +164,7 @@ export async function PATCH(req: Request) {
       customerId: body.customerId,
       notes: body.notes,
       assignedTo: body.assignedTo,
+      buyerName: body.buyerName,
       blockedUntil: body.blockedUntil,
       handoverStage: body.handoverStage as HandoverStage | undefined,
       override: body.override,

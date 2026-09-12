@@ -207,6 +207,7 @@ export interface SetStatusOptions {
   customerId?: string;
   notes?: string;
   assignedTo?: string;
+  buyerName?: string;
   blockedUntil?: string;
   /** Post-booking stage; see lib/showcase/handover.ts. */
   handoverStage?: HandoverStage;
@@ -291,11 +292,17 @@ export function setUnitStatus(
     if (!unit) throw new InventoryError("Unit not found.");
 
     const next = status ?? unit.status;
+    // These two rules police a TRANSITION, not the resting state. Re-checking
+    // them on every edit meant an already-sold villa could not have its buyer
+    // typed in or its handover stage moved — which is backwards, because
+    // recording the buyer is exactly how that villa stops being anonymous.
+    const entering = status !== null && status !== unit.status;
+
     const customerId = opts.customerId ?? unit.customerId;
-    if (next === "sold" && !customerId && !opts.override) {
+    if (entering && next === "sold" && !customerId && !opts.override) {
       throw new InventoryError("A unit can only be marked sold with a linked customer.");
     }
-    if (next === "deal_pending" && !(opts.leadId ?? unit.leadId) && !opts.override) {
+    if (entering && next === "deal_pending" && !(opts.leadId ?? unit.leadId) && !opts.override) {
       throw new InventoryError("A deal in progress needs a linked lead.");
     }
     // A handover past the booking on a unit nobody has committed to buy is a
@@ -313,6 +320,7 @@ export function setUnitStatus(
     if (opts.leadId !== undefined) unit.leadId = opts.leadId;
     if (opts.customerId !== undefined) unit.customerId = opts.customerId;
     if (opts.assignedTo !== undefined) unit.assignedTo = opts.assignedTo || undefined;
+    if (opts.buyerName !== undefined) unit.buyerName = opts.buyerName.trim() || undefined;
     if (opts.blockedUntil !== undefined) unit.blockedUntil = opts.blockedUntil;
     if (opts.handoverStage !== undefined) unit.handoverStage = opts.handoverStage;
     // A human touched it: it is no longer demo data and re-seeding leaves it be.

@@ -74,6 +74,8 @@ interface UnitRow {
   customerName?: string;
   /** The sales person who owns this villa. */
   assignedTo?: string;
+  /** The buyer, typed in by the desk. */
+  buyerName?: string;
   handoverStage?: HandoverStage;
 }
 
@@ -132,6 +134,7 @@ function normaliseUnits(payload: unknown): UnitRow[] {
       status,
       leadId: typeof u.leadId === "string" ? u.leadId : undefined,
       customerId: typeof u.customerId === "string" ? u.customerId : undefined,
+      buyerName: typeof u.buyerName === "string" ? u.buyerName : undefined,
       leadName: typeof u.leadName === "string" ? u.leadName : undefined,
       customerName: typeof u.customerName === "string" ? u.customerName : undefined,
       assignedTo: typeof u.assignedTo === "string" && u.assignedTo ? u.assignedTo : undefined,
@@ -207,12 +210,20 @@ const Hotspots = memo(function Hotspots({
             style={{ left: `${p.xPct}%`, top: `${p.yPct}%` }}
             className={clsx(
               "absolute h-[18px] w-[18px] -translate-x-1/2 -translate-y-1/2 rounded-full",
-              "ring-2 ring-black/40 transition-opacity duration-150",
+              "ring-2 ring-black/40 transition-[transform,opacity] duration-150",
               "focus:outline-none focus-visible:ring-4 focus-visible:ring-white",
               "hover:scale-125",
               STATUS_STYLE[st].dot,
               off ? "opacity-20" : "opacity-95",
-              activeVilla === p.villaNo && "scale-150 ring-4 ring-white",
+              // Selection must not be read as a STATUS. A white ring alone was
+              // ambiguous on a sold villa, whose dot is already red: picking one
+              // looked much like the colour meaning "sold". The selected dot now
+              // carries a dark halo outside a white ring — two rings of opposite
+              // value, which reads as "this one" against every status colour and
+              // against the printed plan underneath — and it grows more than
+              // hover does so it stays findable when the map is zoomed out.
+              activeVilla === p.villaNo &&
+                "z-10 scale-[1.7] ring-[3px] ring-white shadow-[0_0_0_3px_rgba(0,0,0,0.55),0_0_0_9px_rgba(255,255,255,0.28)]",
             )}
           />
         );
@@ -421,7 +432,12 @@ export function SerenityMasterPlan({
    */
   async function patchUnit(
     villaNo: string,
-    patch: { status?: UnitStatus; assignedTo?: string; handoverStage?: HandoverStage },
+    patch: {
+      status?: UnitStatus;
+      assignedTo?: string;
+      handoverStage?: HandoverStage;
+      buyerName?: string;
+    },
   ) {
     const before = units[villaNo];
     setSaving(true);
@@ -749,6 +765,43 @@ export function SerenityMasterPlan({
                         </div>
                       </div>
                     ) : null}
+
+                    {/* Who bought it. Free text: a sale is usually agreed before
+                        the buyer exists as a CRM record, and the desk should not
+                        have to create one to write the name down. Saved on blur
+                        rather than per keystroke so it is one write, not twenty. */}
+                    <div>
+                      <label
+                        htmlFor="villa-buyer"
+                        className="text-[10.5px] font-semibold uppercase tracking-wider text-mist-400"
+                      >
+                        Buyer
+                      </label>
+                      {canWrite ? (
+                        <input
+                          id="villa-buyer"
+                          type="text"
+                          defaultValue={row?.buyerName ?? ""}
+                          key={`buyer-${selectedPlot.villaNo}-${row?.buyerName ?? ""}`}
+                          placeholder="Name of the person who bought it"
+                          autoComplete="off"
+                          onBlur={(e) => {
+                            const next = e.target.value.trim();
+                            if (next !== (row?.buyerName ?? "")) {
+                              void patchUnit(selectedPlot.villaNo, { buyerName: next });
+                            }
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") e.currentTarget.blur();
+                          }}
+                          className="mt-1.5 w-full min-w-0 rounded-xl border border-ink-700 bg-ink-900/70 px-2.5 py-1.5 text-xs text-mist-100 placeholder:text-mist-500 focus:border-brand-500/60 focus:outline-none"
+                        />
+                      ) : (
+                        <p className="mt-1 text-[11.5px] text-mist-100">
+                          {row?.buyerName ?? row?.customerName ?? "Not recorded"}
+                        </p>
+                      )}
+                    </div>
 
                     {/* Who sold it. */}
                     <div>
