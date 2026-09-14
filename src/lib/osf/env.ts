@@ -84,14 +84,34 @@ export const env = {
   get whatsappPhoneNumberId() {
     return required("WHATSAPP_PHONE_NUMBER_ID");
   },
+  /**
+   * The token that calls the Cloud API.
+   *
+   * Falls back to META_SYSTEM_USER_TOKEN, because on a single-app deployment
+   * they are the same credential: WhatsApp, Instagram and the ad accounts all
+   * hang off one Meta app, and a system-user token issued for it carries
+   * whatsapp_business_messaging alongside the rest. Requiring the value to be
+   * pasted a second time under a different name is how an install ends up with
+   * Meta fully configured and WhatsApp still refusing to start.
+   *
+   * Set WHATSAPP_ACCESS_TOKEN explicitly when WhatsApp lives on its own app, or
+   * when you want a token scoped to messaging only.
+   */
   get whatsappAccessToken() {
-    return required("WHATSAPP_ACCESS_TOKEN");
+    return optional("WHATSAPP_ACCESS_TOKEN") || required("META_SYSTEM_USER_TOKEN");
   },
   get whatsappVerifyToken() {
     return required("WHATSAPP_VERIFY_TOKEN");
   },
+  /**
+   * Same reasoning, and it matters more here: this secret verifies the
+   * X-Hub-Signature-256 on every inbound webhook. An app secret belongs to the
+   * Meta *app*, not to a product within it, so META_APP_SECRET is the same
+   * string — and `verifySignature` fails closed when it cannot be read, which
+   * turns a naming mismatch into "the agent silently answers nobody".
+   */
   get whatsappAppSecret() {
-    return required("WHATSAPP_APP_SECRET");
+    return optional("WHATSAPP_APP_SECRET") || required("META_APP_SECRET");
   },
   get whatsappApiVersion() {
     return optional("WHATSAPP_API_VERSION", "v21.0");
@@ -114,7 +134,7 @@ export const env = {
     const explicit = optional("WHATSAPP_PROVIDER")?.toLowerCase();
     if (explicit === "evolution" || explicit === "meta") return explicit;
     const hasEvolution = Boolean(optional("EVOLUTION_API_URL"));
-    const hasMeta = Boolean(optional("WHATSAPP_ACCESS_TOKEN"));
+    const hasMeta = Boolean(optional("WHATSAPP_ACCESS_TOKEN") || optional("META_SYSTEM_USER_TOKEN"));
     return hasEvolution && !hasMeta ? "evolution" : "meta";
   },
 
@@ -170,13 +190,13 @@ export const env = {
     return required("INSTAGRAM_ACCOUNT_ID");
   },
   get instagramAccessToken() {
-    return optional("INSTAGRAM_ACCESS_TOKEN") || required("WHATSAPP_ACCESS_TOKEN");
+    return optional("INSTAGRAM_ACCESS_TOKEN") || env.whatsappAccessToken;
   },
   get instagramVerifyToken() {
-    return optional("INSTAGRAM_VERIFY_TOKEN") || required("WHATSAPP_VERIFY_TOKEN");
+    return optional("INSTAGRAM_VERIFY_TOKEN") || env.whatsappVerifyToken;
   },
   get instagramAppSecret() {
-    return optional("INSTAGRAM_APP_SECRET") || required("WHATSAPP_APP_SECRET");
+    return optional("INSTAGRAM_APP_SECRET") || env.whatsappAppSecret;
   },
 
   get salesTeamWhatsapp() {
@@ -220,10 +240,14 @@ export function configStatus() {
     supabase:
       Boolean(read("OSF_SUPABASE_URL")) &&
       Boolean(read("OSF_SUPABASE_SERVICE_ROLE_KEY")),
+    // Mirrors the getters above, which fall back to the Meta app's own
+    // credentials. Reading only the WHATSAPP_* names here reported "not
+    // configured" for a deployment that was configured, and sent people
+    // hunting for a token they had already supplied under its Meta name.
     whatsapp:
       Boolean(read("WHATSAPP_PHONE_NUMBER_ID")) &&
-      Boolean(read("WHATSAPP_ACCESS_TOKEN")) &&
-      Boolean(read("WHATSAPP_APP_SECRET")) &&
+      Boolean(read("WHATSAPP_ACCESS_TOKEN") ?? read("META_SYSTEM_USER_TOKEN")) &&
+      Boolean(read("WHATSAPP_APP_SECRET") ?? read("META_APP_SECRET")) &&
       Boolean(read("WHATSAPP_VERIFY_TOKEN")),
     evolution:
       Boolean(read("EVOLUTION_API_URL")) &&
@@ -231,7 +255,7 @@ export function configStatus() {
       Boolean(read("EVOLUTION_INSTANCE")),
     instagram:
       Boolean(read("INSTAGRAM_ACCOUNT_ID")) &&
-      Boolean(read("INSTAGRAM_ACCESS_TOKEN") ?? read("WHATSAPP_ACCESS_TOKEN")),
+      Boolean(read("INSTAGRAM_ACCESS_TOKEN") ?? read("WHATSAPP_ACCESS_TOKEN") ?? read("META_SYSTEM_USER_TOKEN")),
     salesHandoff: Boolean(read("SALES_TEAM_WHATSAPP")),
   };
 }
