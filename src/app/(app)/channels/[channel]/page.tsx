@@ -4,6 +4,7 @@ import { ArrowLeft, PlugZap } from "lucide-react";
 import { pageContext, qs } from "@/lib/page-context";
 import { pctChange } from "@/lib/metrics/aggregate";
 import { channelMeta, isUsableConnection, connectionProblem } from "@/lib/platforms/registry";
+import { oauthConfigured } from "@/lib/platforms/oauth";
 import { TopBar } from "@/components/shell";
 import { Badge, Bar, Card, Dot, Empty, SectionTitle, Stat, fmt } from "@/components/ui";
 import { TrendArea, VIZ } from "@/components/charts";
@@ -142,7 +143,9 @@ export default async function ChannelPage({
         {channel === "instagram" && <InstagramStudio brandId={brandId} />}
 
         {/* LinkedIn Studio */}
-        {channel === "linkedin" && <LinkedInStudio brandId={brandId} />}
+        {channel === "linkedin" && (
+          <LinkedInStudio brandId={brandId} oauthAvailable={oauthConfigured("linkedin")} />
+        )}
 
         {channel !== "youtube" && channel !== "facebook" && channel !== "instagram" && channel !== "linkedin" && (!hasSignal(snap) ? (
           <Empty

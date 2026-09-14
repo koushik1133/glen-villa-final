@@ -138,3 +138,21 @@ export const CONNECT_SPECS: ConnectSpec[] = [
 export function specFor(channel: ChannelId): ConnectSpec | undefined {
   return CONNECT_SPECS.find((s) => s.channel === channel);
 }
+
+/**
+ * Whether this deployment can actually start an OAuth flow for a channel.
+ *
+ * Every `authorizeUrl` above interpolates `process.env.X ?? ""`, so with the
+ * credentials unset the link is still a valid-looking URL — it just carries an
+ * empty `client_id`, and the person clicking it lands on a LinkedIn (or Meta,
+ * or Google) error page having been told this was the recommended option.
+ * Screens should ask this before offering the button.
+ *
+ * Server-only: the values are secrets and never reach the browser, so a client
+ * component takes the answer as a prop rather than checking for itself.
+ */
+export function oauthConfigured(channel: ChannelId): boolean {
+  const spec = specFor(channel);
+  if (!spec) return false;
+  return spec.envVars.every((v) => Boolean(process.env[v]?.trim()));
+}

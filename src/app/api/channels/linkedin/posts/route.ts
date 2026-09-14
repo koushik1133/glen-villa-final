@@ -2,8 +2,38 @@ import { NextResponse } from "next/server";
 import { read, resolveBrandId } from "@/lib/db";
 import { guard } from "@/lib/auth/guard";
 import { getSession, assertBrandAccess } from "@/lib/auth/session";
+import { linkedinVersion } from "@/lib/platforms/others";
 
 export const dynamic = "force-dynamic";
+
+function linkedinHeaders(token: string): Record<string, string> {
+  return {
+    Authorization: `Bearer ${token}`,
+    "LinkedIn-Version": linkedinVersion(),
+    "X-Restli-Protocol-Version": "2.0.0",
+  };
+}
+
+/**
+ * Turn a LinkedIn failure into something the person reading the screen can act
+ * on. "LinkedIn API error (401)" tells them nothing; which of these it is
+ * decides whether they reconnect, fix a URN, or simply wait.
+ */
+function describeFailure(status: number, body: string): { error: string; code: string } {
+  if (status === 401) {
+    return { code: "token_invalid", error: "LinkedIn rejected the access token. It has expired or been revoked — paste a fresh one." };
+  }
+  if (status === 403) {
+    return { code: "forbidden", error: "The token is valid but lacks permission for this page. It needs r_organization_social for the organisation you are reading." };
+  }
+  if (status === 426) {
+    return { code: "version_retired", error: `LinkedIn has retired API version ${linkedinVersion()}. Set LINKEDIN_API_VERSION to a current one.` };
+  }
+  if (status === 429) {
+    return { code: "rate_limited", error: "LinkedIn is rate-limiting this app. The figures will return on their own." };
+  }
+  return { code: "api_error", error: `LinkedIn returned ${status}. ${body.slice(0, 160)}` };
+}
 
 export async function GET(req: Request) {
   const denied = await guard("analytics.view");
@@ -50,23 +80,19 @@ export async function GET(req: Request) {
     });
   }
 
-  const headers = {
-    Authorization: `Bearer ${token}`,
-    "LinkedIn-Version": "202510",
-    "X-Restli-Protocol-Version": "2.0.0",
-  };
+  // LinkedIn pins every request to a monthly version and retires each after
+  // roughly a year. The publishing path already reads LINKEDIN_API_VERSION;
+  // this route had the same string frozen inline, so bumping the variable fixed
+  // publishing and left this page failing with a 426 nobody would connect to it.
+  const headers = linkedinHeaders(token);
 
   try {
     const postsUrl = `https://api.linkedin.com/rest/posts?author=${encodeURIComponent(authorUrn)}&q=author&count=20&fields=id,commentary,createdAt,lastModifiedAt,visibility`;
     const postsRes = await fetch(postsUrl, { headers, cache: "no-store", signal: AbortSignal.timeout(10000) });
     if (!postsRes.ok) {
       const errText = await postsRes.text().catch(() => "");
-      return NextResponse.json({
-        ok: false,
-        error: `LinkedIn API error (${postsRes.status}): ${errText || postsRes.statusText}`,
-        code: "api_error",
-        handle: conn.handle,
-      });
+      const { error, code } = describeFailure(postsRes.status, errText || postsRes.statusText);
+      return NextResponse.json({ ok: false, error, code, handle: conn.handle });
     }
 
     const postsData = await postsRes.json();
@@ -99,7 +125,13 @@ export async function GET(req: Request) {
           likes,
           comments,
           shares,
-          impressions: 0,
+          // Not measured here. Impressions come from
+          // organizationalEntityShareStatistics, which needs an organisation
+          // URN and r_organization_social; this endpoint returns engagement
+          // only. It reported a hardcoded 0, which the page rendered as
+          // "0 impressions" — a measurement, and a wrong one. null means
+          // "not measured", and the UI omits it instead of inventing a figure.
+          impressions: null as number | null,
         }
       };
     }));
@@ -143,6 +175,38 @@ export async function POST(req: Request) {
 
   if (!accessToken && !authorUrn) {
     return NextResponse.json({ ok: false, error: "Please provide an Access Token or Author/Page URN." }, { status: 400 });
+  }
+
+  /**
+   * Check the token with LinkedIn before storing it.
+   *
+   * This route used to accept whatever was pasted, write it, and set the
+   * connection to "connected". A token with a truncated tail or a stray space
+   * therefore produced a channel the whole application believed was live —
+   * the badge said connected, the publish queue would pick it up — and the only
+   * symptom was an error on one panel. Verifying here means "connected" is a
+   * statement about LinkedIn, not about the shape of the string.
+   */
+  if (accessToken?.trim()) {
+    try {
+      const probe = await fetch("https://api.linkedin.com/v2/userinfo", {
+        headers: linkedinHeaders(accessToken.trim()),
+        cache: "no-store",
+        signal: AbortSignal.timeout(10_000),
+      });
+      if (probe.status === 401) {
+        return NextResponse.json(
+          { ok: false, error: "LinkedIn rejected that access token. Check it was copied in full and has not expired." },
+          { status: 422 },
+        );
+      }
+      // 403 means the token is real but scoped narrowly — that is a legitimate
+      // page token, so it is stored. Anything else (5xx, a timeout) is
+      // LinkedIn being unreachable, and refusing to save then would strand
+      // someone holding a perfectly good token.
+    } catch {
+      // Network failure reaching LinkedIn — fall through and store it.
+    }
   }
 
   const { mutate } = await import("@/lib/db");

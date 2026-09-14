@@ -509,7 +509,7 @@ const LINKEDIN_ATTEMPTS = 3;
  * default left un-bumped is what turns a working integration into a 426 twelve
  * months from now. Override with LINKEDIN_API_VERSION.
  */
-function linkedinVersion(): string {
+export function linkedinVersion(): string {
   return process.env.LINKEDIN_API_VERSION ?? "202510";
 }
 

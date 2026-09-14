@@ -19,7 +19,8 @@ type LinkedInPost = {
     likes: number;
     comments: number;
     shares: number;
-    impressions: number;
+    /** null when LinkedIn did not report it — show a dash, never a zero. */
+    impressions: number | null;
   };
 };
 
@@ -43,7 +44,19 @@ function useVisible() {
   return visible;
 }
 
-export function LinkedInStudio({ brandId }: { brandId: string }) {
+export function LinkedInStudio({
+  brandId,
+  oauthAvailable = false,
+}: {
+  brandId: string;
+  /**
+   * True when this deployment holds LinkedIn OAuth credentials. Computed on the
+   * server — the client cannot read the secrets — and false here means the
+   * "authorize" route cannot work, so offering it would send someone to an
+   * error page with an empty client_id.
+   */
+  oauthAvailable?: boolean;
+}) {
   const [data, setData] = useState<LinkedInResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -163,15 +176,27 @@ export function LinkedInStudio({ brandId }: { brandId: string }) {
                   </p>
                 </div>
 
-                <div className="pt-3">
-                  <p className="font-semibold text-mist-200 mb-2">Option 1: Connect with OAuth</p>
-                  <Link href="/connections" className="inline-flex items-center justify-center rounded-lg bg-sky-600 px-4 py-2 text-[12.5px] font-semibold text-white hover:bg-sky-500 transition-colors shadow-sm">
-                    Go to Connections to Authorize
-                  </Link>
-                </div>
+                {oauthAvailable ? (
+                  <div className="pt-3">
+                    <p className="font-semibold text-mist-200 mb-2">Option 1: Connect with OAuth</p>
+                    <Link href="/connections" className="inline-flex items-center justify-center rounded-lg bg-sky-600 px-4 py-2 text-[12.5px] font-semibold text-white hover:bg-sky-500 transition-colors shadow-sm">
+                      Go to Connections to Authorize
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="pt-3">
+                    <p className="font-semibold text-mist-200 mb-1">One-click authorisation is not set up here</p>
+                    <p className="text-[12px] text-mist-400">
+                      This deployment has no LinkedIn application credentials, so the
+                      authorise button would fail before it reached LinkedIn. Either
+                      register an application and add its credentials, or paste a token
+                      below — the token route works either way.
+                    </p>
+                  </div>
+                )}
 
                 <div className="pt-4 border-t border-ink-800/80">
-                  <p className="font-semibold text-mist-200 mb-1">Option 2: Enter Access Token & Page URN directly</p>
+                  <p className="font-semibold text-mist-200 mb-1">{oauthAvailable ? "Option 2: " : ""}Enter Access Token &amp; Page URN directly</p>
                   <p className="text-[12px] text-mist-400 mb-3">If you already have a LinkedIn API token or organization URN, enter it below to connect immediately:</p>
                   
                   <form onSubmit={handleSaveConfig} className="space-y-3 max-w-lg">
@@ -227,8 +252,8 @@ export function LinkedInStudio({ brandId }: { brandId: string }) {
     likes: acc.likes + p.metrics.likes,
     comments: acc.comments + p.metrics.comments,
     shares: acc.shares + p.metrics.shares,
-    impressions: acc.impressions + p.metrics.impressions,
-  }), { likes: 0, comments: 0, shares: 0, impressions: 0 });
+    impressions: p.metrics.impressions === null ? acc.impressions : (acc.impressions ?? 0) + p.metrics.impressions,
+  }), { likes: 0, comments: 0, shares: 0, impressions: null as number | null });
 
   return (
     <div className="space-y-6">
@@ -324,7 +349,7 @@ export function LinkedInStudio({ brandId }: { brandId: string }) {
                         <td className="py-3 text-mist-400 text-[11.5px]">
                           {new Date(p.publishedAt).toLocaleDateString("en", { month: "short", day: "numeric", year: "numeric" })}
                         </td>
-                        <td className="tnum py-3 text-right font-semibold text-mist-100">{fmt.n(p.metrics.impressions)}</td>
+                        <td className="tnum py-3 text-right font-semibold text-mist-100">{p.metrics.impressions === null ? <span className="text-mist-500" title="LinkedIn does not report impressions on this endpoint">—</span> : fmt.n(p.metrics.impressions)}</td>
                         <td className="tnum py-3 text-right text-emerald-400 font-semibold">{fmt.n(p.metrics.likes)}</td>
                         <td className="tnum py-3 text-right text-amber-400 font-semibold">{fmt.n(p.metrics.comments)}</td>
                         <td className="tnum py-3 text-right text-sky-400 font-semibold">{fmt.n(p.metrics.shares)}</td>
@@ -362,7 +387,7 @@ export function LinkedInStudio({ brandId }: { brandId: string }) {
                   <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-mist-400">
                     <Eye size={11} className="text-blue-400" /> Total impressions
                   </div>
-                  <div className="tnum mt-1 text-[15px] font-bold text-mist-100">{fmt.full(totals.impressions)}</div>
+                  <div className="tnum mt-1 text-[15px] font-bold text-mist-100">{totals.impressions === null ? <span className="text-mist-500">not reported</span> : fmt.full(totals.impressions)}</div>
                 </div>
                 <div className="rounded-lg border border-ink-800/80 bg-ink-900/50 px-3 py-2.5">
                   <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-mist-400">
