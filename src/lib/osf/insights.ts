@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { complete, extractJson, hasLLM } from "../ai/provider";
 import { db } from "./supabase";
 
 /**
@@ -638,12 +638,16 @@ function sanitiseAiInsights(raw: unknown, s: InsightSignals): DraftInsight[] {
 }
 
 async function aiInsights(s: InsightSignals, existingTitles: string[]): Promise<DraftInsight[]> {
-  const apiKey = process.env.GEMINI_API_KEY?.trim();
-  if (!apiKey || apiKey.startsWith("<")) return [];
+  // Goes through the shared provider chain rather than talking to one vendor
+  // directly. This file used to construct a Gemini client and pin
+  // `gemini-2.5-flash`, which meant the enrichment was dark whenever Gemini was
+  // the provider that was rate-limited or unkeyed — even with Groq configured
+  // and answering for every other AI surface in the product. `complete()`
+  // honours AI_PROVIDER/LLM_PROVIDER and falls through on failure, so insights
+  // now use whichever provider the deployment is actually running on.
+  if (!hasLLM()) return [];
 
   try {
-    const ai = new GoogleGenAI({ apiKey });
-
     const prompt = `You are a sales operations analyst for a villa developer. Below are REAL aggregate numbers from the CRM database.
 
 SIGNALS (the only facts you have):
@@ -662,14 +666,30 @@ Your job is to SUMMARISE AND PRIORITISE the signals above. Hard rules:
 Return at most 3 insights, strictly as a JSON array (no markdown fences, no prose):
 [{"title":"string","description":"string","recommendation":"string","expected_impact":"string","severity":"info|warning|critical|success","category":"sales|marketing|knowledge","action_label":"string","action_href":"string","evidence":[{"label":"string","value":"number or string copied from SIGNALS"}]}]`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: prompt,
+    const text = await complete({
+      system:
+        "You are a sales operations analyst. You summarise and prioritise numbers you are given. " +
+        "You never invent a figure. You answer with JSON only.",
+      prompt,
+      json: true,
+      // Three insights, each with a description, a recommendation and an
+      // evidence array, is a large structured answer — and the reasoning models
+      // on every provider spend hidden tokens before writing any of it, charged
+      // against this same budget. The shared default of 1024 was enough for a
+      // one-line caption but not for this, so the enrichment came back empty
+      // and insights looked like it had no AI configured at all.
+      maxTokens: 2500,
+      // The enrichment sits behind a rule layer that has already produced the
+      // page's content, so a slow model must not hold the request open.
+      timeoutMs: 20_000,
+      temperature: 0.3,
     });
 
-    const cleaned = (response.text ?? "").replace(/```json/gi, "").replace(/```/g, "").trim();
-    if (!cleaned) return [];
-    return sanitiseAiInsights(JSON.parse(cleaned), s);
+    // extractJson tolerates the fences and preamble models add unbidden; a null
+    // here means nothing parseable came back, which is a valid "no enrichment".
+    const parsed = extractJson<unknown>(text);
+    if (!parsed) return [];
+    return sanitiseAiInsights(parsed, s);
   } catch (error) {
     console.error("[insights] LLM enrichment failed, keeping rule-based insights only", error);
     return [];
