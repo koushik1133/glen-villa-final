@@ -1,9 +1,12 @@
+import { Suspense } from "react";
 import { pageContext } from "@/lib/page-context";
 import { generateSuggestions } from "@/lib/ai/signals";
 import { TopBar } from "@/components/shell";
 import { Card, SectionTitle, Badge, fmt } from "@/components/ui";
 import { SuggestionCard } from "@/components/suggestion-card";
 import { hasLLM } from "@/lib/ai/provider";
+import { OperationsInsights } from "@/components/insights/operations-insights";
+import { CardSkeleton } from "@/components/skeletons";
 
 export const dynamic = "force-dynamic";
 
@@ -85,6 +88,12 @@ export default async function InsightsPage({
             </span>
           </div>
         </Card>
+
+        {/* Streamed: it reaches Supabase, and the marketing half above is
+            computed locally and should paint without waiting for the network. */}
+        <Suspense fallback={<CardSkeleton rows={3} />}>
+          <OperationsInsights />
+        </Suspense>
 
         {[
           ["Needs attention", critical],
