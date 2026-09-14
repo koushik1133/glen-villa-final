@@ -90,6 +90,9 @@ const NAV: NavSection[] = [
     { href: "/activity", label: "Activity", icon: Activity },
     { href: "/connections", label: "Connections", icon: PlugZap },
     { href: "/settings", label: "Settings", icon: Settings },
+    // Listed after Settings and gated on `users.manage`, so it appears only for
+    // an administrator — the filter below reads the same map the page guard uses.
+    { href: "/settings/users", label: "Users and roles", icon: ShieldCheck },
   ]},
 ];
 

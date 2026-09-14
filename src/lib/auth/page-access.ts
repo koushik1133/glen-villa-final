@@ -72,7 +72,12 @@ const RULES: Array<[RegExp, Permission]> = [
   [/^\/automation/, "marketing.read"],
   [/^\/publish-v2/, "marketing.read"],
 
-  // Configuration
+  // Configuration.
+  // Staff accounts and role assignment are a stronger capability than the rest
+  // of Settings: `workflows.manage` configures integrations, but granting
+  // yourself `users.manage` would let anyone holding it mint an admin. Listed
+  // before the general /settings rule because first match wins.
+  [/^\/settings\/users/, "users.manage"],
   [/^\/(connections|settings)/, "workflows.manage"],
 ];
 
