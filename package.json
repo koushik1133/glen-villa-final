@@ -16,6 +16,8 @@
     "dev:webpack": "next dev -p 4321"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.90.0",
+    "@google/genai": "^1.52.0",
     "@supabase/ssr": "^0.12.5",
     "@supabase/supabase-js": "^2.112.4",
     "clsx": "2.1.1",
