@@ -151,7 +151,7 @@ export default async function AdminPage() {
           Signed in as {session.fullName} · everything happening across the business
         </p>
       </div>
-      <AdminTabs data={data} />
+      <AdminTabs data={data} permissions={[...session.permissions]} />
     </div>
   );
 }

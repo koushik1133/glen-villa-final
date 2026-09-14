@@ -50,12 +50,22 @@ export interface AdminData {
   activity: Array<{ id: string; at: string; actor: string; actorType: string; action: string; customer?: string }>;
 }
 
+/**
+ * `needs` is the permission the tab's CONTENT requires, which is not always the
+ * permission that opens this page. /ops/admin is gated on `analytics.view` so
+ * the sales, loans and activity views reach the people who read the business —
+ * but "People & access" creates staff accounts and changes roles, and its API
+ * requires `users.manage`. Without this the read-only audit role, which holds
+ * analytics.view, saw the whole staff roster, the create-account form and the
+ * disable buttons; the writes failed at the API, but none of it should have
+ * been on screen.
+ */
 const TABS = [
-  { id: "overview", label: "Overview", icon: BarChart3 },
-  { id: "sales", label: "Sales team", icon: Users },
-  { id: "loans", label: "Loan department", icon: Wallet },
-  { id: "team", label: "People & access", icon: ShieldAlert },
-  { id: "activity", label: "Activity log", icon: Activity },
+  { id: "overview", label: "Overview", icon: BarChart3, needs: null },
+  { id: "sales", label: "Sales team", icon: Users, needs: null },
+  { id: "loans", label: "Loan department", icon: Wallet, needs: null },
+  { id: "team", label: "People & access", icon: ShieldAlert, needs: "users.manage" },
+  { id: "activity", label: "Activity log", icon: Activity, needs: null },
 ] as const;
 
 function ago(iso?: string): string {
@@ -68,14 +78,23 @@ function ago(iso?: string): string {
   return `${Math.round(hours / 24)}d ago`;
 }
 
-export function AdminTabs({ data }: { data: AdminData }) {
+export function AdminTabs({
+  data,
+  permissions = [],
+}: {
+  data: AdminData;
+  /** The caller's permissions. The server passes them; it does not ask the browser. */
+  permissions?: string[];
+}) {
+  const held = new Set(permissions);
+  const tabs = TABS.filter((t) => !t.needs || held.has(t.needs));
   const [tab, setTab] = useState<(typeof TABS)[number]["id"]>("overview");
   const maxStage = Math.max(1, ...data.pipeline.map((p) => p.count));
 
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap gap-1 border-b border-ink-700">
-        {TABS.map((t) => {
+        {tabs.map((t) => {
           const Icon = t.icon;
           return (
             <button
@@ -245,7 +264,7 @@ export function AdminTabs({ data }: { data: AdminData }) {
         </div>
       )}
 
-      {tab === "team" && <TeamManager />}
+      {tab === "team" && held.has("users.manage") && <TeamManager />}
 
       {tab === "activity" && (
         <Card>

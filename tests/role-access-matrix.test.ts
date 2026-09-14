@@ -134,7 +134,7 @@ describe("administrators can reach everything", () => {
 describe("the front desk is held to the front desk", () => {
   const FORBIDDEN = [
     "/dashboard", "/reports", "/analytics", "/insights", "/activity", "/ads",
-    "/ops/loans", "/ops/admin", "/settings", "/settings/users", "/connections",
+    "/ops/loans", "/ops/admin", "/settings", "/connections",
     "/crm/pipeline", "/crm/leads", "/inbox/whatsapp/sales/revenue",
     "/inbox/whatsapp/settings/integrations", "/publish-v2", "/studio",
   ];
@@ -170,7 +170,7 @@ describe("construction sees the site, not the business", () => {
 describe("marketing cannot read the sales book", () => {
   const FORBIDDEN = [
     "/crm/pipeline", "/crm/leads", "/ops/loans", "/ops/sales", "/ops/admin",
-    "/dashboard", "/reports", "/settings/users", "/inbox/whatsapp/sales/revenue",
+    "/dashboard", "/reports", "/inbox/whatsapp/sales/revenue",
   ];
   for (const route of FORBIDDEN) {
     test(`marketing cannot open ${route}`, () => {
@@ -187,7 +187,7 @@ describe("marketing cannot read the sales book", () => {
 
 describe("sales works the pipeline but not the admin panel", () => {
   test("sales cannot open the screens that grant access or configure the system", () => {
-    for (const route of ["/settings", "/settings/users", "/connections", "/ops/admin", "/dashboard"]) {
+    for (const route of ["/settings", "/connections", "/ops/admin", "/dashboard"]) {
       assert.equal(canOpen("sales", route), false, `${route} leaked to sales`);
     }
   });
@@ -201,7 +201,7 @@ describe("sales works the pipeline but not the admin panel", () => {
 
 describe("the loan desk sees loans, not marketing or configuration", () => {
   test("loan officer is confined", () => {
-    for (const route of ["/settings/users", "/connections", "/studio", "/publish-v2", "/dashboard"]) {
+    for (const route of ["/settings", "/connections", "/studio", "/publish-v2", "/dashboard"]) {
       assert.equal(canOpen("loan", route), false, `${route} leaked to the loan desk`);
     }
   });
@@ -213,28 +213,38 @@ describe("the loan desk sees loans, not marketing or configuration", () => {
   });
 });
 
-describe("the users-and-roles screen is the narrowest door in the app", () => {
-  test("it requires users.manage, not the weaker workflows.manage that /settings uses", () => {
-    assert.equal(requiredPermissionFor("/settings/users"), "users.manage");
-    assert.equal(requiredPermissionFor("/settings"), "workflows.manage");
+describe("staff management is not visible to everyone who can open /ops/admin", () => {
+  // /ops/admin is gated on `analytics.view` so the sales, loans and activity
+  // views reach the people who read the business. The "People & access" tab
+  // inside it creates accounts and changes roles, and its API requires
+  // `users.manage`. Those are different permissions, and the audit role holds
+  // the first but not the second — so before the tab carried its own gate, a
+  // read-only auditor saw the staff roster, the create-account form and the
+  // disable buttons. The writes failed at the API; none of it belonged on screen.
+  const adminTabs = fs.readFileSync(path.join(ROOT, "src/components/ops/admin-tabs.tsx"), "utf8");
+
+  test("the audit role can open /ops/admin at all — which is why the tab needs its own gate", () => {
+    assert.equal(canOpen("audit", "/ops/admin"), true);
+    assert.equal(GRANTS.audit!.has("users.manage"), false);
   });
 
-  test("no role except admin can open it", () => {
-    for (const role of ROLES) {
-      assert.equal(
-        canOpen(role, "/settings/users"),
-        role === "admin",
-        `${role} must not reach the screen that assigns roles`,
-      );
-    }
+  test("the People & access tab declares users.manage", () => {
+    assert.match(adminTabs, /id: "team"[^}]*needs: "users\.manage"/);
   });
 
-  test("the rule is ordered before the general /settings rule, so it cannot be shadowed", () => {
-    const src = fs.readFileSync(path.join(ROOT, "src/lib/auth/page-access.ts"), "utf8");
-    const users = src.indexOf("settings\\/users");
-    const settings = src.indexOf("(connections|settings)");
-    assert.ok(users !== -1 && settings !== -1, "both rules must be present");
-    assert.ok(users < settings, "/settings/users must be matched before the general /settings rule");
+  test("the tab strip renders the filtered list, not every tab", () => {
+    assert.match(adminTabs, /const tabs = TABS\.filter\(/);
+    assert.match(adminTabs, /\{tabs\.map\(/);
+    assert.ok(!/\{TABS\.map\(/.test(adminTabs), "the unfiltered list must not be rendered");
+  });
+
+  test("the tab CONTENT is gated too — hiding a button is not access control", () => {
+    assert.match(adminTabs, /tab === "team" && held\.has\("users\.manage"\) && <TeamManager \/>/);
+  });
+
+  test("permissions come from the server, never from the browser", () => {
+    const page = fs.readFileSync(path.join(ROOT, "src/app/(app)/ops/admin/page.tsx"), "utf8");
+    assert.match(page, /<AdminTabs data=\{data\} permissions=\{\[\.\.\.session\.permissions\]\} \/>/);
   });
 });
 
@@ -247,7 +257,7 @@ describe("the whole matrix, so a change to any rule is visible", () => {
     // — but it must be deliberate, and reviewed, rather than noticed in
     // production by the wrong person seeing the wrong screen.
     assert.deepEqual(counts, {
-      admin: 85,
+      admin: 84,
       audit: 71,
       construction: 1,
       front_desk: 11,
@@ -276,8 +286,8 @@ describe("the API behind each screen re-checks, so the page guard is not the onl
     );
   });
 
-  test("the users screen never trusts the page map alone", () => {
-    const src = fs.readFileSync(path.join(ROOT, "src/app/(app)/settings/users/page.tsx"), "utf8");
-    assert.match(src, /hasPermission\(session, "users\.manage"\)/);
+  test("the admin page refuses anyone without analytics.view before rendering a tab", () => {
+    const src = fs.readFileSync(path.join(ROOT, "src/app/(app)/ops/admin/page.tsx"), "utf8");
+    assert.match(src, /hasPermission\(session, "analytics\.view"\)/);
   });
 });
