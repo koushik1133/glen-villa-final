@@ -557,6 +557,9 @@ export function SerenityMasterPlan({
       )}
 
       <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_272px]">
+        {/* The map column: the plan itself, and the controls for whatever is
+            selected on it directly beneath. */}
+        <div className="space-y-4">
         <div
           ref={viewportRef}
           onPointerDown={onPointerDown}
@@ -619,6 +622,158 @@ export function SerenityMasterPlan({
             </ul>
           </div>
         </div>
+
+        {/*
+          The desk's controls live UNDER THE MAP, not in the detail drawer.
+          The drawer is a 272px column holding the villa's facts, and stacking
+          four labelled controls into it pushed everything below the fold — the
+          payments block was only reachable by scrolling a column most people
+          did not realise scrolled. Down here they get the map's full width,
+          laid out as four columns, and the drawer stays short enough to read
+          without scrolling at all.
+        */}
+        {selectedPlot && (
+          <div className="rounded-2xl border border-ink-700/60 bg-ink-900/50 p-4">
+            <div className="mb-3 flex items-baseline justify-between gap-2">
+              <h3 className="text-[12px] font-semibold text-mist-100">
+                Villa {selectedPlot.villaNo}
+              </h3>
+              <span className="text-[10.5px] text-mist-500">Sales desk · changes save immediately</span>
+            </div>
+          {(() => {
+            const row = units[selectedPlot.villaNo];
+            const stage: HandoverStage = row?.handoverStage ?? "not_started";
+            const dept = HANDOVER_STAGE_DEPARTMENT[stage];
+            const pos = row ? payments[row.id] : undefined;
+            return (
+              <div className="grid gap-x-4 gap-y-3 sm:grid-cols-2 xl:grid-cols-4">
+                {canWrite ? (
+                  <div>
+                    <label htmlFor="villa-status" className="text-[10.5px] font-semibold uppercase tracking-wider text-mist-400">
+                      Change status
+                    </label>
+                    <div className="mt-1.5 flex items-center gap-2">
+                      <select
+                        id="villa-status"
+                        value={statusOf(selectedPlot.villaNo)}
+                        onChange={(e) => patchUnit(selectedPlot.villaNo, { status: e.target.value as UnitStatus })}
+                        className="min-w-0 flex-1 rounded-xl border border-ink-700 bg-ink-900/70 px-2.5 py-1.5 text-xs text-mist-100"
+                      >
+                        {STATUSES.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
+                      </select>
+                      {saving && <Loader2 size={14} className="animate-spin text-mist-400" />}
+                    </div>
+                  </div>
+                ) : null}
+
+                {/* Who bought it. Free text: a sale is usually agreed before
+                    the buyer exists as a CRM record, and the desk should not
+                    have to create one to write the name down. Saved on blur
+                    rather than per keystroke so it is one write, not twenty. */}
+                <div>
+                  <label
+                    htmlFor="villa-buyer"
+                    className="text-[10.5px] font-semibold uppercase tracking-wider text-mist-400"
+                  >
+                    Buyer
+                  </label>
+                  {canWrite ? (
+                    <input
+                      id="villa-buyer"
+                      type="text"
+                      defaultValue={row?.buyerName ?? ""}
+                      key={`buyer-${selectedPlot.villaNo}-${row?.buyerName ?? ""}`}
+                      placeholder="Name of the person who bought it"
+                      autoComplete="off"
+                      onBlur={(e) => {
+                        const next = e.target.value.trim();
+                        if (next !== (row?.buyerName ?? "")) {
+                          void patchUnit(selectedPlot.villaNo, { buyerName: next });
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") e.currentTarget.blur();
+                      }}
+                      className="mt-1.5 w-full min-w-0 rounded-xl border border-ink-700 bg-ink-900/70 px-2.5 py-1.5 text-xs text-mist-100 placeholder:text-mist-500 focus:border-brand-500/60 focus:outline-none"
+                    />
+                  ) : (
+                    <p className="mt-1 text-[11.5px] text-mist-100">
+                      {row?.buyerName ?? row?.customerName ?? "Not recorded"}
+                    </p>
+                  )}
+                </div>
+
+                {/* Which department has it, and what they are doing. */}
+                <div>
+                  <span className="text-[10.5px] font-semibold uppercase tracking-wider text-mist-400">Handover stage</span>
+                  {canWrite ? (
+                    <select
+                      aria-label="Handover stage"
+                      value={stage}
+                      onChange={(e) => patchUnit(selectedPlot.villaNo, { handoverStage: e.target.value as HandoverStage })}
+                      className="mt-1.5 w-full min-w-0 rounded-xl border border-ink-700 bg-ink-900/70 px-2.5 py-1.5 text-xs text-mist-100"
+                    >
+                      {HANDOVER_STAGES.map((s) => (
+                        <option key={s} value={s}>
+                          {HANDOVER_STAGE_DEPARTMENT[s]
+                            ? `${HANDOVER_STAGE_LABEL[s]} · ${HANDOVER_STAGE_DEPARTMENT[s]}`
+                            : HANDOVER_STAGE_LABEL[s]}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <p className="mt-1 text-[11.5px] text-mist-100">{HANDOVER_STAGE_LABEL[stage]}</p>
+                  )}
+                  <p className="mt-1 text-[10.5px] leading-snug text-mist-500">
+                    {dept ? `${dept} · ` : ""}{HANDOVER_STAGE_DESCRIPTION[stage]}
+                  </p>
+                </div>
+
+                {/* Payment position. Read-only: these figures are summed from
+                    the receipts accounts recorded against this villa, so there
+                    is nothing here a person may type. A wrong number is fixed
+                    by a transaction in the ledger, never by an edit here. */}
+                <div>
+                  <span className="text-[10.5px] font-semibold uppercase tracking-wider text-mist-400">Payments</span>
+                  {!pos ? (
+                    <p className="mt-1 text-[11.5px] text-mist-400">No payment record linked yet</p>
+                  ) : (
+                    <dl className="mt-1.5 space-y-1 text-[11.5px]">
+                      <div className="flex justify-between gap-2">
+                        <dt className="text-mist-400">Collected</dt>
+                        <dd className="tnum text-emerald-300">{money(pos.paid)}</dd>
+                      </div>
+                      <div className="flex justify-between gap-2">
+                        <dt className="text-mist-400">Pending</dt>
+                        <dd className="tnum text-mist-100">{money(pos.pending)}</dd>
+                      </div>
+                      <div className="flex justify-between gap-2">
+                        <dt className="text-mist-400">Overdue</dt>
+                        <dd className={clsx("tnum", pos.overdue > 0 ? "text-rose-300" : "text-mist-100")}>
+                          {money(pos.overdue)}
+                        </dd>
+                      </div>
+                      <div className="flex justify-between gap-2">
+                        <dt className="text-mist-400">Next due</dt>
+                        <dd className="text-right text-mist-100">
+                          {pos.next
+                            ? `${pos.next.label} · ${money(pos.next.amount)} · ${pos.next.date.slice(0, 10)}`
+                            : "Fully collected"}
+                        </dd>
+                      </div>
+                    </dl>
+                  )}
+                  <p className="mt-1 text-[10px] leading-snug text-mist-500">
+                    Derived from recorded transactions · read-only here.
+                  </p>
+                </div>
+
+                {error && <p className="text-[11px] text-rose-400 sm:col-span-2 xl:col-span-4">{error}</p>}
+              </div>
+            );
+          })()}
+          </div>
+        )}        </div>
 
         {/* Detail drawer */}
         <div className="rounded-2xl border border-ink-700/60 bg-ink-900/50 p-4 lg:sticky lg:top-4 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto">
@@ -737,139 +892,6 @@ export function SerenityMasterPlan({
                     <Compass size={14} />
                     Tour interior
                   </button>
-                );
-              })()}
-
-              {(() => {
-                const row = units[selectedPlot.villaNo];
-                const stage: HandoverStage = row?.handoverStage ?? "not_started";
-                const dept = HANDOVER_STAGE_DEPARTMENT[stage];
-                const pos = row ? payments[row.id] : undefined;
-                return (
-                  <div className="mt-4 space-y-3 border-t border-ink-800 pt-3">
-                    {canWrite ? (
-                      <div>
-                        <label htmlFor="villa-status" className="text-[10.5px] font-semibold uppercase tracking-wider text-mist-400">
-                          Change status
-                        </label>
-                        <div className="mt-1.5 flex items-center gap-2">
-                          <select
-                            id="villa-status"
-                            value={statusOf(selectedPlot.villaNo)}
-                            onChange={(e) => patchUnit(selectedPlot.villaNo, { status: e.target.value as UnitStatus })}
-                            className="min-w-0 flex-1 rounded-xl border border-ink-700 bg-ink-900/70 px-2.5 py-1.5 text-xs text-mist-100"
-                          >
-                            {STATUSES.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
-                          </select>
-                          {saving && <Loader2 size={14} className="animate-spin text-mist-400" />}
-                        </div>
-                      </div>
-                    ) : null}
-
-                    {/* Who bought it. Free text: a sale is usually agreed before
-                        the buyer exists as a CRM record, and the desk should not
-                        have to create one to write the name down. Saved on blur
-                        rather than per keystroke so it is one write, not twenty. */}
-                    <div>
-                      <label
-                        htmlFor="villa-buyer"
-                        className="text-[10.5px] font-semibold uppercase tracking-wider text-mist-400"
-                      >
-                        Buyer
-                      </label>
-                      {canWrite ? (
-                        <input
-                          id="villa-buyer"
-                          type="text"
-                          defaultValue={row?.buyerName ?? ""}
-                          key={`buyer-${selectedPlot.villaNo}-${row?.buyerName ?? ""}`}
-                          placeholder="Name of the person who bought it"
-                          autoComplete="off"
-                          onBlur={(e) => {
-                            const next = e.target.value.trim();
-                            if (next !== (row?.buyerName ?? "")) {
-                              void patchUnit(selectedPlot.villaNo, { buyerName: next });
-                            }
-                          }}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") e.currentTarget.blur();
-                          }}
-                          className="mt-1.5 w-full min-w-0 rounded-xl border border-ink-700 bg-ink-900/70 px-2.5 py-1.5 text-xs text-mist-100 placeholder:text-mist-500 focus:border-brand-500/60 focus:outline-none"
-                        />
-                      ) : (
-                        <p className="mt-1 text-[11.5px] text-mist-100">
-                          {row?.buyerName ?? row?.customerName ?? "Not recorded"}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Which department has it, and what they are doing. */}
-                    <div>
-                      <span className="text-[10.5px] font-semibold uppercase tracking-wider text-mist-400">Handover stage</span>
-                      {canWrite ? (
-                        <select
-                          aria-label="Handover stage"
-                          value={stage}
-                          onChange={(e) => patchUnit(selectedPlot.villaNo, { handoverStage: e.target.value as HandoverStage })}
-                          className="mt-1.5 w-full min-w-0 rounded-xl border border-ink-700 bg-ink-900/70 px-2.5 py-1.5 text-xs text-mist-100"
-                        >
-                          {HANDOVER_STAGES.map((s) => (
-                            <option key={s} value={s}>
-                              {HANDOVER_STAGE_DEPARTMENT[s]
-                                ? `${HANDOVER_STAGE_LABEL[s]} · ${HANDOVER_STAGE_DEPARTMENT[s]}`
-                                : HANDOVER_STAGE_LABEL[s]}
-                            </option>
-                          ))}
-                        </select>
-                      ) : (
-                        <p className="mt-1 text-[11.5px] text-mist-100">{HANDOVER_STAGE_LABEL[stage]}</p>
-                      )}
-                      <p className="mt-1 text-[10.5px] leading-snug text-mist-500">
-                        {dept ? `${dept} · ` : ""}{HANDOVER_STAGE_DESCRIPTION[stage]}
-                      </p>
-                    </div>
-
-                    {/* Payment position. Read-only: these figures are summed from
-                        the receipts accounts recorded against this villa, so there
-                        is nothing here a person may type. A wrong number is fixed
-                        by a transaction in the ledger, never by an edit here. */}
-                    <div>
-                      <span className="text-[10.5px] font-semibold uppercase tracking-wider text-mist-400">Payments</span>
-                      {!pos ? (
-                        <p className="mt-1 text-[11.5px] text-mist-400">No payment record linked yet</p>
-                      ) : (
-                        <dl className="mt-1.5 space-y-1 text-[11.5px]">
-                          <div className="flex justify-between gap-2">
-                            <dt className="text-mist-400">Collected</dt>
-                            <dd className="tnum text-emerald-300">{money(pos.paid)}</dd>
-                          </div>
-                          <div className="flex justify-between gap-2">
-                            <dt className="text-mist-400">Pending</dt>
-                            <dd className="tnum text-mist-100">{money(pos.pending)}</dd>
-                          </div>
-                          <div className="flex justify-between gap-2">
-                            <dt className="text-mist-400">Overdue</dt>
-                            <dd className={clsx("tnum", pos.overdue > 0 ? "text-rose-300" : "text-mist-100")}>
-                              {money(pos.overdue)}
-                            </dd>
-                          </div>
-                          <div className="flex justify-between gap-2">
-                            <dt className="text-mist-400">Next due</dt>
-                            <dd className="text-right text-mist-100">
-                              {pos.next
-                                ? `${pos.next.label} · ${money(pos.next.amount)} · ${pos.next.date.slice(0, 10)}`
-                                : "Fully collected"}
-                            </dd>
-                          </div>
-                        </dl>
-                      )}
-                      <p className="mt-1 text-[10px] leading-snug text-mist-500">
-                        Derived from recorded transactions · read-only here.
-                      </p>
-                    </div>
-
-                    {error && <p className="text-[11px] text-rose-400">{error}</p>}
-                  </div>
                 );
               })()}
             </div>
