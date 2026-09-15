@@ -98,7 +98,49 @@ const UNIT_1: UnitGeometry = {
   ],
 };
 
-const GEOMETRIES: readonly UnitGeometry[] = [UNIT_1];
+/**
+ * Unit 3 — 2032 sq ft, east facing, 3 BHK, middle of the east band.
+ * Transcribed from /showcase/onyx/unit-plan-3.webp.
+ *
+ * A simpler plan than unit 1 and it reads as three columns rather than three
+ * bands. The sitout runs the full width of the north face. Down the west edge
+ * sit the two toilets and then the largest bedroom; the dining room runs deep
+ * through the centre with the utility tucked beneath it; the east edge carries
+ * the second bedroom, the living room — where the front door is — and the
+ * kitchen. The study is the narrow slot between the north bedrooms, drawn on
+ * the sheet without a dimension, so its width here is read from the drawing.
+ */
+const UNIT_3: UnitGeometry = {
+  position: 3,
+  extent: { w: ft(35, 6), h: ft(39, 4) },
+  entry: { x: ft(35, 6), y: ft(21) },
+  rooms: [
+    // The sitout spans the whole north face.
+    { name: "Sitout", kind: "outdoor", x: 0, y: 0, w: ft(35, 6), h: ft(5, 9), label: `35'-6" x 5'-9"` },
+
+    // North band: two bedrooms with their toilets, and the study between them.
+    { name: "Toilet", kind: "bath", x: 0, y: ft(5, 9), w: ft(4, 11), h: ft(11), label: `4'-11" x 11'-0"` },
+    { name: "Bedroom 2", kind: "bedroom", x: ft(4, 11), y: ft(5, 9), w: ft(12), h: ft(11), label: `12'-0" x 11'-0"` },
+    // No dimension is printed for the study; the footprint is read off the sheet.
+    { name: "Study", kind: "service", x: ft(16, 11), y: ft(6, 6), w: ft(1, 6), h: ft(10, 3) },
+    { name: "Toilet", kind: "bath", x: ft(18, 5), y: ft(7, 9), w: ft(5, 5), h: ft(9), label: `5'-5" x 9'-0"` },
+    { name: "Bedroom 3", kind: "bedroom", x: ft(24, 1), y: ft(5, 9), w: ft(11, 5), h: ft(11), label: `11'-5" x 11'-0"` },
+
+    // Middle band: the dining spine, the living room at the door, and the
+    // master's dress and toilet on the west edge.
+    { name: "Toilet", kind: "bath", x: 0, y: ft(16, 9), w: ft(6), h: ft(8), label: `6'-0" x 8'-0"` },
+    { name: "Dress", kind: "service", x: ft(6), y: ft(16, 9), w: ft(5, 5), h: ft(8), label: `5'-5" x 8'-0"` },
+    { name: "Dining", kind: "living", x: ft(12, 6), y: ft(16, 9), w: ft(11), h: ft(17, 7), label: `11'-0" x 17'-7"` },
+    { name: "Living", kind: "living", x: ft(23, 6), y: ft(16, 9), w: ft(12), h: ft(12), label: `12'-0" x 12'-0"` },
+
+    // South band: the master bedroom, the utility and the kitchen.
+    { name: "Master bedroom", kind: "bedroom", x: 0, y: ft(24, 9), w: ft(12), h: ft(14, 7), label: `12'-0" x 14'-7"` },
+    { name: "Utility", kind: "service", x: ft(12, 6), y: ft(34, 4), w: ft(11), h: ft(4, 11), label: `11'-0" x 4'-11"` },
+    { name: "Kitchen", kind: "kitchen", x: ft(24, 1), y: ft(28, 9), w: ft(11, 5), h: ft(10, 7), label: `11'-5" x 10'-7"` },
+  ],
+};
+
+const GEOMETRIES: readonly UnitGeometry[] = [UNIT_1, UNIT_3];
 
 export function unitGeometry(position: number | null | undefined): UnitGeometry | undefined {
   if (position === null || position === undefined) return undefined;
