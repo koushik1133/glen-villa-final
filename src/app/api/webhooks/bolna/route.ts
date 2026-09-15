@@ -1,5 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 import { apiError, apiFail, apiOk } from "@/lib/auth/http";
+import { bridgeCallToWhatsApp } from "@/lib/osf/voice-bridge";
 import { AuthError } from "@/lib/auth/session";
 import { read, resolveBrandId } from "@/lib/db";
 import { clientKey, rateLimit } from "@/lib/ops/ratelimit";
@@ -74,6 +75,36 @@ export async function POST(req: Request) {
     const orgId = await resolveDefaultOrgId();
 
     const result = ingestExecution(execution, { brandId, orgId });
+
+    /**
+     * Only once the call is FINISHED does it mean anything.
+     *
+     * Bolna posts progress updates too, and scoring a half-finished call would
+     * mark a buyer cold for not yet having said the thing they were about to
+     * say — then message them about it. `finalised` is true exactly once per
+     * call, on the terminal update.
+     *
+     * Awaited rather than fired and forgotten: this runs on a serverless
+     * function, and work still in flight when the response returns is killed
+     * with the process. It cannot throw — bridgeCallToWhatsApp catches
+     * everything and reports why — so a failed follow-up costs the follow-up,
+     * never the call record.
+     */
+    let followUp: Awaited<ReturnType<typeof bridgeCallToWhatsApp>> | undefined;
+    if (result.finalised) {
+      const turns = result.record.turns ?? [];
+      const transcript = turns.length
+        ? turns.map((t) => `${t.role === "caller" ? "Caller" : "Agent"}: ${t.text}`).join("\n")
+        : (result.record.transcript ?? "");
+      followUp = await bridgeCallToWhatsApp({
+        phone: result.record.callerPhone,
+        name: result.record.extracted?.name ?? null,
+        transcript,
+        executionId: execution.id,
+        customerTurns: turns.filter((t) => t.role === "caller").length,
+      });
+    }
+
     return apiOk({
       executionId: execution.id,
       status: result.record.status,
@@ -81,6 +112,7 @@ export async function POST(req: Request) {
       finalised: result.finalised,
       leadId: result.record.leadId,
       customerId: result.record.customerId,
+      followUp,
     });
   } catch (e) {
     return apiError(e);
