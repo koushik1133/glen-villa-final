@@ -86,6 +86,16 @@ const ALLOW: Record<string, string> = {
     "selected/focused villa dot on the aerial photograph — white is the only ring that reads on it",
   "src/components/showcase/serenity-master-plan.tsx:bg-white/5":
     "plate behind a floor-plan image, which is drawn on white paper in both themes",
+  // The 3D cutaway's stage is a fixed dark radial gradient in both themes — the
+  // model is lit as if at dusk, and a light stage would wash the room colours
+  // out entirely. Everything below is drawn on that stage, never on a themed
+  // surface, so these do not flip by design.
+  "src/components/showcase/unit-3d-view.tsx:text-white": "unit name read out over the dark stage",
+  "src/components/showcase/unit-3d-view.tsx:text-white/70": "room dimensions under it, same stage",
+  "src/components/showcase/unit-3d-view.tsx:text-white/50": "drawn-area line and the slider icon, same stage",
+  "src/components/showcase/unit-3d-view.tsx:text-white/40": "the drag/scroll hint, same stage",
+  "src/components/showcase/unit-3d-view.tsx:bg-black/40": "pill behind the wall-height slider, floating on the stage",
+  "src/components/showcase/unit-3d-view.tsx:bg-white/25": "the slider's own track inside that pill",
   "src/components/showcase/onyx-tower-explorer.tsx:bg-black/60": "breadcrumb bar over the photoreal render",
   "src/components/showcase/onyx-tower-explorer.tsx:border-white/15": "hairline on that breadcrumb bar",
   "src/components/showcase/onyx-tower-explorer.tsx:text-white/85": "breadcrumb text on that bar",

@@ -35,7 +35,15 @@ export const ONYX_STAGES = ["tower", "floor", "flat", "room"] as const;
 export type OnyxStage = (typeof ONYX_STAGES)[number];
 
 /** The two ways of looking at a flat once you are inside it. */
-export type OnyxFlatView = "360" | "plan";
+/**
+ * How a flat is being looked at.
+ *
+ * "3d" is the isometric cutaway drawn from the approved plan sheet. It lives in
+ * the same union as the other two because the drill-down reducer owns which
+ * view is open, and a second piece of state for one extra tab would be a second
+ * thing to keep in step with the back button.
+ */
+export type OnyxFlatView = "360" | "plan" | "3d";
 
 export type OnyxDrilldownState = {
   stage: OnyxStage;

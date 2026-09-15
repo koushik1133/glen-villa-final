@@ -47,6 +47,16 @@ import {
 } from "@/lib/showcase/onyx-drilldown";
 import { ONYX_PLATE_LAYOUT, onyxUnitType } from "@/lib/showcase/onyx-units";
 import { ONYX_TOWER_VIEWS } from "@/lib/showcase/onyx-tower-views";
+import { unitGeometry } from "@/lib/showcase/onyx-unit-geometry";
+
+const Unit3DView = dynamic(() => import("./unit-3d-view").then((m) => m.Unit3DView), {
+  ssr: false,
+  loading: () => (
+    <div className="grid h-full min-h-[240px] place-items-center text-mist-400">
+      <Loader2 className="size-5 animate-spin" aria-hidden />
+    </div>
+  ),
+});
 
 const OnyxTour = dynamic(() => import("./onyx-tour").then((m) => m.OnyxTour), {
   ssr: false,
@@ -320,6 +330,8 @@ export function OnyxTowerExplorer({
                 <RoomPanel
                   unitNumber={state.unitNumber}
                   brandId={brandId}
+                  position={type?.position ?? null}
+                  sqFt={type?.sqFt}
                   view={state.view}
                   planImage={type?.planImage ?? null}
                   onView={(view) => dispatch({ type: "setView", view })}
@@ -439,7 +451,7 @@ function FlatPanel({
   planImage: string | null;
   rooms: Array<{ name: string; dimensions?: string }>;
   position: number | null;
-  onEnter: (view: "360" | "plan") => void;
+  onEnter: (view: "360" | "plan" | "3d") => void;
 }) {
   return (
     <Shell
@@ -504,14 +516,22 @@ function RoomPanel({
   brandId,
   view,
   planImage,
+  position,
+  sqFt,
   onView,
 }: {
   unitNumber: string;
   brandId: string;
-  view: "360" | "plan";
+  view: "360" | "plan" | "3d";
   planImage: string | null;
-  onView: (v: "360" | "plan") => void;
+  /** Unit type on the plate, 1–7. The 3D geometry is keyed on it. */
+  position: number | null;
+  sqFt?: number;
+  onView: (v: "360" | "plan" | "3d") => void;
 }) {
+  // Offered only where the plan sheet has actually been transcribed; the tab is
+  // disabled rather than hidden so it is clear the view exists for other units.
+  const has3D = Boolean(unitGeometry(position));
   return (
     <div className="flex size-full flex-col overflow-hidden rounded-xl border border-ink-500 bg-ink-900/95 backdrop-blur-md">
       <div className="flex shrink-0 items-center justify-end gap-1.5 px-3 pb-1 pt-12 sm:pt-2.5">
@@ -528,6 +548,17 @@ function RoomPanel({
           <Button
             size="sm"
             role="tab"
+            aria-selected={view === "3d"}
+            variant={view === "3d" ? "primary" : "secondary"}
+            onClick={() => onView("3d")}
+            disabled={!has3D}
+            title={has3D ? undefined : "No transcribed plan for this unit yet"}
+          >
+            3D
+          </Button>
+          <Button
+            size="sm"
+            role="tab"
             aria-selected={view === "plan"}
             variant={view === "plan" ? "primary" : "secondary"}
             onClick={() => onView("plan")}
@@ -540,6 +571,8 @@ function RoomPanel({
       <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-3">
         {view === "360" ? (
           <OnyxTour unitNumber={unitNumber} brandId={brandId} />
+        ) : view === "3d" ? (
+          <Unit3DView position={position} unitNumber={unitNumber} sqFt={sqFt} />
         ) : planImage ? (
           <div className="grid h-full place-items-center rounded-xl bg-white p-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
