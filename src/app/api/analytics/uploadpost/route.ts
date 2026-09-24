@@ -49,9 +49,14 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const forceRefresh = searchParams.get("refresh") === "true";
     const requestedProfile = searchParams.get("profile") || uploadPostUser();
+    // The screen's 7/30/90 toggle used to be decorative here: `days` was pinned
+    // to 30, so switching range re-fetched the identical window.
+    const days = [7, 30, 90].includes(Number(searchParams.get("days")))
+      ? Number(searchParams.get("days"))
+      : 30;
 
     const now = Date.now();
-    if (!forceRefresh && cachedData && cachedData.profile === requestedProfile && now < cacheExpiry) {
+    if (!forceRefresh && cachedData && cachedData.profile === requestedProfile && cachedData.days === days && now < cacheExpiry) {
       return NextResponse.json(
         { ok: true, cached: true, ...cachedData },
         { headers: { "Cache-Control": "private, no-store" } }
@@ -64,16 +69,22 @@ export async function GET(req: NextRequest) {
     let profiles: any[] = [];
     let activeProfileObj: any = null;
     let facebookPageId = "1368849489636077";
-    let facebookPageName = "Kiwik.One";
+    let facebookPageName = "";
     const profileUsername = requestedProfile || "default";
 
     const analyticsUrl = `https://api.upload-post.com/api/analytics/${encodeURIComponent(
       profileUsername
     )}?platforms=instagram,facebook,linkedin,youtube&page_id=${encodeURIComponent(
       facebookPageId
-    )}&days=30`;
+    )}&days=${days}`;
 
     let rawAnalytics: any = {};
+    /**
+     * Non-null when the upstream call did not produce usable data. The numbers
+     * on this screen are labelled "Live synced", so a failed fetch must reach
+     * the UI as a failure — never as a plausible-looking constant.
+     */
+    let upstreamError: string | null = null;
 
     const [usersResult, analyticsResult] = await Promise.allSettled([
       fetch("https://api.upload-post.com/api/uploadposts/users", {
@@ -81,10 +92,14 @@ export async function GET(req: NextRequest) {
         cache: "no-store",
         signal: AbortSignal.timeout(5000),
       }),
+      // Upload-Post aggregates four networks server-side and consistently takes
+      // 7-9s for a 30-day window. The old 5s abort therefore fired on EVERY
+      // request, which is why the chart was always empty while the tiles still
+      // showed numbers — those were the hardcoded fallbacks below, not live data.
       fetch(analyticsUrl, {
         headers,
         cache: "no-store",
-        signal: AbortSignal.timeout(5000),
+        signal: AbortSignal.timeout(30_000),
       }),
     ]);
 
@@ -110,8 +125,16 @@ export async function GET(req: NextRequest) {
       try {
         rawAnalytics = await analyticsResult.value.json();
       } catch (e) {
-        console.warn("Error parsing rawAnalytics:", e);
+        upstreamError = `Could not parse the Upload-Post response: ${e instanceof Error ? e.message : String(e)}`;
       }
+    } else if (analyticsResult.status === "rejected") {
+      const r = analyticsResult.reason;
+      upstreamError =
+        r?.name === "TimeoutError"
+          ? "Upload-Post did not respond in time."
+          : `Upload-Post request failed: ${r instanceof Error ? r.message : String(r)}`;
+    } else {
+      upstreamError = `Upload-Post returned HTTP ${analyticsResult.value.status}.`;
     }
 
     // 3. Process Instagram Data
@@ -121,17 +144,17 @@ export async function GET(req: NextRequest) {
       : [];
     const instagram = {
       connected: Boolean(activeProfileObj?.social_accounts?.instagram),
-      handle: activeProfileObj?.social_accounts?.instagram?.handle?.replace(/^@/, "") || "kiwik.one1",
-      displayName: activeProfileObj?.social_accounts?.instagram?.display_name || "kiwik.one1",
+      handle: activeProfileObj?.social_accounts?.instagram?.handle?.replace(/^@/, "") || "",
+      displayName: activeProfileObj?.social_accounts?.instagram?.display_name || "",
       avatar: activeProfileObj?.social_accounts?.instagram?.social_images || null,
       followers: Number(rawIg.followers ?? 0),
-      reach: Number(rawIg.reach ?? 103),
-      views: Number(rawIg.views ?? rawIg.impressions ?? 120),
-      accountsEngaged: Number(rawIg.profileViews ?? 14),
-      likes: Number(rawIg.likes ?? 13),
+      reach: Number(rawIg.reach ?? 0),
+      views: Number(rawIg.views ?? rawIg.impressions ?? 0),
+      accountsEngaged: Number(rawIg.accounts_engaged ?? rawIg.profileViews ?? 0),
+      likes: Number(rawIg.likes ?? 0),
       comments: Number(rawIg.comments ?? 0),
       shares: Number(rawIg.shares ?? 0),
-      saves: Number(rawIg.saves ?? 1),
+      saves: Number(rawIg.saves ?? 0),
       reachTimeseries: igReachSeries,
     };
 
@@ -147,12 +170,12 @@ export async function GET(req: NextRequest) {
       connected: Boolean(activeProfileObj?.social_accounts?.facebook),
       pageId: "61594222312601",
       pageName: facebookPageName,
-      managerName: activeProfileObj?.social_accounts?.facebook?.display_name || "Praneeth Ramaswamy",
-      handle: facebookPageName || "Kiwik.One",
+      managerName: activeProfileObj?.social_accounts?.facebook?.display_name || "",
+      handle: facebookPageName || "",
       avatar: activeProfileObj?.social_accounts?.facebook?.social_images || null,
       followers: Number(rawFb.followers ?? 0),
-      reach: Number(rawFb.reach ?? 88),
-      impressions: Number(rawFb.impressions ?? 96),
+      reach: Number(rawFb.reach ?? 0),
+      impressions: Number(rawFb.impressions ?? 0),
       profileViews: Number(rawFb.profileViews ?? 0),
       reachTimeseries: fbReachSeries,
       impressionsTimeseries: fbImpSeries,
@@ -165,8 +188,8 @@ export async function GET(req: NextRequest) {
       : [];
     const youtube = {
       connected: Boolean(activeProfileObj?.social_accounts?.youtube),
-      displayName: activeProfileObj?.social_accounts?.youtube?.display_name || "Kiwik One",
-      handle: activeProfileObj?.social_accounts?.youtube?.handle || "@kiwik-one",
+      displayName: activeProfileObj?.social_accounts?.youtube?.display_name || "",
+      handle: activeProfileObj?.social_accounts?.youtube?.handle || "",
       avatar: activeProfileObj?.social_accounts?.youtube?.social_images || null,
       followers: Number(rawYt.followers ?? 0),
       reach: Number(rawYt.reach ?? 0),
@@ -181,8 +204,8 @@ export async function GET(req: NextRequest) {
     // 6. Process LinkedIn Data
     const linkedin = {
       connected: Boolean(activeProfileObj?.social_accounts?.linkedin),
-      displayName: activeProfileObj?.social_accounts?.linkedin?.display_name || "Kiwik.One 1",
-      handle: activeProfileObj?.social_accounts?.linkedin?.handle || "Kiwik.One 1",
+      displayName: activeProfileObj?.social_accounts?.linkedin?.display_name || "",
+      handle: activeProfileObj?.social_accounts?.linkedin?.handle || "",
       avatar: activeProfileObj?.social_accounts?.linkedin?.social_images || null,
       isPersonalProfile: true,
       note:
@@ -245,11 +268,17 @@ export async function GET(req: NextRequest) {
         linkedin,
       },
       updatedAt: new Date().toISOString(),
+      days,
+      stale: upstreamError !== null,
+      upstreamError,
     };
 
-    // Update cache for 60s
-    cachedData = responsePayload;
-    cacheExpiry = Date.now() + 60_000;
+    // Never cache a failed fetch: doing so would keep a blank chart on screen
+    // for a minute after the upstream recovered.
+    if (!upstreamError) {
+      cachedData = responsePayload;
+      cacheExpiry = Date.now() + 60_000;
+    }
 
     return NextResponse.json(
       { ok: true, cached: false, ...responsePayload },

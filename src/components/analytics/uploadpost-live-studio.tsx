@@ -49,6 +49,10 @@ interface UploadPostData {
   profile: string;
   profiles: Array<{ username: string; createdAt?: string; facebookPageName?: string }>;
   totalTimeseries: TotalTimeseriesPoint[];
+  days: number;
+  /** True when the upstream call failed and these numbers are not live. */
+  stale?: boolean;
+  upstreamError?: string | null;
   summary: {
     totalReach: number;
     totalViews: number;
@@ -111,6 +115,8 @@ interface UploadPostData {
   updatedAt: string;
 }
 
+const windowLabel = (days: number) => `Last ${days} Days`;
+
 const formatDateLabel = (dateStr: string) => {
   if (!dateStr) return "";
   const parts = dateStr.split("-");
@@ -124,7 +130,7 @@ const formatDateLabel = (dateStr: string) => {
   return `${day} ${monthNames[monthIndex] || ""}`;
 };
 
-export function UploadPostLiveStudio({ brandId }: { brandId?: string }) {
+export function UploadPostLiveStudio({ brandId, days = 30 }: { brandId?: string; days?: number }) {
   const [data, setData] = useState<UploadPostData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -137,9 +143,9 @@ export function UploadPostLiveStudio({ brandId }: { brandId?: string }) {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch(`/api/analytics/uploadpost${force ? "?refresh=true" : ""}`, {
-        cache: "no-store",
-      });
+      const qs = new URLSearchParams({ days: String(days) });
+      if (force) qs.set("refresh", "true");
+      const res = await fetch(`/api/analytics/uploadpost?${qs}`, { cache: "no-store" });
       const json = await res.json();
       if (json.ok) {
         setData(json);
@@ -154,9 +160,11 @@ export function UploadPostLiveStudio({ brandId }: { brandId?: string }) {
     }
   };
 
+  // Re-fetch when the 7/30/90 toggle moves, not only on mount.
   useEffect(() => {
     fetchData();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [days]);
 
   const handleRefresh = () => {
     startTransition(() => {
@@ -171,10 +179,10 @@ export function UploadPostLiveStudio({ brandId }: { brandId?: string }) {
 
   // Active platform timeseries chart data
   let activeChartData: Array<{ date: string; value: number; formattedDate: string }> = [];
-  let activeChartTitle = "Daily Reach — Last 30 Days";
+  let activeChartTitle = `Daily Reach — ${windowLabel(days)}`;
 
   if (activePlatform === "instagram" && ig) {
-    activeChartTitle = activeMetric === "views" ? "Daily Views — Last 30 Days" : "Daily Reach — Last 30 Days";
+    activeChartTitle = activeMetric === "views" ? `Daily Views — ${windowLabel(days)}` : `Daily Reach — ${windowLabel(days)}`;
     activeChartData = ig.reachTimeseries.map((pt) => ({
       date: pt.date,
       value: pt.value,
@@ -182,14 +190,14 @@ export function UploadPostLiveStudio({ brandId }: { brandId?: string }) {
     }));
   } else if (activePlatform === "facebook" && fb) {
     if (activeMetric === "impressions" && fb.impressionsTimeseries.length > 0) {
-      activeChartTitle = "Daily Page Impressions — Last 30 Days";
+      activeChartTitle = `Daily Page Impressions — ${windowLabel(days)}`;
       activeChartData = fb.impressionsTimeseries.map((pt) => ({
         date: pt.date,
         value: pt.value,
         formattedDate: formatDateLabel(pt.date),
       }));
     } else {
-      activeChartTitle = "Daily Reach — Last 30 Days";
+      activeChartTitle = `Daily Reach — ${windowLabel(days)}`;
       activeChartData = fb.reachTimeseries.map((pt) => ({
         date: pt.date,
         value: pt.value,
@@ -197,7 +205,7 @@ export function UploadPostLiveStudio({ brandId }: { brandId?: string }) {
       }));
     }
   } else if (activePlatform === "youtube" && yt) {
-    activeChartTitle = "Daily Reach / Views — Last 30 Days";
+    activeChartTitle = `Daily Reach / Views — ${windowLabel(days)}`;
     activeChartData = yt.reachTimeseries.map((pt) => ({
       date: pt.date,
       value: pt.value,
@@ -213,13 +221,22 @@ export function UploadPostLiveStudio({ brandId }: { brandId?: string }) {
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-[15px] font-semibold text-mist-100">Total Reach / Views</h2>
-              <span className="flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[10.5px] font-medium text-emerald-600 dark:text-emerald-400">
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
-                Live synced
-              </span>
+{/* The badge is a claim about the data. When the upstream call fails the
+                  numbers are not live, and saying so is the whole point. */}
+              {data?.stale || error ? (
+                <span className="flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 text-[10.5px] font-medium text-amber-600 dark:text-amber-400">
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                  Not synced
+                </span>
+              ) : (
+                <span className="flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-0.5 text-[10.5px] font-medium text-emerald-600 dark:text-emerald-400">
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+                  Live synced
+                </span>
+              )}
             </div>
             <p className="mt-0.5 text-[12px] text-mist-400">
-              Aggregated across Instagram, Facebook, and connected platforms · Last 30 Days
+              Aggregated across Instagram, Facebook, and connected platforms · {windowLabel(days)}
             </p>
           </div>
 
@@ -298,8 +315,19 @@ export function UploadPostLiveStudio({ brandId }: { brandId?: string }) {
               </AreaChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex h-full items-center justify-center text-[12.5px] text-mist-400">
-              {loading ? "Loading live data..." : "No timeseries data available"}
+            <div className="flex h-full flex-col items-center justify-center gap-1 px-6 text-center text-[12.5px] text-mist-400">
+              {loading ? (
+                "Loading live data…"
+              ) : (
+                <>
+                  <span>No timeseries data available</span>
+                  {(data?.upstreamError || error) && (
+                    <span className="text-[11.5px] text-amber-600 dark:text-amber-400">
+                      {data?.upstreamError || error}
+                    </span>
+                  )}
+                </>
+              )}
             </div>
           )}
         </div>

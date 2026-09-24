@@ -15,6 +15,6 @@ const Studio = dynamic(
   },
 );
 
-export function UploadPostLiveStudioLazy({ brandId }: { brandId: string }) {
-  return <Studio brandId={brandId} />;
+export function UploadPostLiveStudioLazy({ brandId, days }: { brandId: string; days?: number }) {
+  return <Studio brandId={brandId} days={days} />;
 }

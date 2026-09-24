@@ -69,7 +69,7 @@ export default async function AnalyticsPage({
       <TopBar brands={db.brands} brandId={brandId} title="Analytics" subtitle={`${brand.name} · live multi-platform performance`} />
 
       <div className="space-y-6 p-4 sm:p-6 lg:p-7">
-        <UploadPostLiveStudioLazy brandId={brandId} />
+        <UploadPostLiveStudioLazy brandId={brandId} days={days} />
 
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
           <Stat label="Impressions" value={fmt.n(t.impressions)} delta={pctChange(t.impressions, tPrev.impressions)} />
