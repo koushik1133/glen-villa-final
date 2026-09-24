@@ -1,19 +1,23 @@
 import Link from "next/link";
 import { Bot, BotOff, AlertTriangle } from "lucide-react";
 import { Badge, Card, Empty, PageHeader, SetupNotice, formatNumber } from "@/components/osf/ui";
+import { LiveRefresh } from "../LiveRefresh";
 import {
   SERVICE_WINDOW_HOURS,
+  EVOLUTION_ENV_VARS,
   WHATSAPP_ENV_VARS,
   lastInboundFrom,
   listConversations,
   loadThread,
   serviceWindow,
+  serviceWindowApplies,
   windowLabel,
 } from "@/lib/osf/communication";
-import { configStatus } from "@/lib/osf/env";
+import { configStatus, env } from "@/lib/osf/env";
 import { gatedLoad } from "@/lib/osf/queries";
 import { ConversationList, MessageThread, NoThreadSelected, ThreadHeader } from "../thread";
 import ReplyBox from "./ReplyBox";
+import { StartChat } from "./StartChat";
 
 export const dynamic = "force-dynamic";
 
@@ -22,9 +26,9 @@ const BASE = "/inbox/whatsapp/communication/whatsapp";
 export default async function WhatsAppPage({
   searchParams,
 }: {
-  searchParams: Promise<{ c?: string; error?: string }>;
+  searchParams: Promise<{ c?: string; error?: string; sent?: string; skipped?: string; failed?: string }>;
 }) {
-  const { c, error } = await searchParams;
+  const { c, error, sent, skipped, failed } = await searchParams;
 
   const page = await gatedLoad(null, () =>
     Promise.all([
@@ -43,12 +47,22 @@ export default async function WhatsAppPage({
   }
 
   const [conversations, thread] = page.data;
-  const connected = configStatus().whatsapp;
+
+  // Ask whether the ACTIVE transport is configured, not whether Meta's is.
+  // This console sends through whatever `whatsappProvider` resolves to, and on
+  // an Evolution deployment that is Evolution — so checking the Meta variables
+  // told a correctly configured desk that WhatsApp was not connected, and
+  // pointed them at four credentials they were never going to set.
+  const status = configStatus();
+  const provider = env.whatsappProvider;
+  const connected = provider === "evolution" ? status.evolution : status.whatsapp;
+  const missingVars = provider === "evolution" ? EVOLUTION_ENV_VARS : WHATSAPP_ENV_VARS;
 
   // A thread reached from the inbox may not be WhatsApp at all. The send path
   // refuses those anyway; saying so here beats offering a composer that can't work.
   const wrongChannel = thread !== null && thread.conversation.channel !== "whatsapp";
 
+  const windowApplies = serviceWindowApplies();
   const window = thread ? serviceWindow(lastInboundFrom(thread.messages)) : null;
   const closesAt =
     window?.lastInboundAt !== null && window?.lastInboundAt !== undefined
@@ -64,16 +78,30 @@ export default async function WhatsAppPage({
         title="WhatsApp"
         sub="The only channel with a live send integration. Replying here hands the thread to you — the AI stops answering on it until you give it back."
         actions={
-          <div className="text-right">
-            <p className="stat text-xl">{formatNumber(conversations.length)}</p>
-            <p className="label mt-0.5">
-              {awaiting} awaiting reply · {paused} AI paused
-            </p>
+          <div className="flex items-center gap-3">
+            <StartChat returnTo={BASE} />
+            <LiveRefresh seconds={8} />
+            <div className="text-right">
+              <p className="stat text-xl">{formatNumber(conversations.length)}</p>
+              <p className="label mt-0.5">
+                {awaiting} awaiting reply · {paused} AI paused
+              </p>
+            </div>
           </div>
         }
       />
 
-      {!connected && <SetupNotice missing={WHATSAPP_ENV_VARS} detail="Threads still render from the database, but nothing can be sent until the WhatsApp Cloud API credentials are set." />}
+      {!connected && <SetupNotice missing={missingVars} detail="Threads still render from the database, but a human reply cannot be sent until these are set." />}
+
+      {sent !== undefined && (
+        <div className="mb-6 rounded-2xl border border-[var(--color-gold-line)] bg-[var(--color-gold-soft)] p-4 text-sm text-[var(--color-ink)]">
+          Opening message sent to <strong>{sent}</strong>{" "}
+          {sent === "1" ? "person" : "people"}.
+          {skipped ? ` ${skipped} skipped (already in a conversation, or opted out).` : ""}
+          {failed ? ` ${failed} could not be delivered.` : ""}{" "}
+          Their threads are in the list — the agent answers when they reply.
+        </div>
+      )}
 
       {error && (
         <div className="mb-6 flex items-start gap-2.5 rounded-2xl border border-[color-mix(in_oklab,var(--c-bad)_30%,transparent)] bg-[color-mix(in_oklab,var(--c-bad)_8%,transparent)] p-4 text-sm text-[var(--color-danger)]">
@@ -166,6 +194,7 @@ export default async function WhatsAppPage({
                   initiallyOpen={window?.open ?? false}
                   initialLabel={window ? windowLabel(window) : "No inbound message yet"}
                   preferredLanguage={thread.lead?.preferred_language ?? "en"}
+                  windowApplies={windowApplies}
                 />
               )}
             </>

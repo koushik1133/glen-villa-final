@@ -3,13 +3,20 @@ import { Card, Empty, PageHeader, SetupNotice, formatNumber } from "@/components
 import {
   CHANNELS,
   CONVERSATION_STATUSES,
+  SERVICE_WINDOW_HOURS,
   channelLabel,
   inboxFacets,
+  lastInboundFrom,
   listConversations,
   loadThread,
+  serviceWindow,
+  serviceWindowApplies,
+  windowLabel,
 } from "@/lib/osf/communication";
 import { gatedLoad } from "@/lib/osf/queries";
 import { ChannelIcon, ConversationList, MessageThread, NoThreadSelected, ThreadHeader } from "../thread";
+import { LiveRefresh } from "../LiveRefresh";
+import ReplyBox from "../whatsapp/ReplyBox";
 
 export const dynamic = "force-dynamic";
 
@@ -84,11 +91,31 @@ export default async function InboxPage({
   const [conversations, facets, thread] = page.data;
   const carry = { channel: activeChannel, status: activeStatus };
 
+  /** Back to this same thread, with whatever filters are applied, after a send. */
+  const threadHref = (conversationId: string) => {
+    const query = new URLSearchParams({ c: conversationId });
+    if (activeChannel) query.set("channel", activeChannel);
+    if (activeStatus) query.set("status", activeStatus);
+    return `${BASE}?${query.toString()}`;
+  };
+
+  // Meta's 24-hour rule is a property of the conversation, not of the screen it
+  // is read on, so it is computed here exactly as the WhatsApp console does it.
+  const windowApplies = serviceWindowApplies();
+  const replyWindow = thread ? serviceWindow(lastInboundFrom(thread.messages)) : null;
+  const closesAt =
+    replyWindow?.lastInboundAt !== null && replyWindow?.lastInboundAt !== undefined
+      ? new Date(
+          new Date(replyWindow.lastInboundAt).getTime() + SERVICE_WINDOW_HOURS * 3_600_000,
+        ).toISOString()
+      : null;
+
   return (
     <>
       <PageHeader
         title="Inbox"
-        sub="Every thread, every channel, newest first. Read-only here — replying is channel-specific, so WhatsApp has its own console."
+        sub="Every thread, every channel, newest first. WhatsApp threads can be answered here; replying pauses the AI on that lead."
+        actions={<LiveRefresh seconds={8} />}
       />
 
       {error && (
@@ -179,7 +206,10 @@ export default async function InboxPage({
                     href={`/inbox/whatsapp/communication/whatsapp?c=${thread.conversation.id}`}
                     className="btn-ghost !py-2 text-xs"
                   >
-                    Reply in WhatsApp console
+                    {/* Replying no longer requires the console, so the link
+                        now offers what the inbox does not: the AI pause/resume
+                        toggle and the opt-out banner. */}
+                    Open in WhatsApp console
                   </Link>
                 )}
               </ThreadHeader>
@@ -191,15 +221,37 @@ export default async function InboxPage({
                 </p>
               )}
 
-              <div className="mt-5 max-h-[calc(100vh-24rem)] overflow-y-auto pr-1">
+              <div className="mt-5 max-h-[calc(100vh-30rem)] min-h-[12rem] overflow-y-auto pr-1">
                 <MessageThread messages={thread.messages} />
               </div>
 
-              {thread.conversation.channel !== "whatsapp" && (
+              {/*
+                Replying happens here now, not only in the WhatsApp console.
+                Making someone read a thread on one screen and answer it on
+                another is a step that exists for no reason the customer would
+                recognise — and the composer already carries its own rules
+                (the 24-hour window, template fallback, and pausing the AI on
+                send), so nothing is lost by offering it in both places.
+              */}
+              {thread.conversation.channel !== "whatsapp" ? (
                 <p className="mt-4 border-t border-[var(--color-line)] pt-4 text-xs text-[var(--color-muted)]">
                   {channelLabel(thread.conversation.channel)} has no send integration wired up in
                   this app, so this thread is read-only.
                 </p>
+              ) : thread.lead?.opted_out ? (
+                <p className="mt-4 border-t border-[var(--color-line)] pt-4 text-xs text-[var(--color-danger)]">
+                  This customer opted out. Nothing may be sent to them on any channel.
+                </p>
+              ) : (
+                <ReplyBox
+                  conversationId={thread.conversation.id}
+                  windowClosesAt={closesAt}
+                  initiallyOpen={replyWindow?.open ?? false}
+                  initialLabel={replyWindow ? windowLabel(replyWindow) : "No inbound message yet"}
+                  preferredLanguage={thread.lead?.preferred_language ?? "en"}
+                  windowApplies={windowApplies}
+                  returnTo={threadHref(thread.conversation.id)}
+                />
               )}
             </>
           )}

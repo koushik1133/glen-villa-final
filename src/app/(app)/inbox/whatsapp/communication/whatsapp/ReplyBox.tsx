@@ -29,6 +29,8 @@ export default function ReplyBox({
   initiallyOpen,
   initialLabel,
   preferredLanguage,
+  windowApplies = true,
+  returnTo,
 }: {
   conversationId: string;
   /** ISO instant free-text stops being allowed. Null when the customer never wrote. */
@@ -36,6 +38,23 @@ export default function ReplyBox({
   initiallyOpen: boolean;
   initialLabel: string;
   preferredLanguage: string;
+  /**
+   * False on Evolution, which has no service window and no template approval.
+   * The countdown and the template-only lock are Meta rules; showing them on a
+   * deployment they do not govern invents a deadline the rep does not have.
+   */
+  windowApplies?: boolean;
+  /**
+   * Where to land after sending. The composer now appears on the inbox as well
+   * as the WhatsApp console, and a rep who replies from the inbox should stay
+   * on the inbox — being thrown into a different screen mid-conversation reads
+   * as the app losing their place. Defaults to the console it was written for,
+   * so the existing call site is unchanged.
+   *
+   * The server still validates this against an allowlist before redirecting;
+   * it is a convenience, not a trusted value.
+   */
+  returnTo?: string;
 }) {
   // Null until mounted so the first client render matches the server's.
   const [now, setNow] = useState<number | null>(null);
@@ -52,7 +71,7 @@ export default function ReplyBox({
 
   const closesAt = windowClosesAt ? new Date(windowClosesAt).getTime() : null;
   const live = now !== null && closesAt !== null;
-  const open = live ? now < closesAt : initiallyOpen;
+  const open = !windowApplies || (live ? now < closesAt : initiallyOpen);
   const label = live ? formatLeft(closesAt - now) : initialLabel;
 
   const composing = open ? mode : "template";
@@ -62,21 +81,27 @@ export default function ReplyBox({
     .map((value) => value.trim())
     .filter(Boolean);
 
-  const next = `/inbox/whatsapp/communication/whatsapp?c=${conversationId}`;
+  const next = returnTo ?? `/inbox/whatsapp/communication/whatsapp?c=${conversationId}`;
 
   return (
     <div className="mt-5 border-t border-[var(--color-line)] pt-4">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <span
-          className={`pill ${
-            open
-              ? "bg-[color-mix(in_oklab,var(--c-good)_14%,transparent)] text-[var(--color-success)]"
-              : "bg-[color-mix(in_oklab,var(--c-warn)_14%,transparent)] text-[var(--color-warm)]"
-          }`}
-        >
-          {open ? <Clock size={12} strokeWidth={2} aria-hidden /> : <Lock size={12} strokeWidth={2} aria-hidden />}
-          24h window · {label}
-        </span>
+        {windowApplies ? (
+          <span
+            className={`pill ${
+              open
+                ? "bg-[color-mix(in_oklab,var(--c-good)_14%,transparent)] text-[var(--color-success)]"
+                : "bg-[color-mix(in_oklab,var(--c-warn)_14%,transparent)] text-[var(--color-warm)]"
+            }`}
+          >
+            {open ? <Clock size={12} strokeWidth={2} aria-hidden /> : <Lock size={12} strokeWidth={2} aria-hidden />}
+            24h window · {label}
+          </span>
+        ) : (
+          <span className="text-[11px] text-[var(--color-faint)]">
+            No sending window on this connection — you can reply at any time.
+          </span>
+        )}
 
         {open && (
           <div className="flex items-center gap-1 rounded-xl border border-[var(--color-line)] bg-[var(--color-void)] p-1">

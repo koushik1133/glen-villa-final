@@ -1,5 +1,5 @@
 import { logActivity } from "./activities";
-import { configStatus } from "./env";
+import { configStatus, env } from "./env";
 import { db } from "./supabase";
 import { sendPlainText, sendReengagement } from "./whatsapp/outbound";
 import type { Conversation, LeadTemperature, Message, MessageRole } from "./types";
@@ -282,12 +282,67 @@ export const WHATSAPP_ENV_VARS = [
   "WHATSAPP_APP_SECRET",
 ];
 
-const NOT_CONFIGURED =
-  "WhatsApp isn't connected. Set the WHATSAPP_* variables in .env.local before sending.";
+/**
+ * What an Evolution deployment needs instead.
+ *
+ * Only the three send credentials. EVOLUTION_WEBHOOK_TOKEN is deliberately
+ * absent: this console does not receive inbound — the agent that owns the
+ * number does — so listing it here would ask somebody to configure a webhook
+ * we refuse on purpose.
+ */
+export const EVOLUTION_ENV_VARS = [
+  "EVOLUTION_API_URL",
+  "EVOLUTION_API_KEY",
+  "EVOLUTION_INSTANCE",
+];
+
+/**
+ * Whether the transport that would actually carry this message is configured.
+ *
+ * `sendPlainText` already routes by `whatsappProvider`, so asking only about
+ * the Meta variables refused every send on an Evolution deployment that was
+ * correctly set up — the message never left, and the rep was told to configure
+ * credentials the send path was never going to use.
+ */
+function sendTransportReady(): { ok: true } | { ok: false; error: string } {
+  const status = configStatus();
+  if (env.whatsappProvider === "evolution") {
+    return status.evolution
+      ? { ok: true }
+      : {
+          ok: false,
+          error:
+            "WhatsApp isn't connected. Set EVOLUTION_API_URL, EVOLUTION_API_KEY and EVOLUTION_INSTANCE before sending.",
+        };
+  }
+  return status.whatsapp
+    ? { ok: true }
+    : {
+        ok: false,
+        error: "WhatsApp isn't connected. Set the WHATSAPP_* variables in .env.local before sending.",
+      };
+}
 
 export const OUTSIDE_WINDOW_MESSAGE =
   "The 24-hour customer-service window has closed. Meta rejects free-form text here — " +
   "send an approved template to re-open the conversation.";
+
+/**
+ * Whether Meta's 24-hour rule applies to this deployment at all.
+ *
+ * It is Meta's rule, not WhatsApp's. Evolution drives a linked handset and has
+ * no service window and no template approval, so enforcing it there did real
+ * damage in both directions: the composer counted down to a deadline that did
+ * not exist, and once it expired the send was REFUSED outright — a rep with a
+ * customer who had gone quiet for a day could not reply at all, and was told
+ * to send an approved template that Evolution has no concept of.
+ *
+ * Skipping the check also removes a database round trip from every send on
+ * Evolution, because `lastInboundAt` no longer has to be fetched.
+ */
+export function serviceWindowApplies(): boolean {
+  return env.whatsappProvider === "meta";
+}
 
 interface SendTarget {
   conversation: Pick<Conversation, "id" | "message_count" | "channel">;
@@ -342,44 +397,64 @@ async function recordOutbound(params: {
   const supabase = db();
   const now = new Date().toISOString();
 
-  const { error } = await supabase.from("villa_messages").insert({
-    conversation_id: params.target.conversation.id,
-    lead_id: params.target.lead.id,
-    role: "human_agent",
-    channel: "whatsapp",
-    body: params.body,
-    wa_message_id: params.waMessageId,
-  });
+  /**
+   * All four writes go at once.
+   *
+   * They were sequential, which cost four round trips to a database roughly
+   * 150ms away — about half a second the rep spent watching a spinner AFTER
+   * the customer had already received the message. Nothing here reads anything
+   * another one writes: a message row, a conversation timestamp, the lead's
+   * pause flag and an activity line are four independent facts about the same
+   * event, so the ordering was incidental rather than meaningful.
+   *
+   * `allSettled`, not `all`: the send already happened. A failed bookkeeping
+   * write must not surface as a send failure, because a rep told "that didn't
+   * send" will send again and the customer gets the message twice.
+   */
+  const [inserted] = await Promise.allSettled([
+    supabase.from("villa_messages").insert({
+      conversation_id: params.target.conversation.id,
+      lead_id: params.target.lead.id,
+      role: "human_agent",
+      channel: "whatsapp",
+      body: params.body,
+      wa_message_id: params.waMessageId,
+    }),
 
-  // Meta has already delivered the message by this point, so a failed write is
-  // a logging problem, not a send failure. Reporting it as one would tell the
-  // rep to send again — which would actually double-message the customer.
-  if (error) console.error("[communication] could not record outbound message:", error.message);
+    supabase
+      .from("villa_conversations")
+      .update({ last_message_at: now, message_count: params.target.conversation.message_count + 1 })
+      .eq("id", params.target.conversation.id),
 
-  await supabase
-    .from("villa_conversations")
-    .update({ last_message_at: now, message_count: params.target.conversation.message_count + 1 })
-    .eq("id", params.target.conversation.id);
+    supabase
+      .from("villa_leads")
+      .update({ ai_paused: true, last_contact_at: now })
+      .eq("id", params.target.lead.id),
 
-  await supabase
-    .from("villa_leads")
-    .update({ ai_paused: true, last_contact_at: now })
-    .eq("id", params.target.lead.id);
+    logActivity({
+      leadId: params.target.lead.id,
+      type: "message_sent",
+      description: params.activityDescription,
+      channel: "whatsapp",
+      metadata: { conversation_id: params.target.conversation.id, sent_by: "human" },
+    }),
+  ]);
 
-  await logActivity({
-    leadId: params.target.lead.id,
-    type: "message_sent",
-    description: params.activityDescription,
-    channel: "whatsapp",
-    metadata: { conversation_id: params.target.conversation.id, sent_by: "human" },
-  });
+  // The message row is the one worth complaining about in the log: without it
+  // the rep's own reply is missing from the thread they are looking at.
+  if (inserted.status === "rejected") {
+    console.error("[communication] could not record outbound message:", inserted.reason);
+  } else if (inserted.value?.error) {
+    console.error("[communication] could not record outbound message:", inserted.value.error.message);
+  }
 }
 
 export async function sendWhatsAppText(input: {
   conversationId: string;
   text: string;
 }): Promise<SendResult> {
-  if (!configStatus().whatsapp) return { ok: false, error: NOT_CONFIGURED };
+  const ready = sendTransportReady();
+  if (!ready.ok) return { ok: false, error: ready.error };
 
   const body = input.text?.trim();
   if (!body) return { ok: false, error: "Type a message before sending." };
@@ -392,7 +467,9 @@ export async function sendWhatsAppText(input: {
   }
 
   // Re-checked server-side: the UI hides the box, but a stale tab still has it.
-  if (!serviceWindow(await lastInboundAt(input.conversationId)).open) {
+  // Only on Meta — see serviceWindowApplies(). On Evolution this check would
+  // refuse a perfectly legal reply, and the lookup it needs is a round trip.
+  if (serviceWindowApplies() && !serviceWindow(await lastInboundAt(input.conversationId)).open) {
     return { ok: false, error: OUTSIDE_WINDOW_MESSAGE };
   }
 
@@ -430,7 +507,8 @@ export async function sendWhatsAppTemplate(input: {
   language?: string | null;
   params?: string[];
 }): Promise<SendResult> {
-  if (!configStatus().whatsapp) return { ok: false, error: NOT_CONFIGURED };
+  const ready = sendTransportReady();
+  if (!ready.ok) return { ok: false, error: ready.error };
 
   const name = input.templateName?.trim().toLowerCase();
   if (!name) return { ok: false, error: "A template name is required." };
