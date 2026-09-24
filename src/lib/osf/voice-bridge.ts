@@ -2,9 +2,13 @@ import { complete, extractJson, hasLLM } from "../ai/provider";
 import { db } from "./supabase";
 import { getOrCreateLead } from "./conversation";
 import { scoreLead, temperatureFor } from "./agent/scoring";
-import { sendReengagement } from "./whatsapp/outbound";
+import { activeProvider, deliverReply, sendPlainText, sendReengagement } from "./whatsapp/outbound";
+import { deliverApprovedAssets } from "./agent/execute";
+import { getOrCreateConversation } from "./conversation";
+import { serviceWindow } from "./communication";
+import { env } from "./env";
 import { logActivity } from "./activities";
-import type { BuyerPurpose, Lead, LeadTemperature, PurchaseTimeline } from "./types";
+import type { AssetKind, BuyerPurpose, Lead, LeadTemperature, PurchaseTimeline } from "./types";
 
 /**
  * THE BRIDGE BETWEEN THE CALL AND THE WHATSAPP THREAD
@@ -48,6 +52,14 @@ export interface CallSignals {
   askedAboutBooking?: boolean;
   requestedMaterial?: boolean;
   requestedHandoff?: boolean;
+  /**
+   * WHAT the caller asked to be sent, not merely that they asked for something.
+   * `requestedMaterial` is a scoring input; this is a work order — each kind
+   * here is fulfilled from the operator's approved asset list after the call.
+   */
+  requestedAssetKinds?: AssetKind[];
+  /** "Send me the location" — a maps link, never an attachment. */
+  requestedLocation?: boolean;
   /** Turns the CUSTOMER spoke — engagement, not call length. */
   customerTurns?: number;
   /** One line a human can read in the CRM. Never shown to the customer. */
@@ -80,15 +92,76 @@ function coerce(raw: Record<string, unknown>): CallSignals {
     askedAboutBooking: raw.askedAboutBooking === true,
     requestedMaterial: raw.requestedMaterial === true,
     requestedHandoff: raw.requestedHandoff === true,
+    requestedAssetKinds: Array.isArray(raw.requestedAssets)
+      ? [...new Set(raw.requestedAssets.map(String))].filter(
+          (k): k is AssetKind => (SENDABLE_KINDS as readonly string[]).includes(k),
+        )
+      : [],
+    requestedLocation: raw.requestedLocation === true,
     summary: typeof raw.summary === "string" && raw.summary.trim() ? raw.summary.trim().slice(0, 400) : null,
   };
+}
+
+/**
+ * The kinds a post-call follow-up may deliver on its own.
+ *
+ * Deliberately narrower than `AssetKind`. "image", "video" and "other" are
+ * excluded: a caller who said "send me some photos" is asking a salesperson to
+ * choose, and an unattended process picking four files out of the library is
+ * how someone receives a stranger's floor plan. Those become a human task.
+ */
+const SENDABLE_KINDS = [
+  "brochure", "floor_plan", "site_plan", "master_plan", "price_sheet", "virtual_tour",
+] as const satisfies readonly AssetKind[];
+
+/** Phrases that name a specific deliverable, in English and common Hinglish. */
+const KIND_PATTERNS: ReadonlyArray<[AssetKind, RegExp]> = [
+  ["brochure", /\b(brochure|broucher|catalogue|catalog|pamphlet)\b/],
+  ["floor_plan", /\b(floor ?plan|unit plan|layout of the (villa|unit|flat)|2d plan)\b/],
+  ["site_plan", /\b(site ?plan|site layout|plot layout)\b/],
+  ["master_plan", /\b(master ?plan|project layout|overall layout)\b/],
+  ["price_sheet", /\b(price (list|sheet|chart)|rate (list|chart)|cost sheet|payment schedule)\b/],
+  ["virtual_tour", /\b(virtual tour|3d tour|walkthrough|walk ?through)\b/],
+];
+
+/**
+ * "Send me the location" is its own thing. A maps URL is a web page, not a
+ * file — `getAssets` refuses to attach one for exactly this reason — so it is
+ * delivered as text.
+ */
+const LOCATION_PATTERN =
+  /\b(location|address|where (is|are) (it|the)|google ?maps?|map link|pin|directions|kaha(n)? hai)\b/;
+
+/**
+ * Only the caller's own lines.
+ *
+ * This matters far more here than it does for scoring. The agent says "shall I
+ * send you the brochure?" on practically every call, so a whole-transcript
+ * match would mail a brochure to someone who answered "no, thanks". The
+ * transcript the webhook builds is "Caller: …" / "Agent: …" line-prefixed;
+ * when it is an unlabelled blob we have no way to tell the two apart, so the
+ * whole thing is used and the model pass — which is told to attribute — is what
+ * keeps it honest.
+ */
+function callerLines(transcript: string): string {
+  const lines = transcript.split("\n");
+  const labelled = lines.filter((l) => /^\s*(caller|customer|user)\s*:/i.test(l));
+  return (labelled.length ? labelled : lines).join("\n").toLowerCase();
+}
+
+/** What the caller asked to be SENT, read off the transcript with patterns. */
+function requestedKindsFromText(t: string): AssetKind[] {
+  return KIND_PATTERNS.filter(([, re]) => re.test(t)).map(([kind]) => kind);
 }
 
 /** The deterministic floor. Runs with no model, and alongside one. */
 export function keywordSignals(transcript: string): CallSignals {
   const t = transcript.toLowerCase();
+  const said = callerLines(transcript);
   const has = (re: RegExp) => re.test(t);
   return {
+    requestedAssetKinds: requestedKindsFromText(said),
+    requestedLocation: LOCATION_PATTERN.test(said),
     requestedSiteVisit: has(/\b(site visit|visit the site|come and see|show me the (villa|property|plot)|schedule a visit|site dekh)/),
     askedAboutBooking: has(/\b(book|booking|token|advance|payment plan|emi|down payment|register)/),
     requestedMaterial: has(/\b(brochure|floor plan|price list|price sheet|send me the details|pdf)/),
@@ -132,12 +205,16 @@ Return exactly this JSON object, no prose, no fences:
  "askedAboutBooking": boolean,
  "requestedMaterial": boolean,
  "requestedHandoff": boolean,
+ "requestedAssets": string[],
+ "requestedLocation": boolean,
  "summary": string
 }
 
 Rules:
 - budgetMaxInr in rupees as a number. "one crore" is 10000000, "80 lakhs" is 8000000. Null if no figure was said.
 - Booleans are true only if the CALLER asked. The agent offering something does not count.
+- requestedAssets: which of ${SENDABLE_KINDS.map((k) => `"${k}"`).join(", ")} the CALLER asked to be SENT to them. This drives an automatic WhatsApp delivery, so include a kind only if they clearly wanted it. If the agent offered and the caller declined or did not answer, leave it out. [] if none.
+- requestedLocation: true only if the caller asked where the project is, or asked for the address, map or directions.
 - summary: one sentence, factual, for the sales team.`,
       json: true,
       maxTokens: 900,
@@ -157,6 +234,13 @@ Rules:
       askedAboutBooking: model.askedAboutBooking || floor.askedAboutBooking,
       requestedMaterial: model.requestedMaterial || floor.requestedMaterial,
       requestedHandoff: model.requestedHandoff || floor.requestedHandoff,
+      // Union here too: the model reads "bhej dijiye woh paper" that no regex
+      // has, and the regex catches what a terse model reply drops. Both were
+      // read off the caller's own words, so neither can invent a request.
+      requestedAssetKinds: [
+        ...new Set([...(model.requestedAssetKinds ?? []), ...(floor.requestedAssetKinds ?? [])]),
+      ],
+      requestedLocation: Boolean(model.requestedLocation || floor.requestedLocation),
       purchaseTimeline: model.purchaseTimeline ?? floor.purchaseTimeline ?? null,
     };
   } catch {
@@ -180,6 +264,137 @@ export interface BridgeResult {
   messaged: boolean;
   /** Why nothing was sent, when nothing was sent. */
   skipped?: string;
+  /** What the caller asked for on the call, and what became of it. */
+  requests?: FulfilmentResult;
+}
+
+export interface FulfilmentResult {
+  /** Kinds the caller asked to be sent. */
+  requested: AssetKind[];
+  /** Kinds actually delivered, with the file count for each. */
+  delivered: Partial<Record<AssetKind, number>>;
+  locationSent: boolean;
+  /**
+   * Asked for, but nothing went out — no approved file of that kind, or the
+   * send failed. These are handed to a human rather than dropped.
+   */
+  unfulfilled: AssetKind[];
+  /** Set when the 24-hour service window was shut, so nothing could be sent. */
+  deferred?: string;
+}
+
+/** Customer-facing label. Never the enum. */
+const KIND_LABEL: Record<string, string> = {
+  brochure: "the brochure",
+  floor_plan: "the floor plan",
+  site_plan: "the site plan",
+  master_plan: "the master plan",
+  price_sheet: "the price sheet",
+  virtual_tour: "the virtual tour",
+};
+
+function listOut(parts: string[]): string {
+  if (parts.length <= 1) return parts[0] ?? "";
+  return `${parts.slice(0, -1).join(", ")} and ${parts[parts.length - 1]}`;
+}
+
+/**
+ * ACT ON WHAT THE CALLER ASKED FOR.
+ *
+ * The agent says "sure, I will send it on WhatsApp" and, until now, nothing
+ * did. This delivers it — but only from `villa_assets` rows the operator has
+ * marked `shareable_by_ai`, through `deliverApprovedAssets`, which re-runs the
+ * allowlist and is-it-really-a-file checks the live agent uses. Nothing here
+ * can send a URL a human has not approved.
+ *
+ * WHY THIS CAN LEGITIMATELY SEND NOTHING
+ *
+ * Meta only permits free-form messages and attachments inside 24 hours of the
+ * customer's last inbound WhatsApp message. A voice call does not open that
+ * window — only a WhatsApp message from them does. So for a caller who has
+ * never messaged us, the lawful move is the approved template, and the
+ * brochure follows when they reply. That is reported as `deferred`, not as a
+ * success, and the request is logged so a human can see it is outstanding.
+ */
+export async function fulfilCallRequests(input: {
+  lead: Lead;
+  phone: string;
+  signals: CallSignals;
+  executionId: string;
+}): Promise<FulfilmentResult | null> {
+  const { lead, phone, signals } = input;
+  const requested = (signals.requestedAssetKinds ?? []).filter(
+    (k): k is AssetKind => (SENDABLE_KINDS as readonly string[]).includes(k),
+  );
+  const wantsLocation = Boolean(signals.requestedLocation) && Boolean(env.projectMapsUrl);
+  if (requested.length === 0 && !wantsLocation) return null;
+
+  const result: FulfilmentResult = {
+    requested,
+    delivered: {},
+    locationSent: false,
+    unfulfilled: [],
+  };
+
+  // Evolution is our own WhatsApp session — no template regime, no window.
+  if (activeProvider() === "meta") {
+    const { data: lastInbound } = await db()
+      .from("villa_messages")
+      .select("created_at")
+      .eq("lead_id", lead.id)
+      .eq("role", "customer")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (!serviceWindow(lastInbound?.created_at ?? null).open) {
+      result.deferred =
+        "the 24-hour WhatsApp service window is closed — sent the approved template instead, and the request is queued for their reply";
+      result.unfulfilled = requested;
+      return result;
+    }
+  }
+
+  const conversation = await getOrCreateConversation(lead.id, "whatsapp");
+  const deliver = (reply: Parameters<typeof deliverReply>[1]) => deliverReply(phone, reply);
+
+  const wanted = listOut([
+    ...requested.map((k) => KIND_LABEL[k] ?? k.replace(/_/g, " ")),
+    ...(wantsLocation ? ["the location"] : []),
+  ]);
+  const greeting = lead.name ? `Hi ${lead.name}` : "Hi";
+  await sendPlainText(phone, `${greeting} — as promised on the call, here is ${wanted}.`).catch(() => {});
+
+  for (const kind of requested) {
+    let sent = 0;
+    try {
+      sent = await deliverApprovedAssets({
+        lead,
+        conversationId: conversation.id,
+        kind,
+        deliver,
+        caption: KIND_LABEL[kind]
+          ? `${KIND_LABEL[kind][0].toUpperCase()}${KIND_LABEL[kind].slice(1)}`
+          : undefined,
+      });
+    } catch {
+      sent = 0;
+    }
+    if (sent > 0) result.delivered[kind] = sent;
+    else result.unfulfilled.push(kind);
+  }
+
+  if (wantsLocation) {
+    // A maps short-link is a web page, so it goes as text. Attaching it
+    // produces an unopenable `location-map.pdf` — see getAssets.
+    try {
+      await sendPlainText(phone, `Here is the location: ${env.projectMapsUrl}`);
+      result.locationSent = true;
+    } catch {
+      /* reported below as an unmet request */
+    }
+  }
+
+  return result;
 }
 
 /**
@@ -268,9 +483,73 @@ export async function bridgeCallToWhatsApp(input: {
       return { leadId: lead.id, temperature: finalTemperature, score, messaged: false, skipped: "lead has opted out" };
     }
 
+    /**
+     * WHAT THEY ASKED FOR COMES FIRST.
+     *
+     * A caller who said "send me the brochure on WhatsApp" gets the brochure,
+     * whatever the score says — including on a call the scorer read as cold.
+     * The temperature decides whether we reach out uninvited; it has no say
+     * over a request the person made out loud.
+     */
+    const requests = await fulfilCallRequests({
+      lead: merged,
+      phone,
+      signals,
+      executionId: input.executionId,
+    });
+
+    if (requests) {
+      const deliveredKinds = Object.keys(requests.delivered) as AssetKind[];
+      const anythingSent = deliveredKinds.length > 0 || requests.locationSent;
+
+      await logActivity({
+        leadId: lead.id,
+        type: anythingSent ? "call_request_fulfilled" : "call_request_pending",
+        channel: "whatsapp",
+        description: anythingSent
+          ? `Sent what the caller asked for: ${listOut([
+              ...deliveredKinds.map((k) => KIND_LABEL[k] ?? k),
+              ...(requests.locationSent ? ["the location"] : []),
+            ])}.`
+          : `Caller asked for ${listOut(
+              requests.requested.map((k) => KIND_LABEL[k] ?? k),
+            )} — not sent: ${requests.deferred ?? "no approved file of that kind is uploaded"}.`,
+        metadata: { executionId: input.executionId, ...requests },
+      }).catch(() => {});
+
+      // Anything still outstanding is a person's job, not a silent gap. Only
+      // from "none": a thread a colleague has already picked up must not be
+      // pushed back to "requested" by an automated follow-up.
+      const outstanding =
+        requests.unfulfilled.length > 0 || (Boolean(signals.requestedLocation) && !requests.locationSent);
+      if (outstanding && (lead.handoff_status ?? "none") === "none") {
+        await db()
+          .from("villa_leads")
+          .update({ handoff_status: "requested", handoff_reason: "post-call material requested" })
+          .eq("id", lead.id)
+          .then(
+            () => undefined,
+            () => undefined,
+          );
+      }
+
+      // We have just messaged them about the thing they asked for. A second,
+      // generic "great speaking with you" template on top of that is spam.
+      if (anythingSent) {
+        return { leadId: lead.id, temperature: finalTemperature, score, messaged: true, requests };
+      }
+    }
+
     const templateName = FOLLOW_UP_TEMPLATE[finalTemperature];
     if (!templateName) {
-      return { leadId: lead.id, temperature: finalTemperature, score, messaged: false, skipped: "cold call — recorded, not messaged" };
+      return {
+        leadId: lead.id,
+        temperature: finalTemperature,
+        score,
+        messaged: false,
+        skipped: "cold call — recorded, not messaged",
+        requests: requests ?? undefined,
+      };
     }
 
     // A template, not free text. The person may never have messaged us on
@@ -291,7 +570,7 @@ export async function bridgeCallToWhatsApp(input: {
       metadata: { executionId: input.executionId, template: templateName },
     }).catch(() => {});
 
-    return { leadId: lead.id, temperature: finalTemperature, score, messaged: true };
+    return { leadId: lead.id, temperature: finalTemperature, score, messaged: true, requests: requests ?? undefined };
   } catch (e) {
     console.error("[voice-bridge] follow-up failed", e);
     return { ...empty, skipped: e instanceof Error ? e.message : "unknown failure" };

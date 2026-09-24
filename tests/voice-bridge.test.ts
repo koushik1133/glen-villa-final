@@ -198,3 +198,80 @@ describe("a failed follow-up does not cost the call record", () => {
     assert.match(BRIDGE, /skipped: e instanceof Error \? e\.message/);
   });
 });
+
+/**
+ * "SEND IT ON WHATSAPP"
+ *
+ * The agent promises it on the call. These lock down that the promise is kept,
+ * and — just as important — that it is never kept to someone who did not ask.
+ */
+describe("what the caller asked to be sent is heard, and attributed", () => {
+  test("a brochure request is heard", () => {
+    const s = keywordSignals("Agent: hello\nCaller: can you send me the brochure on WhatsApp");
+    assert.deepEqual(s.requestedAssetKinds, ["brochure"]);
+  });
+
+  test("several asks in one breath are all heard", () => {
+    const s = keywordSignals(
+      "Caller: send me the floor plan and the price list, and the location also",
+    );
+    assert.deepEqual([...(s.requestedAssetKinds ?? [])].sort(), ["floor_plan", "price_sheet"]);
+    assert.equal(s.requestedLocation, true);
+  });
+
+  test("the AGENT offering the brochure is not a request", () => {
+    const s = keywordSignals(
+      "Agent: shall I send you the brochure and the price list on WhatsApp?\nCaller: no thanks, not now",
+    );
+    assert.deepEqual(s.requestedAssetKinds, []);
+  });
+
+  test("a call where nothing was asked for sends nothing", () => {
+    const s = keywordSignals("Caller: I was just calling to check if you are open on Sunday");
+    assert.deepEqual(s.requestedAssetKinds, []);
+    assert.equal(s.requestedLocation, false);
+  });
+
+  test("photos are never picked by the machine — they are a human's job", () => {
+    const s = keywordSignals("Caller: send me some photos of the villa");
+    assert.deepEqual(s.requestedAssetKinds, []);
+  });
+});
+
+describe("delivering what was asked for", () => {
+  test("only operator-approved assets can go out", () => {
+    // deliverApprovedAssets re-runs the allowlist and is-it-a-file gates and
+    // reads only shareable_by_ai rows. Sending any other way would bypass both.
+    assert.match(BRIDGE, /deliverApprovedAssets/);
+    assert.doesNotMatch(BRIDGE, /sendMedia\(/);
+  });
+
+  test("the location goes as a link, never as an attachment", () => {
+    assert.match(BRIDGE, /sendPlainText\(phone, `Here is the location/);
+  });
+
+  test("a request is honoured even on a call the scorer read as cold", () => {
+    // The cold-call early return must come AFTER fulfilment, or a buyer who
+    // asked for the brochure and little else would be met with silence.
+    assert.ok(
+      BRIDGE.indexOf("fulfilCallRequests({") < BRIDGE.indexOf("cold call — recorded, not messaged"),
+    );
+  });
+
+  test("an opted-out lead is never messaged, whatever they asked for", () => {
+    assert.ok(BRIDGE.indexOf("lead has opted out") < BRIDGE.indexOf("fulfilCallRequests({"));
+  });
+
+  test("delivering the ask replaces the generic template rather than adding to it", () => {
+    assert.match(BRIDGE, /if \(anythingSent\) \{/);
+  });
+
+  test("a shut 24-hour window defers rather than pretending to send", () => {
+    assert.match(BRIDGE, /serviceWindow\(lastInbound\?\.created_at \?\? null\)\.open/);
+    assert.match(BRIDGE, /deferred/);
+  });
+
+  test("an unmet request becomes a human's job", () => {
+    assert.match(BRIDGE, /handoff_status: "requested"/);
+  });
+});

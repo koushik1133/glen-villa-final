@@ -1,5 +1,6 @@
 import { db } from "./supabase";
 import { logActivity } from "./activities";
+import { findPhoneNumber } from "./phone-capture";
 import { runAgent, type RunResult } from "./agent";
 import { conversationLockKey, withLock } from "./locks";
 import type { AgentReply, Conversation, Lead } from "./types";
@@ -255,6 +256,42 @@ export async function handleInbound(params: {
       body: params.text,
       ...mediaColumns,
     });
+  }
+
+  /**
+   * A number typed into the message makes the lead callable.
+   *
+   * Instagram gives us no phone number, so an Instagram lead cannot be rung
+   * however interested they are — and people put their number straight into
+   * the DM. Reading it out here is what connects that thread to the voice
+   * agent's call queue.
+   *
+   * Only ever FILLS a blank. A number already on the lead is the one the desk
+   * and every previous conversation have been using; a stray number in one
+   * message (a friend's, a builder's) must not replace it.
+   */
+  if (!lead.phone && params.text) {
+    const captured = findPhoneNumber(params.text);
+    if (captured) {
+      const { error: phoneError } = await supabase
+        .from("villa_leads")
+        .update({ phone: captured.e164 })
+        .eq("id", lead.id)
+        .is("phone", null);
+      if (!phoneError) {
+        lead.phone = captured.e164;
+        await logActivity({
+          leadId: lead.id,
+          type: "phone_captured",
+          channel,
+          description: `Phone number ${captured.e164} read from their ${channel} message ("${captured.asWritten}"). This lead can now be called.`,
+          metadata: { source: channel, asWritten: captured.asWritten },
+        }).catch(() => {});
+      }
+      // A unique-violation here means the number already belongs to another
+      // lead — the same person reaching us on two channels. Left alone
+      // deliberately: merging two leads is a decision with a human in it.
+    }
   }
 
   // Recorded above, deliberately not answered. Same shape as every other
