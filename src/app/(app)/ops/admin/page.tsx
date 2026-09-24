@@ -30,7 +30,12 @@ export default async function AdminPage() {
   if (!hasPermission(session, "analytics.view")) redirect("/ops");
 
   const db = read();
-  const org = db.workspaces[0]?.id ?? "";
+  // The session's org is the Supabase `organizations.id`, which is what every
+  // other ops surface (/ops/sales, /ops/loans, the webhook) scopes its writes
+  // to. This screen used to read the local `workspaces[0].id` instead — a
+  // different string — so the control centre counted a different org's records
+  // and reported zeroes while the queues had work in them.
+  const org = session.orgId ?? db.workspaces[0]?.id ?? "";
   const now = Date.now();
   const cfg = getConfig(org);
 
