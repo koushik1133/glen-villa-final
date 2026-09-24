@@ -1,4 +1,4 @@
-import { timingSafeEqual } from "node:crypto";
+import { createHash, timingSafeEqual } from "node:crypto";
 import { apiError, apiFail, apiOk } from "@/lib/auth/http";
 import { bridgeCallToWhatsApp } from "@/lib/osf/voice-bridge";
 import { AuthError } from "@/lib/auth/session";
@@ -26,10 +26,35 @@ export const dynamic = "force-dynamic";
 function requireVoiceSecret(req: Request): void {
   const expected = process.env.VOICE_WEBHOOK_SECRET;
   if (!expected) throw new AuthError("The voice webhook is not configured.", 503);
-  const presented = req.headers.get("x-voice-secret") ?? "";
-  const a = Buffer.from(presented);
-  const b = Buffer.from(expected);
-  if (a.length !== b.length || !timingSafeEqual(a, b)) {
+
+  /**
+   * Header first, query string accepted.
+   *
+   * The provider posts execution updates from its own servers and its
+   * dashboard offers a URL field and nothing else — there is no way to attach
+   * a custom header. Requiring one therefore meant the loop could not be
+   * closed without standing a reverse proxy in front purely to add it, and
+   * until somebody did, every finished call was dropped and no transcript,
+   * lead or follow-up was ever created.
+   *
+   * So `?secret=` is accepted as well, exactly as the Evolution webhook
+   * already does. The cost is real and worth stating: a query string is
+   * recorded in access logs in a way a header is not, which makes this URL as
+   * sensitive as the secret itself. Treat it accordingly — unguessable, never
+   * pasted into a ticket or a screenshot, and rotated together with the
+   * secret. Prefer the header wherever the sender can set one.
+   */
+  const presented =
+    req.headers.get("x-voice-secret") ??
+    new URL(req.url).searchParams.get("secret") ??
+    "";
+
+  // Hashed before comparing so the compare is constant-time on a fixed width:
+  // a raw timingSafeEqual needs equal lengths, and the length check that makes
+  // it safe to call is itself a signal about how long the secret is.
+  const a = createHash("sha256").update(presented, "utf8").digest();
+  const b = createHash("sha256").update(expected, "utf8").digest();
+  if (!timingSafeEqual(a, b)) {
     throw new AuthError("Invalid webhook credentials.", 401);
   }
 }

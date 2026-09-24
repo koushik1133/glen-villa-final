@@ -190,12 +190,45 @@ describe("ingestion", () => {
 describe("webhook route", () => {
   const route = src("src/app/api/webhooks/bolna/route.ts");
 
-  test("fails closed without the secret, reads it from a header, compares constant-time", () => {
+  test("fails closed when the secret is unset", () => {
     assert.match(route, /if \(!expected\) throw new AuthError\(.*503\)/);
-    assert.match(route, /headers\.get\("x-voice-secret"\)/);
     assert.match(route, /process\.env\.VOICE_WEBHOOK_SECRET/);
-    assert.doesNotMatch(route, /searchParams\.get\("secret"\)/);
+  });
+
+  /**
+   * This test previously asserted the secret could ONLY arrive in a header,
+   * and that the query string was refused. That was the safer rule and it is
+   * why a query string is still second here — it lands in access logs in a way
+   * a header does not.
+   *
+   * It was relaxed deliberately, not by accident. The call provider posts from
+   * its own servers and its dashboard offers a URL field and nothing else, so
+   * a header-only rule meant the return path could not be connected without
+   * standing up a reverse proxy purely to inject one — and until somebody did,
+   * every finished call was silently dropped: no transcript, no lead, no
+   * follow-up. A rule that guarantees the feature is switched off is not
+   * actually protecting anything.
+   *
+   * The properties that do the real work are asserted below and must hold:
+   * the header is preferred, the comparison is constant-time over a fixed
+   * width, and an absent secret still fails closed.
+   */
+  test("prefers the header, and accepts a query secret so the provider can reach us", () => {
+    assert.match(route, /headers\.get\("x-voice-secret"\)/);
+    assert.match(route, /searchParams\.get\("secret"\)/);
+    assert.ok(
+      route.indexOf('headers.get("x-voice-secret")') < route.indexOf('searchParams.get("secret")'),
+      "the header must be read first — the query string is the fallback, not the default",
+    );
+  });
+
+  test("compares constant-time over a fixed width", () => {
+    // Hashing first is what makes this safe: timingSafeEqual throws on
+    // mismatched lengths, and the length check guarding it would itself leak
+    // how long the real secret is.
+    assert.match(route, /createHash\("sha256"\)/);
     assert.match(route, /timingSafeEqual/);
+    assert.doesNotMatch(route, /a\.length !== b\.length/);
   });
 
   test("is listed as self-authenticating in the middleware", () => {
