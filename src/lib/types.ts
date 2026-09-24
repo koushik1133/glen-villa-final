@@ -460,7 +460,7 @@ export interface ReportBlock {
 import type { Broker, CrmContact, CrmTask, Lead } from "./crm/types";
 import type { OpsDatabase } from "./ops/types";
 import type { HandoverStage } from "./showcase/handover";
-import type { VoiceAgentConfig, VoiceCallRecord } from "./voice/types";
+import type { VoiceAgentConfig, VoiceCallRecord, VoiceQueueEntry } from "./voice/types";
 export type * from "./voice/types";
 export type * from "./crm/types";
 export type * from "./appointments/types";
@@ -590,6 +590,7 @@ export interface Database {
   crmTasks: CrmTask[];
   /** Voice agent: normalised call log (idempotent by executionId) and per-brand agent wording. */
   voiceCalls: VoiceCallRecord[];
+  voiceCallQueue: VoiceQueueEntry[];
   voiceAgentConfigs: VoiceAgentConfig[];
   /** Sellable units (villas and flats) behind the public showcase layouts. */
   inventoryUnits: InventoryUnit[];

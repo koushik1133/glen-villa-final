@@ -10,6 +10,7 @@ import type { VoiceClientCall, VoiceOverview } from "@/lib/voice/overview";
 import { dateTime } from "@/lib/crm/format";
 import { Badge, Card, LiquidSegmentedControl, SectionTitle, Stat } from "../ui";
 import { StartCallDialog } from "./start-call";
+import { CallQueue } from "./call-queue";
 
 /**
  * Voice agent — the client's view.
@@ -285,13 +286,28 @@ export function VoicePanel({ initial, brandId, canEditSettings }: { initial: Voi
               <Settings2 size={13} /> Agent settings
             </a>
           )}
-          {data.diagnostics?.agentId && (
-            <StartCallDialog brandId={brandId} agentId={data.diagnostics.agentId} onComplete={() => load(range)} />
+          {data.callingAgentId && (
+            <StartCallDialog brandId={brandId} agentId={data.callingAgentId} onComplete={() => load(range)} />
           )}
         </div>
       </div>
 
       <Funnel f={data.funnel} />
+
+      {/*
+        Always rendered, never gated on the agent being connected. A missing
+        box is indistinguishable from a missing feature: the desk looks for
+        somewhere to paste their numbers, finds nothing, and has no idea
+        whether the product cannot do it or is merely unconfigured. The panel
+        says which.
+      */}
+      <Card>
+        <SectionTitle
+          title="Call queue"
+          hint="Paste the numbers — the agent calls, talks, and follows up on WhatsApp"
+        />
+        <CallQueue brandId={brandId} onChange={() => load(range)} />
+      </Card>
 
       <Card>
         <SectionTitle title="Calls" hint={`Last ${data.days} days · newest first`} />

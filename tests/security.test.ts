@@ -911,6 +911,7 @@ describe("every API route states a permission, or authenticates by its own mecha
     "src/app/api/osf/evolution/route.ts",      // shared token, sha256 + timingSafeEqual
     "src/app/api/osf/cron/follow-ups/route.ts", // Bearer CRON_SECRET, timingSafeEqual
     "src/app/api/osf/cron/outbound/route.ts",   // Bearer CRON_SECRET, timingSafeEqual
+    "src/app/api/voice/queue/run/route.ts",     // Bearer CRON_SECRET, timingSafeEqual
   ]);
 
   const CHECKS =

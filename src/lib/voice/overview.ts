@@ -48,6 +48,15 @@ export interface VoiceOverview {
   connected: boolean;
   calls: VoiceClientCall[];
   funnel: VoiceFunnel;
+  /**
+   * The agent that will place outbound calls, when one is configured.
+   *
+   * Deliberately NOT inside `diagnostics`. It used to be, and since
+   * diagnostics is admin-only the entire outbound-calling UI was invisible to
+   * the sales desk — the only people who actually hold a list of numbers to
+   * call. It is an id, not a secret, and it is what the dialler needs.
+   */
+  callingAgentId: string | null;
   /** Only present for users.manage. */
   diagnostics?: VoiceDiagnostics;
 }
@@ -147,6 +156,7 @@ export async function loadVoiceOverview(
     brandId,
     days: opts.days,
     connected,
+    callingAgentId: connected ? configuredAgentId() : null,
     calls,
     funnel: {
       calls: calls.length,

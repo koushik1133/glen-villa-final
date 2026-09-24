@@ -40,6 +40,11 @@ const SELF_AUTHENTICATING = [
   "/api/webhooks/bolna",
   "/api/ops/session",      // the sign-in endpoint itself
   "/api/publish/tick",     // worker secret, constant-time compared
+  // The outbound call-queue heartbeat. Constant-time CRON_SECRET, failing
+  // closed when unset. Matched as a prefix like the rest of this list, which
+  // deliberately does NOT open /api/voice/queue — loading the queue rings real
+  // phones and stays behind the session gate.
+  "/api/voice/queue/run",
   "/api/ops/followups",    // worker secret or session, checked in-route
   "/auth/callback",        // OAuth / magic-link code exchange, single-use code
 ];

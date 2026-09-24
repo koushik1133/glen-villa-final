@@ -86,3 +86,37 @@ export interface VoiceAgentConfig {
   /** Result of the last push to the provider, for the settings page banner. */
   lastSync: { at: string; ok: boolean; message: string } | null;
 }
+
+/**
+ * OUTBOUND CALL QUEUE — one number the desk asked the agent to ring.
+ *
+ * `attempts` counts dials made, not dials remaining, so a run that is retried
+ * after a redeploy cannot get a fresh allowance. `notBefore` is how a
+ * no-answer waits an hour without a timer having to survive anywhere.
+ */
+export type VoiceQueueStatus = "queued" | "calling" | "done" | "failed" | "cancelled";
+
+export interface VoiceQueueEntry {
+  id: string;
+  brandId: string;
+  /** The provider agent that will do the talking. */
+  agentId: string;
+  /** E.164. Validated at enqueue — nothing downstream guesses a country code. */
+  phone: string;
+  name: string | null;
+  /** Set when the number came from a lead rather than a paste. */
+  leadId: string | null;
+  status: VoiceQueueStatus;
+  attempts: number;
+  maxAttempts: number;
+  /** Provider execution id, once the dial is accepted. Links to VoiceCallRecord. */
+  executionId: string | null;
+  /** The provider's own words when a dial failed. Shown to the operator. */
+  lastError: string | null;
+  /** Retry backoff, and the reason a queued entry is not being dialled yet. */
+  notBefore: string | null;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+  completedAt: string | null;
+}

@@ -7,6 +7,7 @@ import { clientKey, rateLimit } from "@/lib/ops/ratelimit";
 import { resolveDefaultOrgId } from "@/lib/ops/seed";
 import { normaliseExecution } from "@/lib/bolna/client";
 import { ingestExecution } from "@/lib/voice/calls";
+import { pumpQueue, settleQueueEntry } from "@/lib/voice/queue";
 
 export const dynamic = "force-dynamic";
 
@@ -105,6 +106,30 @@ export async function POST(req: Request) {
       });
     }
 
+    /**
+     * The queue moves on.
+     *
+     * Settling first, dialling second: the finished entry has to leave the
+     * `calling` state before the pump counts how many calls are in flight, or
+     * the concurrency limit sees a slot that is already free as still taken
+     * and the run stalls one call in.
+     *
+     * A no-answer goes back to `queued` with an hour's backoff — the person
+     * did not refuse, they were not there — so the pump will usually find
+     * nothing to do here and the cron heartbeat picks it up later.
+     */
+    let queue: { settled: string | null; dialled: number } | undefined;
+    if (result.finalised) {
+      const settled = settleQueueEntry({
+        executionId: execution.id,
+        phone: result.record.callerPhone,
+        brandId,
+        outcome: result.record.outcome,
+      });
+      const pumped = await pumpQueue(brandId).catch(() => ({ dialled: 0 }));
+      queue = { settled: settled?.status ?? null, dialled: pumped.dialled };
+    }
+
     return apiOk({
       executionId: execution.id,
       status: result.record.status,
@@ -113,6 +138,7 @@ export async function POST(req: Request) {
       leadId: result.record.leadId,
       customerId: result.record.customerId,
       followUp,
+      queue,
     });
   } catch (e) {
     return apiError(e);
