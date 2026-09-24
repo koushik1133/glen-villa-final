@@ -11,6 +11,7 @@ import {
 import { Badge, Empty, TemperaturePill, timeAgo } from "@/components/osf/ui";
 import { channelLabel, type InboxConversation, type ThreadLead } from "@/lib/osf/communication";
 import type { Message, MessageRole } from "@/lib/osf/types";
+import { mediaSrc } from "@/lib/osf/agent-media";
 
 /**
  * The subset of a message this file actually renders.
@@ -180,7 +181,10 @@ function messageTime(iso: string): string {
  * kind of friction that stops a checklist being worked.
  */
 function Attachment({ kind, url }: { kind: string | null; url: string }) {
-  const href = /^https?:\/\//.test(url) ? url : `/api/osf/media/${url}`;
+  // mediaSrc keeps private inbound files on /api/osf/media and routes the
+  // agent host's plain-http URLs through a same-origin proxy, which is what
+  // makes them render at all under the CSP. See lib/osf/agent-media.ts.
+  const href = mediaSrc(url);
 
   if (kind === "audio") {
     return (

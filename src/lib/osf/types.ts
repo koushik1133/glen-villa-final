@@ -23,12 +23,25 @@ export type Financing = "cash" | "home_loan" | "combination" | "undecided";
 
 export type HandoffStatus = "none" | "requested" | "notified" | "accepted" | "closed";
 
+/**
+ * Mirrors the `villa_pipeline_stage` enum in Postgres, all ten values.
+ *
+ * Three of them — contacted, site_visit_completed, token_paid — were missing
+ * here while the database and the live WhatsApp agent both used them. The
+ * effect was not a type error but disappearing leads: `isPipelineStage()`
+ * rejected those rows, so a lead the agent had moved to "contacted" dropped
+ * out of the Kanban board and its label rendered undefined. If this list and
+ * the database enum ever diverge again, that is the symptom.
+ */
 export type PipelineStage =
   | "new"
+  | "contacted"
   | "qualifying"
   | "qualified"
   | "site_visit_scheduled"
+  | "site_visit_completed"
   | "negotiation"
+  | "token_paid"
   | "booked"
   | "lost";
 
@@ -157,6 +170,13 @@ export interface Lead {
   lead_score: number;
   lead_temperature: LeadTemperature;
   pipeline_stage: PipelineStage;
+  /** Written by the live agent from the conversation. Display only. */
+  sentiment: string | null;
+  ai_summary: string | null;
+  /** → villa_team_members.id, the rep who owns this lead. */
+  assigned_to: string | null;
+  /** → villa_contacts.id, when the same person is known across channels. */
+  contact_id: string | null;
   source: string;
   campaign: string | null;
   ad_id: string | null;
@@ -177,6 +197,12 @@ export interface Lead {
   opted_out: boolean;
   opted_out_at: string | null;
   ai_paused: boolean;
+  /** Parked rather than lost — the agent reconnects at `reconnect_at`. */
+  is_future_prospect: boolean;
+  reconnect_at: string | null;
+  conversion_confirmed: boolean | null;
+  conversion_checked_at: string | null;
+  conversion_notes: string | null;
   notes: string | null;
   first_contact_at: string;
   last_contact_at: string;
@@ -195,15 +221,38 @@ export interface Conversation {
   summary: string | null;
 }
 
+/** WhatsApp delivery lifecycle — the `villa_delivery_status` enum. */
+export type DeliveryStatus = "queued" | "sent" | "delivered" | "read" | "failed" | "skipped";
+
+/** The `villa_comm_channel` enum, shared by conversations and messages. */
+export type CommChannel =
+  | "whatsapp"
+  | "instagram"
+  | "facebook"
+  | "email"
+  | "sms"
+  | "web_form"
+  | "call";
+
 export interface Message {
   id: string;
   conversation_id: string;
   lead_id: string;
   role: MessageRole;
+  /** Which surface it came in on. Present in the table; was missing here. */
+  channel: CommChannel | null;
   body: string | null;
   media_url: string | null;
   media_kind: AssetKind | null;
   wa_message_id: string | null;
+  /**
+   * Delivery ticks. Written by whatever actually sent the message — today the
+   * VPS agent — so the console displays them and never computes them.
+   */
+  delivery_status: DeliveryStatus | null;
+  delivered_at: string | null;
+  read_at: string | null;
+  error: string | null;
   created_at: string;
 }
 

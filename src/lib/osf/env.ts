@@ -74,11 +74,33 @@ export const env = {
     return optional("GROQ_MODEL", "openai/gpt-oss-120b");
   },
 
+  /**
+   * WHERE THE `villa_*` TABLES ACTUALLY LIVE.
+   *
+   * This module was written when the WhatsApp console ran on its own Supabase
+   * project, so it asked for OSF_SUPABASE_*. That is no longer where the data
+   * is: the `villa_*` schema has been applied to the SAME project that holds
+   * auth, and the live WhatsApp agent on the VPS writes every lead, message
+   * and conversation into it.
+   *
+   * So the OSF_* names are now an override, not a requirement. Unset — which
+   * is the normal case — these fall through to the main project's credentials
+   * and the console reads the live data with no extra configuration.
+   *
+   * Falling back rather than renaming keeps a genuinely separate deployment
+   * possible: set OSF_SUPABASE_URL and the console points elsewhere again.
+   *
+   * The service key is deliberate and not negotiable here. Every `villa_*`
+   * table has RLS on with no policy and is revoked from anon/authenticated, so
+   * the anon key returns zero rows. Reads happen server-side or not at all —
+   * `browserClient()` in ./supabase-auth is for auth only and never for these
+   * tables.
+   */
   get supabaseUrl() {
-    return required("OSF_SUPABASE_URL");
+    return optional("OSF_SUPABASE_URL") || required("NEXT_PUBLIC_SUPABASE_URL");
   },
   get supabaseServiceKey() {
-    return required("OSF_SUPABASE_SERVICE_ROLE_KEY");
+    return optional("OSF_SUPABASE_SERVICE_ROLE_KEY") || required("SUPABASE_SERVICE_ROLE_KEY");
   },
 
   get whatsappPhoneNumberId() {
@@ -237,9 +259,14 @@ export function configStatus() {
     groq,
     /** Whichever provider is active actually has a key set. */
     aiConfigured: llmProvider === "groq" ? groq : anthropic,
+    // Mirrors the getters above, which now fall back to the main project.
+    // Reading only the OSF_* names here rendered a "connect your database"
+    // checklist on every screen of a console that was already pointed at the
+    // live data — the gate said unconfigured while the queries would have
+    // worked.
     supabase:
-      Boolean(read("OSF_SUPABASE_URL")) &&
-      Boolean(read("OSF_SUPABASE_SERVICE_ROLE_KEY")),
+      Boolean(read("OSF_SUPABASE_URL") ?? read("NEXT_PUBLIC_SUPABASE_URL")) &&
+      Boolean(read("OSF_SUPABASE_SERVICE_ROLE_KEY") ?? read("SUPABASE_SERVICE_ROLE_KEY")),
     // Mirrors the getters above, which fall back to the Meta app's own
     // credentials. Reading only the WHATSAPP_* names here reported "not
     // configured" for a deployment that was configured, and sent people

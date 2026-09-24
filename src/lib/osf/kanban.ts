@@ -11,10 +11,13 @@ import type { Lead, PipelineStage } from "./types";
  */
 export const PIPELINE_STAGES: PipelineStage[] = [
   "new",
+  "contacted",
   "qualifying",
   "qualified",
   "site_visit_scheduled",
+  "site_visit_completed",
   "negotiation",
+  "token_paid",
   "booked",
   "lost",
 ];
@@ -27,10 +30,13 @@ export function isPipelineStage(value: string): value is PipelineStage {
 
 export const STAGE_LABELS: Record<PipelineStage, string> = {
   new: "New",
+  contacted: "Contacted",
   qualifying: "Qualifying",
   qualified: "Qualified",
   site_visit_scheduled: "Site Visit Scheduled",
+  site_visit_completed: "Site Visit Completed",
   negotiation: "Negotiation",
+  token_paid: "Token Paid",
   booked: "Booked",
   lost: "Lost",
 };

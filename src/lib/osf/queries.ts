@@ -194,12 +194,23 @@ export async function messagesForLead(leadId: string): Promise<Message[]> {
 export async function recentConversations(limit = 50) {
   const { data } = await db()
     .from("villa_conversations")
-    .select("*, villa_leads(id, name, phone, lead_temperature, lead_score)")
+    // pipeline_stage and ai_paused are here because the inbox list renders
+    // both: the stage badge beside each thread, and the "AI paused" marker
+    // that tells a rep this chat is already being handled by a human. Without
+    // them the list silently showed neither — the fields came back undefined
+    // rather than erroring, which is the quiet way a PostgREST embed goes
+    // wrong.
+    .select(
+      "*, villa_leads(id, name, phone, lead_temperature, lead_score, pipeline_stage, ai_paused)",
+    )
     .order("last_message_at", { ascending: false })
     .limit(limit);
   return (data ?? []) as Array<
     Conversation & {
-      villa_leads: Pick<Lead, "id" | "name" | "phone" | "lead_temperature" | "lead_score"> | null;
+      villa_leads: Pick<
+        Lead,
+        "id" | "name" | "phone" | "lead_temperature" | "lead_score" | "pipeline_stage" | "ai_paused"
+      > | null;
     }
   >;
 }

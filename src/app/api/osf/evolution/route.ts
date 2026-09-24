@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import { NextResponse, after } from "next/server";
-import { env } from "@/lib/osf/env";
+import { env, optional } from "@/lib/osf/env";
 import { handleInbound } from "@/lib/osf/conversation";
 import {
   describeMedia, type InboundMedia, type InboundMediaKind,
@@ -303,7 +303,40 @@ async function processMessage(m: EvolutionMessage): Promise<void> {
   }
 }
 
+/**
+ * ONE RESPONDER PER NUMBER.
+ *
+ * The live WhatsApp agent runs on the VPS and owns Evolution's webhook. If
+ * this deployment also accepted `messages.upsert` it would run the agent a
+ * second time on the same message, and the customer would get two different
+ * replies from one number. That is not a degraded experience — it is the
+ * failure the whole console is meant to prevent.
+ *
+ * So inbound is refused unless somebody deliberately turns it on. It is an
+ * explicit opt-in rather than a consequence of EVOLUTION_WEBHOOK_TOKEN being
+ * unset, because "safe because a variable happens to be empty" stops being
+ * true the moment someone fills that variable in to make sending work.
+ *
+ * Set EVOLUTION_INBOUND=enabled ONLY on the deployment that owns the number.
+ */
+function inboundEnabled(): boolean {
+  return optional("EVOLUTION_INBOUND").toLowerCase() === "enabled";
+}
+
 export async function POST(request: Request) {
+  if (!inboundEnabled()) {
+    // 410 rather than 404: the endpoint exists and is deliberately closed, so
+    // whoever pointed Evolution here gets an answer instead of a mystery.
+    return NextResponse.json(
+      {
+        error:
+          "Inbound WhatsApp is disabled on this deployment. The agent that owns this number handles it; " +
+          "this console is read plus human reply only. Set EVOLUTION_INBOUND=enabled only on the owning deployment.",
+      },
+      { status: 410 },
+    );
+  }
+
   if (!tokenValid(request)) {
     return NextResponse.json({ error: "invalid token" }, { status: 401 });
   }
