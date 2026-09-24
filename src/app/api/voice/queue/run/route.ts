@@ -12,6 +12,22 @@ export const maxDuration = 60;
  *
  *   GET /api/voice/queue/run   with   Authorization: Bearer $CRON_SECRET
  *
+ * SCHEDULE, AND WHY IT IS ONLY DAILY
+ *
+ * This wants to run every few minutes and on a Hobby plan it cannot: Vercel
+ * caps that tier at one cron execution per day, and a five-minute schedule is
+ * rejected at deploy time — it fails the whole deployment, not just the cron.
+ *
+ * A daily tick is therefore what `vercel.json` asks for, and that is survivable
+ * because this was never the primary driver: the webhook advances the queue the
+ * moment each call ends, which is what actually keeps a run moving. What the
+ * daily tick loses is timeliness on the recovery cases below — a no-answer
+ * retry waits for the next tick rather than the next hour.
+ *
+ * On a plan that allows it, restore the five-minute schedule. Anything that can reach the
+ * route with the right secret works too — an external scheduler, or an operator
+ * pressing Run.
+ *
  * The webhook is what normally keeps a run moving — a call ends, the next one
  * starts. This exists for the cases the webhook cannot cover:
  *
