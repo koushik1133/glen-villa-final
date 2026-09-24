@@ -17,3 +17,7 @@ _e2e.mjs
 
 # Timestamped .env backups taken before a live config change.
 .env.bak.*
+.env.recovered
+.env.template-blank
+.env.*
+!.env.example
